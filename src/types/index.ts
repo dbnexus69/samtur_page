@@ -1,11 +1,46 @@
 export interface User {
   id: number;
   name: string;
+  docType: string;
+  docNumber: string;
+  phone: string;
+  birthDate?: string;
   email: string;
   password: string;
   role: 'admin' | 'vendor';
   status: 'active' | 'inactive';
+  createdAt?: string;
+  lastLogin?: string;
+  avatar?: string;
+  customPermissions?: RolePermissions; // Permisos personalizados por usuario
 }
+
+export interface RolePermissions {
+  dashboard: { view: 'all' | 'own' };
+  sales: { create: boolean; edit: 'all' | 'own' | 'none'; delete: boolean };
+  clients: { create: boolean; edit: 'all' | 'own' | 'none'; delete: boolean };
+  itineraries: { view: boolean; edit: boolean; delete: boolean };
+  users: { view: boolean; create: boolean; edit: boolean; delete: boolean };
+  config: { view: boolean; edit: boolean };
+}
+
+export const DEFAULT_VENDOR_PERMISSIONS: RolePermissions = {
+  dashboard: { view: 'own' },
+  sales: { create: true, edit: 'own', delete: false },
+  clients: { create: true, edit: 'none', delete: false },
+  itineraries: { view: true, edit: false, delete: false },
+  users: { view: false, create: false, edit: false, delete: false },
+  config: { view: false, edit: false }
+};
+
+export const ADMIN_PERMISSIONS: RolePermissions = {
+  dashboard: { view: 'all' },
+  sales: { create: true, edit: 'all', delete: true },
+  clients: { create: true, edit: 'all', delete: true },
+  itineraries: { view: true, edit: true, delete: true },
+  users: { view: true, create: true, edit: true, delete: true },
+  config: { view: true, edit: true }
+};
 
 export interface Client {
   id: number;
@@ -49,6 +84,9 @@ export interface ConfigData {
   suppliers: { id: number; name: string; type: string; contact: string }[];
   routes: { id: number; origin: string; destination: string; duration: string }[];
   baggage: { id: number; name: string; maxWeight: string }[];
+  rolePermissions: {
+    vendor: RolePermissions; // Permisos por defecto del vendedor (editables)
+  };
 }
 
 export interface AppData {
@@ -57,4 +95,4 @@ export interface AppData {
   sales: Sale[];
   flights: Flight[];
   config: ConfigData;
-}
+};

@@ -14,12 +14,12 @@ export function Header() {
   const title = pageTitles[location.pathname] || 'Samtour';
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b px-6 py-4">
+    <header className="sticky top-0 z-40 bg-white border-b border-gray-border px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-500">Samtour</span>
           <span className="text-gray-400">/</span>
-          <span className="font-semibold text-gray-900">{title}</span>
+          <span className="font-heading font-semibold text-primary">{title}</span>
         </div>
         <div className="text-sm text-gray-500">
           {new Date().toLocaleDateString('es-CO', {

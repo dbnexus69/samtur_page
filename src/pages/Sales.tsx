@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -8,12 +8,14 @@ import { FormField, Input, Select, Textarea } from '../components/ui/Form';
 import { Table, TableRow, TableCell } from '../components/ui/Table';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
+import { usePermissions } from '../context/PermissionsContext';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { Sale } from '../types';
 
 export default function Sales() {
   const { data, addSale, updateSale } = useData();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const { canCreate, canEdit } = usePermissions();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSale, setEditingSale] = useState<Sale | null>(null);
 
@@ -25,7 +27,30 @@ export default function Sales() {
     observations: ''
   });
 
+  const filteredSales = useMemo(() => {
+    if (isAdmin) return data.sales;
+    return data.sales.filter(s => s.vendorId === user?.id);
+  }, [data.sales, isAdmin, user?.id]);
+
+  const totals = useMemo(() => {
+    return filteredSales.reduce(
+      (acc, s) => ({
+        total: acc.total + s.total,
+        pagado: acc.pagado + (s.status === 'pagado' ? s.total : 0),
+        pendiente: acc.pendiente + (s.status === 'pendiente' ? s.total : 0)
+      }),
+      { total: 0, pagado: 0, pendiente: 0 }
+    );
+  }, [filteredSales]);
+
+  const canEditThis = (sale: Sale): boolean => {
+    if (!canEdit('sales')) return false;
+    if (isAdmin) return true;
+    return sale.vendorId === user?.id;
+  };
+
   const handleOpenModal = (sale?: Sale) => {
+    if (sale && !canEditThis(sale)) return;
     if (sale) {
       setEditingSale(sale);
       setFormData({
@@ -71,15 +96,6 @@ export default function Sales() {
     setIsModalOpen(false);
   };
 
-  const totals = data.sales.reduce(
-    (acc, s) => ({
-      total: acc.total + s.total,
-      pagado: acc.pagado + (s.status === 'pagado' ? s.total : 0),
-      pendiente: acc.pendiente + (s.status === 'pendiente' ? s.total : 0)
-    }),
-    { total: 0, pagado: 0, pendiente: 0 }
-  );
-
   return (
     <div className="space-y-6">
       <Card>
@@ -101,15 +117,17 @@ export default function Sales() {
 
       <Card>
         <CardHeader actions={
-          <Button onClick={() => handleOpenModal()}>
-            <Plus size={18} />
-            Nueva Venta
-          </Button>
+          canCreate('sales') ? (
+            <Button onClick={() => handleOpenModal()}>
+              <Plus size={18} />
+              Nueva Venta
+            </Button>
+          ) : undefined
         }>
-          Lista de Ventas
+          Lista de Ventas {isAdmin ? '(Todas)' : '(Mis Ventas)'}
         </CardHeader>
         <Table headers={['#', 'Cliente', 'Vendedor', 'Fecha', 'Valor', 'Estado', 'Acciones']}>
-          {data.sales.map(sale => (
+          {filteredSales.map(sale => (
             <TableRow key={sale.id}>
               <TableCell>{sale.id}</TableCell>
               <TableCell>{sale.clientName}</TableCell>
@@ -118,9 +136,13 @@ export default function Sales() {
               <TableCell className="font-semibold">{formatCurrency(sale.total)}</TableCell>
               <TableCell><Badge variant={sale.status}>{sale.status}</Badge></TableCell>
               <TableCell>
-                <Button variant="outline" size="sm" onClick={() => handleOpenModal(sale)}>
-                  Editar
-                </Button>
+                {canEditThis(sale) ? (
+                  <Button variant="outline" size="sm" onClick={() => handleOpenModal(sale)}>
+                    Editar
+                  </Button>
+                ) : (
+                  <span className="text-xs text-gray-400">Sin acceso</span>
+                )}
               </TableCell>
             </TableRow>
           ))}

@@ -45,15 +45,15 @@ export function Table({ headers, children }: TableProps) {
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="bg-gray-50">
+          <tr className="bg-gray-light">
             {headers.map((header, i) => (
-              <th key={i} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th key={i} className="px-4 py-3 text-left text-xs font-semibold text-primary uppercase tracking-wider">
                 {header}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">{children}</tbody>
+        <tbody className="divide-y divide-gray-border">{children}</tbody>
       </table>
     </div>
   );
@@ -66,7 +66,7 @@ interface TableRowProps {
 
 export function TableRow({ children, onClick }: TableRowProps) {
   return (
-    <tr className={`hover:bg-gray-50 ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick}>
+    <tr className={`hover:bg-gray-light ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick}>
       {children}
     </tr>
   );

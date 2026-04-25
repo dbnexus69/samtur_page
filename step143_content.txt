@@ -1,0 +1,2 @@
+"  // Función para guardar permisos del rol vendedor\n  const handleSaveRolePermissions = () => {\n    updateRolePermissions(editingUserPermissions);\n    setSuccessMessage('Permisos globales del rol Vendedor actualizados');\n    setShowSuccess(true);\n  
+<truncated 27736 bytes>

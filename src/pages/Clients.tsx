@@ -7,11 +7,13 @@ import { Modal } from '../components/ui/Modal';
 import { FormField, Input, Select, Textarea } from '../components/ui/Form';
 import { Table, TableRow, TableCell } from '../components/ui/Table';
 import { useData } from '../context/DataContext';
+import { usePermissions } from '../context/PermissionsContext';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { Client } from '../types';
 
 export default function Clients() {
   const { data, addClient, updateClient, deleteClient } = useData();
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -26,6 +28,7 @@ export default function Clients() {
   });
 
   const handleOpenModal = (client?: Client) => {
+    if (client && !canEdit('clients')) return;
     if (client) {
       setEditingClient(client);
       setFormData({
@@ -55,6 +58,7 @@ export default function Clients() {
   };
 
   const handleDelete = (id: number) => {
+    if (!canDelete('clients')) return;
     if (confirm('Esta seguro de eliminar este cliente?')) {
       deleteClient(id);
     }
@@ -73,10 +77,12 @@ export default function Clients() {
     <div className="space-y-6">
       <Card>
         <CardHeader actions={
-          <Button onClick={() => handleOpenModal()}>
-            <Plus size={18} />
-            Nuevo Cliente
-          </Button>
+          canCreate('clients') ? (
+            <Button onClick={() => handleOpenModal()}>
+              <Plus size={18} />
+              Nuevo Cliente
+            </Button>
+          ) : undefined
         }>
           Lista de Clientes
         </CardHeader>
@@ -95,12 +101,16 @@ export default function Clients() {
                   <Button variant="outline" size="sm" onClick={() => handleViewDetail(client)}>
                     <Eye size={14} />
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleOpenModal(client)}>
-                    <Pencil size={14} />
-                  </Button>
-                  <Button variant="danger" size="sm" onClick={() => handleDelete(client.id)}>
-                    <Trash2 size={14} />
-                  </Button>
+                  {canEdit('clients') && (
+                    <Button variant="outline" size="sm" onClick={() => handleOpenModal(client)}>
+                      <Pencil size={14} />
+                    </Button>
+                  )}
+                  {canDelete('clients') && (
+                    <Button variant="danger" size="sm" onClick={() => handleDelete(client.id)}>
+                      <Trash2 size={14} />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

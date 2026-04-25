@@ -4,6 +4,7 @@ import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useData } from '../context/DataContext';
+import { usePermissions } from '../context/PermissionsContext';
 import { formatDate } from '../utils/formatters';
 import { Flight } from '../types';
 
@@ -18,6 +19,7 @@ interface Notification {
 
 export default function Itineraries() {
   const { data, updateFlight } = useData();
+  const { canEdit: canEditItinerary, canView } = usePermissions();
   const [currentTab, setCurrentTab] = useState<'ida' | 'regreso'>('ida');
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -69,6 +71,7 @@ export default function Itineraries() {
   };
 
   const handleMarkCheckin = (flightId: number) => {
+    if (!canEditItinerary('itineraries')) return;
     if (confirm('Marcar check-in como realizado?')) {
       updateFlight(flightId, { checkin: 'realizado' });
       dismissNotification(flightId);
@@ -121,6 +124,14 @@ export default function Itineraries() {
 
   const getDayKey = (day: number, month: number, year: number) => 
     `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+  if (!canView('itineraries')) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-500">No tiene permisos para ver itinerarios</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -183,7 +194,7 @@ export default function Itineraries() {
 
           <div className="grid grid-cols-7">
             {DAYS.map(day => (
-              <div key={day} className="p-3 text-center text-xs font-semibold text-gray-500 bg-gray-50 uppercase">
+              <div key={day} className="p-3 text-center text-xs font-semibold text-gray-500 bg-gray-light uppercase">
                 {day}
               </div>
             ))}
@@ -200,10 +211,10 @@ export default function Itineraries() {
               return (
                 <div
                   key={i}
-                  className={`min-h-40 p-2 border-r border-b relative ${isOtherMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}`}
+                  className={`min-h-40 p-2 border-r border-b relative ${isOtherMonth ? 'bg-gray-light text-gray-400' : 'bg-white'}`}
                 >
                   {hasFlights && (
-                    <div className="absolute top-1 right-1 text-xs font-bold text-white bg-blue-600 rounded-full w-5 h-5 flex items-center justify-center z-10">
+                    <div className="absolute top-1 right-1 text-xs font-bold text-white bg-accent rounded-full w-5 h-5 flex items-center justify-center z-10">
                       {dayFlights.length}
                     </div>
                   )}
@@ -228,7 +239,7 @@ export default function Itineraries() {
                           {flight.passenger.split(' ')[0]}
                         </div>
                         <div className="text-xs opacity-75">{flight.route}</div>
-                        {flight.checkin === 'pendiente' && (
+                        {flight.checkin === 'pendiente' && canEditItinerary('itineraries') && (
                           <button
                             className="mt-1 text-xs bg-white px-1.5 py-0.5 rounded hover:bg-gray-100"
                             onClick={() => handleMarkCheckin(flight.id)}
@@ -243,7 +254,7 @@ export default function Itineraries() {
                   {hasMoreThanOne && (
                     <button
                       onClick={() => toggleDay(dayKey)}
-                      className="w-full flex items-center justify-center gap-1 text-xs font-bold text-blue-700 bg-blue-100 border border-blue-300 rounded px-1 py-1 mt-1 hover:bg-blue-200 cursor-pointer"
+                      className="w-full flex items-center justify-center gap-1 text-xs font-bold text-accent bg-accent/10 border border-accent/30 rounded px-1 py-1 mt-1 hover:bg-accent/20 cursor-pointer"
                     >
                       {isExpanded ? `[−] Ver menos` : `[+] +${dayFlights.length - 1} más`}
                     </button>
@@ -260,7 +271,7 @@ export default function Itineraries() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase">
+              <tr className="bg-gray-light text-left text-xs font-semibold text-gray-600 uppercase">
                 <th className="px-4 py-3">Pasajero</th>
                 <th className="px-4 py-3">Ruta</th>
                 <th className="px-4 py-3">Aerolinea</th>
@@ -271,7 +282,7 @@ export default function Itineraries() {
             </thead>
             <tbody className="divide-y">
               {flights.slice(0, 8).map(flight => (
-                <tr key={flight.id} className="hover:bg-gray-50">
+                <tr key={flight.id} className="hover:bg-gray-light">
                   <td className="px-4 py-3">{flight.passenger}</td>
                   <td className="px-4 py-3">{flight.route}</td>
                   <td className="px-4 py-3">{flight.airline}</td>

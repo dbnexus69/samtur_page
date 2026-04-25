@@ -6,8 +6,9 @@ interface CardProps {
 }
 
 export function Card({ children, className = '' }: CardProps) {
+  const hasBackground = /\bbg-/.test(className);
   return (
-    <div className={`bg-white rounded-lg shadow ${className}`}>
+    <div className={`${hasBackground ? '' : 'bg-white'} rounded-lg border border-gray-border shadow-sm ${className}`}>
       {children}
     </div>
   );
@@ -20,8 +21,8 @@ interface CardHeaderProps {
 
 export function CardHeader({ children, actions }: CardHeaderProps) {
   return (
-    <div className="flex items-center justify-between p-4 border-b">
-      <h2 className="text-lg font-semibold">{children}</h2>
+    <div className="flex items-center justify-between p-4 border-b border-gray-border">
+      <h2 className="text-lg font-heading font-semibold text-primary">{children}</h2>
       {actions}
     </div>
   );

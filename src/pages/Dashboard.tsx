@@ -68,8 +68,8 @@ export default function Dashboard() {
     { name: 'Pendiente', value: stats.Pendiente }
   ];
 
-  const COLORS = ['#06b6d4', '#8b5cf6', '#ec4899', '#f97316', '#22c55e'];
-  const CARTERA_COLORS = ['#16a34a', '#2563eb', '#f59e0b'];
+  const COLORS = ['#102846', '#f2892f', '#06b6d4', '#8b5cf6', '#22c55e'];
+  const CARTERA_COLORS = ['#16a34a', '#f2892f', '#f59e0b'];
 
   return (
     <div className="space-y-6">

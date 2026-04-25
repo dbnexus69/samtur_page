@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, ReactNode } from 'react';
-import { AppData, User, Client, Sale, Flight } from '../types';
+import { AppData, User, Client, Sale, Flight, RolePermissions } from '../types';
 import { mockData } from '../data/mockData';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
@@ -10,6 +10,7 @@ interface DataContextType {
   refreshData: () => void;
   addUser: (user: Omit<User, 'id'>) => User;
   updateUser: (id: number, user: Partial<User>) => void;
+  updateUserPermissions: (id: number, permissions: RolePermissions) => void;
   addClient: (client: Omit<Client, 'id'>) => Client;
   updateClient: (id: number, client: Partial<Client>) => void;
   deleteClient: (id: number) => void;
@@ -19,6 +20,7 @@ interface DataContextType {
   addConfigItem: (section: ConfigSection, item: Record<string, unknown>) => Record<string, unknown>;
   updateConfigItem: (section: ConfigSection, id: number, item: Record<string, unknown>) => void;
   deleteConfigItem: (section: ConfigSection, id: number) => void;
+  updateRolePermissions: (permissions: RolePermissions) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -130,12 +132,32 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const updateRolePermissions = (permissions: RolePermissions) => {
+    setData({
+      ...data,
+      config: {
+        ...data.config,
+        rolePermissions: {
+          vendor: permissions
+        }
+      }
+    });
+  };
+
+  const updateUserPermissions = (id: number, permissions: RolePermissions) => {
+    setData({
+      ...data,
+      users: data.users.map(u => u.id === id ? { ...u, customPermissions: permissions } : u)
+    });
+  };
+
   return (
     <DataContext.Provider value={{
       data,
       refreshData,
       addUser,
       updateUser,
+      updateUserPermissions,
       addClient,
       updateClient,
       deleteClient,
@@ -144,7 +166,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       updateFlight,
       addConfigItem,
       updateConfigItem,
-      deleteConfigItem
+      deleteConfigItem,
+      updateRolePermissions
     }}>
       {children}
     </DataContext.Provider>

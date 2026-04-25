@@ -8,6 +8,8 @@ import { Table, TableRow, TableCell } from '../components/ui/Table';
 import { useData } from '../context/DataContext';
 import { ConfigData } from '../types';
 
+type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'routes' | 'baggage';
+
 const SECTIONS = [
   { id: 'cards', label: 'Tarjetas' },
   { id: 'paymentMethods', label: 'Formas de Pago' },
@@ -28,7 +30,7 @@ export default function Config() {
 
   const [formData, setFormData] = useState<any>({});
 
-  const currentData = data.config[currentSection as keyof ConfigData] || [];
+  const currentData = (data.config[currentSection as keyof ConfigData] || []) as any[];
 
   const getHeaders = (section: SectionId): string[] => {
     switch (section) {
@@ -69,16 +71,16 @@ export default function Config() {
 
   const handleSubmit = () => {
     if (editingItem) {
-      updateConfigItem(currentSection as keyof ConfigData, editingItem.id, formData);
+      updateConfigItem(currentSection as ConfigSection, editingItem.id, formData);
     } else {
-      addConfigItem(currentSection as keyof ConfigData, formData);
+      addConfigItem(currentSection as ConfigSection, formData);
     }
     setIsModalOpen(false);
   };
 
   const handleDelete = (id: number) => {
     if (confirm('Esta seguro de eliminar este registro?')) {
-      deleteConfigItem(currentSection as keyof ConfigData, id);
+      deleteConfigItem(currentSection as ConfigSection, id);
     }
   };
 

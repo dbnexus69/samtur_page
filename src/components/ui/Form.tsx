@@ -28,15 +28,12 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export function Input({ className = '', error, ...props }: InputProps) {
   return (
-    <div>
-      <input
-        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-          error ? 'border-red-500' : 'border-gray-300'
-        } ${className}`}
-        {...props}
-      />
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-    </div>
+    <input
+      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 ${
+        error ? 'border-red-500' : 'border-gray-border'
+      } ${className}`}
+      {...props}
+    />
   );
 }
 
@@ -47,19 +44,16 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 
 export function Select({ options, error, className = '', ...props }: SelectProps) {
   return (
-    <div>
-      <select
-        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-          error ? 'border-red-500' : 'border-gray-300'
-        } ${className}`}
-        {...props}
-      >
-        {options.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-    </div>
+    <select
+      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 ${
+        error ? 'border-red-500' : 'border-gray-border'
+      } ${className}`}
+      {...props}
+    >
+      {options.map(opt => (
+        <option key={opt.value} value={opt.value}>{opt.label}</option>
+      ))}
+    </select>
   );
 }
 
@@ -68,7 +62,7 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 export function Textarea({ className = '', ...props }: TextareaProps) {
   return (
     <textarea
-      className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 ${className}`}
+      className={`w-full px-3 py-2 border border-gray-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 ${className}`}
       {...props}
     />
   );

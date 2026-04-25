@@ -1,11 +1,11 @@
-import { AppData } from '../types';
+import { AppData, DEFAULT_VENDOR_PERMISSIONS } from '../types';
 
 export const mockData: AppData = {
   users: [
-    { id: 1, name: 'Admin Samtour', email: 'admin@samtour.com', password: 'admin123', role: 'admin', status: 'active' },
-    { id: 2, name: 'Juan Perez', email: 'juan@samtour.com', password: 'vendor123', role: 'vendor', status: 'active' },
-    { id: 3, name: 'Maria Garcia', email: 'maria@samtour.com', password: 'vendor123', role: 'vendor', status: 'active' },
-    { id: 4, name: 'Carlos Lopez', email: 'carlos@samtour.com', password: 'vendor123', role: 'vendor', status: 'inactive' }
+    { id: 1, name: 'Admin Samtour', docType: 'CC', docNumber: '123456789', phone: '3001234567', birthDate: '1990-01-15', email: 'admin@samtour.com', password: 'Admin123', role: 'admin', status: 'active' },
+    { id: 2, name: 'Juan Perez', docType: 'CC', docNumber: '987654321', phone: '3002345678', birthDate: '1985-06-20', email: 'juan@samtour.com', password: 'Vendor123', role: 'vendor', status: 'active' },
+    { id: 3, name: 'Maria Garcia', docType: 'CE', docNumber: '5555555', phone: '3003456789', birthDate: '1992-03-10', email: 'maria@samtour.com', password: 'Vendor123', role: 'vendor', status: 'active' },
+    { id: 4, name: 'Carlos Lopez', docType: 'Pasaporte', docNumber: 'XY789654', phone: '3004567890', birthDate: '1988-11-25', email: 'carlos@samtour.com', password: 'Vendor123', role: 'vendor', status: 'inactive' }
   ],
   clients: [
     { id: 1, name: 'Ana Maria Torres', docType: 'CC', docNumber: '12345678', phone: '3001234567', email: 'ana@email.com', registrationDate: '2025-01-15' },
@@ -93,6 +93,9 @@ export const mockData: AppData = {
       { id: 1, name: 'Equipaje de Mano', maxWeight: '8 kg' },
       { id: 2, name: 'Equipaje Documentado', maxWeight: '23 kg' },
       { id: 3, name: 'Equipaje Extra', maxWeight: '32 kg' }
-    ]
+    ],
+    rolePermissions: {
+      vendor: DEFAULT_VENDOR_PERMISSIONS
+    }
   }
 };

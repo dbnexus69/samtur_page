@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
+import { PermissionsProvider } from './context/PermissionsContext';
 import { Layout } from './components/layout/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -11,9 +12,16 @@ import Users from './pages/Users';
 import Config from './pages/Config';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-light">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   if (!user) return <Navigate to="/login" replace />;
-  return <>{children}</>;
+  return <PermissionsProvider user={user}>{children}</PermissionsProvider>;
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
