@@ -4,7 +4,8 @@ import {
   AlertCircle, CheckCircle, PartyPopper, Shield, Settings, Eye, EyeOff,
   Mail, Phone, Calendar, Hash, ShieldCheck, Briefcase, Lock,
   Globe, LayoutDashboard, ShoppingBag, Users as UsersGroup, Map, Key,
-  ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight
+  ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight,
+  Trash2, AlertTriangle, Edit, X
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
@@ -40,7 +41,7 @@ const AVATARS = [
 ];
 
 export default function Users() {
-  const { data, addUser, updateUser, updateRolePermissions, updateUserPermissions } = useData();
+  const { data, addUser, updateUser, deleteUser, updateRolePermissions, updateUserPermissions } = useData();
   const { user: currentUser } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'users' | 'permissions'>('users');
@@ -49,13 +50,18 @@ export default function Users() {
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showConfetti, setShowConfetti] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [selectedUserForDetail, setSelectedUserForDetail] = useState<User | null>(null);
   const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<User | null>(null);
   const [editingUserPermissions, setEditingUserPermissions] = useState<RolePermissions>(data.config.rolePermissions?.vendor || DEFAULT_VENDOR_PERMISSIONS);
+  
+  // Eliminación
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
@@ -65,7 +71,8 @@ export default function Users() {
   const itemsPerPage = 8;
 
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     role: 'vendor' as 'admin' | 'vendor',
@@ -91,7 +98,8 @@ export default function Users() {
   const filteredUsers = useMemo(() => {
     const filtered = data.users.filter(user => {
       const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           user.email.toLowerCase().includes(searchTerm.toLowerCase());
+                           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           user.docNumber.includes(searchTerm);
       const matchesRole = filterRole === 'all' || user.role === filterRole;
       const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
       return matchesSearch && matchesRole && matchesStatus;
@@ -100,38 +108,21 @@ export default function Users() {
     return [...filtered].sort((a, b) => {
       const aValue = a[sortConfig.key] || '';
       const bValue = b[sortConfig.key] || '';
-      
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     });
   }, [data.users, searchTerm, filterRole, filterStatus, sortConfig]);
 
-  // Paginacion
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, filterRole, filterStatus]);
-
-  // Handlers
-  const requestSort = (key: keyof User) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const handleOpenModal = (user: User | null = null) => {
+  const handleOpenModal = (user?: User) => {
     if (user) {
       setEditingUser(user);
+      const nameParts = user.name.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
       setFormData({
-        name: user.name,
+        firstName,
+        lastName,
         email: user.email,
         password: user.password,
         role: user.role,
@@ -145,7 +136,8 @@ export default function Users() {
     } else {
       setEditingUser(null);
       setFormData({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
         role: 'vendor',
@@ -157,26 +149,31 @@ export default function Users() {
         avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)]
       });
     }
+    setErrors({});
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validaciones
+  const handleSaveUser = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = 'El nombre es obligatorio';
+    if (!formData.firstName.trim()) newErrors.firstName = 'El nombre es obligatorio';
+    if (!formData.lastName.trim()) newErrors.lastName = 'El apellido es obligatorio';
     if (!formData.email.trim()) newErrors.email = 'El correo es obligatorio';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'El correo no es valido';
     
-    if (!editingUser && !formData.password.trim()) {
-      newErrors.password = 'La contrasena es obligatoria para nuevos usuarios';
-    } else if (formData.password && formData.password.length < 6) {
-      newErrors.password = 'La contrasena debe tener al menos 6 caracteres';
-    }
+    if (!editingUser && !formData.password.trim()) newErrors.password = 'La contraseña es obligatoria';
     
-    if (!formData.docNumber.trim()) newErrors.docNumber = 'El documento es obligatorio';
+    if (!formData.docNumber.trim()) newErrors.docNumber = 'El numero de documento es obligatorio';
+    else if (formData.docNumber.length > 20) newErrors.docNumber = 'El documento no puede exceder 20 caracteres';
+    
     if (!formData.phone.trim()) newErrors.phone = 'El telefono es obligatorio';
+    else if (!/^\d+$/.test(formData.phone)) newErrors.phone = 'El telefono solo debe contener numeros';
+    else if (formData.phone.length > 20) newErrors.phone = 'El telefono no puede exceder 20 caracteres';
+    
+    if (!formData.birthDate) newErrors.birthDate = 'La fecha de nacimiento es obligatoria';
+
+    if (formData.firstName.length > 50) newErrors.firstName = 'El nombre no puede exceder 50 caracteres';
+    if (formData.lastName.length > 50) newErrors.lastName = 'El apellido no puede exceder 50 caracteres';
+    if (formData.email.length > 100) newErrors.email = 'El correo no puede exceder 100 caracteres';
 
     // Verificar duplicados (Email y Documento)
     const isDuplicateEmail = data.users.some(u => 
@@ -196,11 +193,19 @@ export default function Users() {
 
     setErrors({});
     if (editingUser) {
-      updateUser(editingUser.id, formData);
+      updateUser(editingUser.id, {
+        ...formData,
+        name: `${formData.firstName} ${formData.lastName}`.trim()
+      });
       setSuccessMessage('Usuario actualizado exitosamente');
     } else {
-      addUser(formData);
+      addUser({
+        ...formData,
+        name: `${formData.firstName} ${formData.lastName}`.trim()
+      } as any);
       setSuccessMessage('Nuevo usuario registrado correctamente');
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
     }
     setShowSuccess(true);
     setIsModalOpen(false);
@@ -208,25 +213,33 @@ export default function Users() {
   };
 
   const handleToggleStatus = (user: User) => {
-    const action = user.status === 'active' ? 'desactivar' : 'activar';
-    if (confirm(`¿Estás seguro de que deseas ${action} al usuario ${user.name}?`)) {
-      updateUser(user.id, {
-        status: user.status === 'active' ? 'inactive' : 'active'
-      });
-      setSuccessMessage(`Usuario ${user.name} ${action === 'activar' ? 'activado' : 'desactivado'} correctamente`);
+    const action = user.status === 'active' ? 'desactivado' : 'activado';
+    updateUser(user.id, {
+      status: user.status === 'active' ? 'inactive' : 'active'
+    });
+    setSuccessMessage(`Usuario ${user.name} ${action} correctamente`);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
+  };
+
+  const handleDeleteRequest = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (userToDelete) {
+      deleteUser(userToDelete.id);
+      setSuccessMessage('Usuario eliminado correctamente');
       setShowSuccess(true);
+      setIsDeleteModalOpen(false);
       setTimeout(() => setShowSuccess(false), 3000);
     }
   };
 
-  const handleViewDetails = (user: User) => {
-    setSelectedUserForDetail(user);
-    setIsDetailModalOpen(true);
-  };
-
   const handleOpenPermissions = (user: User) => {
     setSelectedUserForPermissions(user);
-    setEditingUserPermissions(user.customPermissions || data.config.rolePermissions.vendor);
+    setEditingUserPermissions(user.customPermissions || data.config.rolePermissions[user.role]);
     setIsPermissionsModalOpen(true);
   };
 
@@ -248,25 +261,49 @@ export default function Users() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-6 max-w-7xl mx-auto space-y-6 relative animate-fade-in">
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-[100] flex justify-center">
+          {[...Array(20)].map((_, i) => (
+            <div 
+              key={i} 
+              className="animate-confetti absolute top-0 text-2xl"
+              style={{ 
+                left: `${Math.random() * 100}%`, 
+                animationDelay: `${Math.random() * 2}s`,
+                color: ['#FFD700', '#FF4500', '#00BFFF', '#32CD32', '#FF69B4'][Math.floor(Math.random() * 5)]
+              }}
+            >
+              ★
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showSuccess && (
+        <div className="fixed top-20 right-6 z-[100] bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 animate-slide-in-right">
+          <div className="bg-green-500 text-white rounded-full p-1">
+            <CheckCircle size={18} />
+          </div>
+          <div>
+            <p className="font-bold text-sm">Operación Exitosa</p>
+            <p className="text-xs opacity-90">{successMessage}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Header de Sección */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
-            <ShieldCheck className="text-accent" /> Gestion de Usuarios
+          <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
+            <ShieldCheck className="text-accent w-8 h-8" /> Gestión de Usuarios
           </h1>
-          <p className="text-gray-500 text-sm">Administra los accesos, roles y permisos de tu equipo.</p>
+          <p className="text-gray-500 text-sm mt-1">Administra los accesos, roles y permisos de tu equipo corporativo.</p>
         </div>
         <Button onClick={() => handleOpenModal()} className="shadow-lg shadow-primary/20">
           <Plus size={18} /> Nuevo Usuario
         </Button>
       </div>
-
-      {showSuccess && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-scale-in">
-          <CheckCircle size={20} />
-          <span className="font-medium">{successMessage}</span>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard icon={<UsersIcon />} label="Total" value={stats.total} color="bg-primary" />
@@ -281,10 +318,13 @@ export default function Users() {
           onClick={() => setActiveTab('users')}
           className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'users' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-primary'}`}
         >
-          Gestion de Usuarios
+          Lista de Usuarios
         </button>
         <button
-          onClick={() => setActiveTab('permissions')}
+          onClick={() => {
+            setActiveTab('permissions');
+            setEditingUserPermissions(data.config.rolePermissions.vendor);
+          }}
           className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'permissions' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-primary'}`}
         >
           Permisos por Rol
@@ -292,184 +332,102 @@ export default function Users() {
       </div>
 
       {activeTab === 'users' ? (
-        <Card className="overflow-hidden animate-fade-in">
-          <div className="bg-gray-50/50 border-b border-gray-border p-4 flex flex-col md:flex-row md:items-center gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <Input 
-                placeholder="Buscar por nombre o correo..." 
-                className="pl-10" 
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-            </div>
+        <Card>
+          <CardHeader actions={
             <div className="flex gap-2">
-              <Select 
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <input
+                  type="text"
+                  placeholder="Buscar..."
+                  className="pl-9 pr-4 py-1.5 text-sm bg-gray-50 border border-gray-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Select
                 value={filterRole}
                 onChange={e => setFilterRole(e.target.value)}
                 options={[
-                  { value: 'all', label: 'Todos los roles' },
-                  { value: 'admin', label: 'Administradores' },
+                  { value: 'all', label: 'Todos los Roles' },
+                  { value: 'admin', label: 'Admins' },
                   { value: 'vendor', label: 'Vendedores' }
-                ]} 
-              />
-              <Select 
-                value={filterStatus}
-                onChange={e => setFilterStatus(e.target.value)}
-                options={[
-                  { value: 'all', label: 'Todos los estados' },
-                  { value: 'active', label: 'Activos' },
-                  { value: 'inactive', label: 'Inactivos' }
-                ]} 
+                ]}
+                className="w-32 py-1.5"
               />
             </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-border">
-                  <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-primary transition-colors" onClick={() => requestSort('name')}>
-                    <div className="flex items-center gap-1">
-                      Usuario <SortIcon active={sortConfig.key === 'name'} direction={sortConfig.direction} />
-                    </div>
-                  </th>
-                  <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-primary transition-colors" onClick={() => requestSort('role')}>
-                    <div className="flex items-center gap-1">
-                      Rol <SortIcon active={sortConfig.key === 'role'} direction={sortConfig.direction} />
-                    </div>
-                  </th>
-                  <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-primary transition-colors" onClick={() => requestSort('status')}>
-                    <div className="flex items-center gap-1">
-                      Estado <SortIcon active={sortConfig.key === 'status'} direction={sortConfig.direction} />
-                    </div>
-                  </th>
-                  <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Permisos</th>
-                  <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedUsers.map(user => (
-                  <tr key={user.id} className="border-b border-gray-border/50 hover:bg-gray-50/30 transition-colors">
+          }>
+            Personal de la Agencia
+          </CardHeader>
+          <Table headers={['#', 'Usuario', 'Rol', 'Documento', 'Teléfono', 'Estado', 'Acciones']}>
+            {filteredUsers.map(user => (
+              <TableRow key={user.id}>
+                <TableCell>{user.id}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shadow-sm overflow-hidden">
-                      {user.avatar ? (
-                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                      ) : (
-                        user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">{user.name}</div>
-                      <div className="text-xs text-gray-500 flex items-center gap-1">
-                        <Mail size={12} /> {user.email}
-                      </div>
+                    <img src={user.avatar} className="w-8 h-8 rounded-full border border-gray-200" alt={user.name} />
+                    <div className="flex flex-col">
+                      <span className="font-medium text-primary leading-tight">{user.name}</span>
+                      <span className="text-[10px] text-gray-500">{user.email}</span>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                    {user.role === 'admin' ? <Shield size={12} /> : <Briefcase size={12} />}
-                    {user.role === 'admin' ? 'Admin' : 'Vendedor'}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={user.status === 'active' ? 'active' : 'inactive'}>
-                    {user.status === 'active' ? 'Activo' : 'Inactivo'}
+                  <Badge variant={user.role === 'admin' ? 'active' : 'inactive'} className="uppercase text-[9px]">
+                    {user.role}
                   </Badge>
                 </TableCell>
+                <TableCell className="text-xs">{user.docType} {user.docNumber}</TableCell>
+                <TableCell className="text-xs">{user.phone}</TableCell>
                 <TableCell>
-                  {user.role === 'vendor' ? (
-                    <button 
-                      onClick={() => handleOpenPermissions(user)}
-                      className={`text-xs font-semibold flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-100 transition-colors ${user.customPermissions ? 'text-accent' : 'text-gray-400'}`}
-                    >
-                      <Lock size={12} />
-                      {user.customPermissions ? 'Personalizados' : 'Por Defecto'}
-                    </button>
-                  ) : (
-                    <span className="text-xs text-gray-300">Acceso Total</span>
-                  )}
+                  <Badge variant={user.status}>{user.status === 'active' ? 'Activo' : 'Inactivo'}</Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(user)} title="Ver detalles">
-                      <Eye size={14} />
-                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleOpenModal(user)} title="Editar">
-                      <Pencil size={14} />
+                      <Edit size={14} />
                     </Button>
-                    <Button
-                      variant={user.status === 'active' ? 'danger' : 'success'}
-                      size="sm"
-                      onClick={() => handleToggleStatus(user)}
-                    >
-                      {user.status === 'active' ? <UserX size={14} /> : <UserCheck size={14} />}
+                    <Button variant="outline" size="sm" onClick={() => handleOpenPermissions(user)} title="Permisos">
+                      <Key size={14} />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleToggleStatus(user)} title={user.status === 'active' ? 'Desactivar' : 'Activar'}>
+                      {user.status === 'active' ? <UserX size={14} className="text-red-500" /> : <UserCheck size={14} className="text-green-500" />}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleDeleteRequest(user)} title="Eliminar">
+                      <Trash2 size={14} className="text-red-400" />
                     </Button>
                   </div>
                 </TableCell>
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
-          
-          {totalPages > 1 && (
-            <div className="p-4 bg-gray-50/30 border-t border-gray-border flex items-center justify-between">
-              <span className="text-xs text-gray-500">
-                Mostrando {paginatedUsers.length} de {filteredUsers.length} usuarios
-              </span>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" size="sm" 
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft size={16} /> Anterior
-                </Button>
-                <div className="flex items-center px-3 text-xs font-bold text-primary bg-white border border-gray-border rounded-lg">
-                  {currentPage} / {totalPages}
-                </div>
-                <Button 
-                  variant="outline" size="sm" 
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  Siguiente <ChevronRight size={16} />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {filteredUsers.length === 0 && (
-            <div className="flex flex-col items-center justify-center p-12 text-gray-500 bg-white">
-              <UserX size={48} className="text-gray-200 mb-4" />
-              <p className="text-lg font-medium">No se encontraron usuarios</p>
-              <p className="text-sm">Prueba ajustando los filtros o terminos de busqueda.</p>
-            </div>
-          )}
+          </Table>
         </Card>
       ) : (
         <Card className="animate-fade-in">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-primary flex items-center gap-2">
-                  <Key className="text-accent" /> Permisos del Rol Vendedor
-                </h2>
-                <p className="text-sm text-gray-500">Configura los permisos predeterminados que tendran todos los vendedores.</p>
-              </div>
-              <Button onClick={handleSaveRolePermissions}>
-                <CheckCircle size={18} /> Guardar Cambios
-              </Button>
-            </div>
+          <CardHeader actions={
+            <Button onClick={handleSaveRolePermissions}>
+              <ShieldCheck size={18} /> Guardar Cambios Globales
+            </Button>
+          }>
+            Configuración de Permisos por Defecto: Vendedores
           </CardHeader>
-          <CardBody className="bg-gray-50/30">
-            <PermissionsGrid permissions={editingUserPermissions} onChange={setEditingUserPermissions} />
+          <CardBody>
+            <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl mb-6 flex gap-3">
+              <AlertCircle className="text-amber-500 shrink-0" size={20} />
+              <p className="text-xs text-amber-700 leading-relaxed">
+                Aquí defines lo que un <b>Vendedor</b> puede hacer de forma predeterminada al ser registrado. 
+                Los cambios aplicarán a todos los vendedores existentes que no tengan permisos personalizados.
+              </p>
+            </div>
+            <PermissionsGrid 
+              permissions={editingUserPermissions} 
+              onChange={setEditingUserPermissions} 
+            />
           </CardBody>
         </Card>
       )}
 
+      {/* Modales */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -478,178 +436,73 @@ export default function Users() {
         footer={
           <>
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSubmit}>
-              {editingUser ? 'Guardar Cambios' : 'Registrar Usuario'}
-            </Button>
+            <Button onClick={handleSaveUser}>Guardar</Button>
           </>
         }
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          <div className="col-span-1 md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-border mb-2">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <PartyPopper size={14} className="text-accent" /> Selecciona tu Avatar
-            </h3>
-            <div className="max-h-32 overflow-y-auto pr-2 custom-scrollbar">
-              <div className="flex flex-wrap gap-3 justify-center md:justify-start py-1">
-                {AVATARS.map((avatar, index) => (
-                  <div 
-                    key={index}
-                    onClick={() => setFormData({ ...formData, avatar })}
-                    className={`w-12 h-12 rounded-full cursor-pointer transition-all border-2 overflow-hidden shadow-sm hover:scale-110 ${formData.avatar === avatar ? 'border-accent ring-2 ring-accent/20 scale-110' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                  >
-                    <img src={avatar} alt={`Avatar ${index}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="col-span-1 md:col-span-2">
-            <h3 className="text-sm font-semibold text-primary uppercase tracking-wide mb-3 pb-2 border-b border-gray-border">Datos Personales</h3>
-          </div>
-          
-          <FormField label="Nombre Completo" error={errors.name}>
-            <Input 
-              value={formData.name} 
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Ej. Juan Perez"
-              error={errors.name}
-            />
-          </FormField>
-          
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-1">
-              <FormField label="Tipo">
-                <Select 
-                  value={formData.docType} 
-                  onChange={e => setFormData({ ...formData, docType: e.target.value })}
-                  options={[{ value: 'CC', label: 'CC' }, { value: 'CE', label: 'CE' }, { value: 'PP', label: 'Pasaporte' }]}
-                />
-              </FormField>
-            </div>
-            <div className="col-span-2">
-              <FormField label="Documento" error={errors.docNumber}>
-                <Input 
-                  value={formData.docNumber} 
-                  onChange={e => setFormData({ ...formData, docNumber: e.target.value })}
-                  placeholder="Numero de identificacion"
-                  error={errors.docNumber}
-                  disabled={!!editingUser}
-                />
-              </FormField>
-            </div>
-          </div>
-
-          <FormField label="Telefono / Celular" error={errors.phone}>
-            <Input 
-              value={formData.phone} 
-              onChange={e => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="300 000 0000"
-              error={errors.phone}
-            />
-          </FormField>
-
-          <FormField label="Fecha de Nacimiento">
-            <Input type="date" value={formData.birthDate} onChange={e => setFormData({ ...formData, birthDate: e.target.value })} />
-          </FormField>
-
-          <div className="col-span-1 md:col-span-2 mt-2">
-            <h3 className="text-sm font-semibold text-primary uppercase tracking-wide mb-3 pb-2 border-b border-gray-border">Configuracion de Acceso</h3>
-          </div>
-
-          <FormField label="Correo Electronico" error={errors.email}>
-            <Input 
-              type="email" 
-              value={formData.email} 
-              onChange={e => setFormData({ ...formData, email: e.target.value })} 
-              placeholder="correo@ejemplo.com" 
-              disabled={!!editingUser}
-              error={errors.email}
-            />
-          </FormField>
-
-          <FormField label="Contrasena" error={errors.password}>
-            <div className="relative">
-              <Input 
-                type={showPassword ? "text" : "password"} 
-                value={formData.password} 
-                onChange={e => setFormData({ ...formData, password: e.target.value })} 
-                placeholder={editingUser ? "Dejar en blanco para no cambiar" : "Minimo 6 caracteres"}
-                error={errors.password}
-                className="pr-10"
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-border mb-6">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Selecciona Avatar</h3>
+          <div className="flex flex-wrap gap-2">
+            {AVATARS.map((avatar, i) => (
+              <img 
+                key={i} 
+                src={avatar} 
+                onClick={() => setFormData({...formData, avatar})}
+                className={`w-10 h-10 rounded-full cursor-pointer border-2 transition-all hover:scale-110 ${formData.avatar === avatar ? 'border-primary ring-2 ring-primary/20 scale-110' : 'border-transparent opacity-50 hover:opacity-100'}`}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
-              >
-                {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Nombres" error={errors.firstName}>
+            <Input value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
+          </FormField>
+          <FormField label="Apellidos" error={errors.lastName}>
+            <Input value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+          </FormField>
+          <FormField label="Correo" error={errors.email}>
+            <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+          </FormField>
+          <FormField label="Contraseña" error={errors.password}>
+            <div className="relative">
+              <Input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+              <button onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </FormField>
-
-          <FormField label="Rol de Usuario">
-            <Select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as 'admin' | 'vendor' })} options={[{ value: 'vendor', label: 'Vendedor' }, { value: 'admin', label: 'Administrador' }]} />
+          <FormField label="Rol">
+            <Select 
+              value={formData.role} 
+              onChange={e => setFormData({...formData, role: e.target.value as 'admin' | 'vendor'})}
+              options={[{value: 'admin', label: 'Administrador'}, {value: 'vendor', label: 'Vendedor'}]}
+            />
           </FormField>
-
-          <FormField label="Estado Inicial">
-            <Select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })} options={[{ value: 'active', label: 'Activo' }, { value: 'inactive', label: 'Inactivo' }]} />
+          <FormField label="Tipo Doc">
+            <Select 
+              value={formData.docType} 
+              onChange={e => setFormData({...formData, docType: e.target.value})}
+              options={[{value: 'CC', label: 'Cédula de Ciudadanía'}, {value: 'CE', label: 'Cédula de Extranjería'}, {value: 'PP', label: 'Pasaporte'}]}
+            />
+          </FormField>
+          <FormField label="Documento" error={errors.docNumber}>
+            <Input value={formData.docNumber} onChange={e => setFormData({...formData, docNumber: e.target.value})} />
+          </FormField>
+          <FormField label="Teléfono" error={errors.phone}>
+            <Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+          </FormField>
+          <FormField label="Fecha Nacimiento" error={errors.birthDate}>
+            <Input type="date" value={formData.birthDate} onChange={e => setFormData({...formData, birthDate: e.target.value})} />
+          </FormField>
+          <FormField label="Estado">
+            <Select 
+              value={formData.status} 
+              onChange={e => setFormData({...formData, status: e.target.value as 'active' | 'inactive'})}
+              options={[{value: 'active', label: 'Activo'}, {value: 'inactive', label: 'Inactivo'}]}
+            />
           </FormField>
         </div>
-      </Modal>
-
-      <Modal
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        title="Detalles del Usuario"
-        size="md"
-        footer={<Button onClick={() => setIsDetailModalOpen(false)}>Cerrar</Button>}
-      >
-        {selectedUserForDetail && (
-          <div className="space-y-6">
-            <div className="flex flex-col items-center text-center p-6 bg-gradient-to-b from-primary/5 to-transparent rounded-2xl border border-primary/5">
-              <div className="w-24 h-24 rounded-full border-4 border-white shadow-xl mb-4 overflow-hidden bg-primary/10">
-                {selectedUserForDetail.avatar ? (
-                  <img src={selectedUserForDetail.avatar} alt={selectedUserForDetail.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-primary">
-                    {selectedUserForDetail.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
-                  </div>
-                )}
-              </div>
-              <h2 className="text-xl font-bold text-primary">{selectedUserForDetail.name}</h2>
-              <Badge variant={selectedUserForDetail.status === 'active' ? 'active' : 'inactive'} className="mt-1">
-                {selectedUserForDetail.status === 'active' ? 'USUARIO ACTIVO' : 'USUARIO INACTIVO'}
-              </Badge>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <DetailItem icon={<Shield size={16} />} label="Rol" value={selectedUserForDetail.role === 'admin' ? 'Administrador' : 'Vendedor'} />
-              <DetailItem icon={<Mail size={16} />} label="Correo" value={selectedUserForDetail.email} />
-              <DetailItem icon={<Hash size={16} />} label="Documento" value={`${selectedUserForDetail.docType || 'CC'} ${selectedUserForDetail.docNumber || '---'}`} />
-              <DetailItem icon={<Phone size={16} />} label="Telefono" value={selectedUserForDetail.phone || '---'} />
-              <DetailItem icon={<Calendar size={16} />} label="Nacimiento" value={selectedUserForDetail.birthDate || '---'} />
-              <DetailItem icon={<Settings size={16} />} label="ID Sistema" value={`#${selectedUserForDetail.id}`} />
-            </div>
-
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-border flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white rounded-lg border border-gray-border">
-                  <Lock size={18} className="text-accent" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-gray-700">Configuracion de Permisos</div>
-                  <div className="text-xs text-gray-500">{selectedUserForDetail.customPermissions ? 'Tiene reglas personalizadas' : 'Usa reglas globales del rol'}</div>
-                </div>
-              </div>
-              {selectedUserForDetail.role === 'vendor' && (
-                <Button size="sm" variant="outline" onClick={() => { setIsDetailModalOpen(false); handleOpenPermissions(selectedUserForDetail); }}>
-                  Ajustar
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
       </Modal>
 
       <Modal
@@ -660,111 +513,136 @@ export default function Users() {
         footer={
           <>
             <Button variant="outline" onClick={() => setIsPermissionsModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveUserPermissions}>Guardar Permisos</Button>
+            <Button onClick={handleSaveUserPermissions}>Actualizar Permisos</Button>
           </>
         }
       >
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg flex gap-3 text-sm mb-6">
-          <AlertCircle className="shrink-0" size={18} />
-          <p>Al guardar, estos permisos <strong>sobrescribiran</strong> los permisos globales del rol vendedor solo para este usuario.</p>
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-xl flex gap-3">
+          <ShieldCheck className="text-blue-500 shrink-0" size={24} />
+          <div>
+            <p className="text-sm font-bold text-blue-900">Configuración Personalizada</p>
+            <p className="text-xs text-blue-700">Estos permisos sobrescriben la configuración global para este usuario específico.</p>
+          </div>
         </div>
         <PermissionsGrid permissions={editingUserPermissions} onChange={setEditingUserPermissions} />
       </Modal>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Eliminar Usuario"
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>Cancelar</Button>
+            <Button variant="danger" onClick={confirmDelete}>Confirmar Eliminación</Button>
+          </>
+        }
+      >
+        <div className="text-center py-4">
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle size={32} />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900">¿Estás seguro?</h3>
+          <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+            Esta acción eliminará permanentemente al usuario <b>{userToDelete?.name}</b>. 
+            Esta acción no se puede deshacer.
+          </p>
+        </div>
+      </Modal>
+
     </div>
   );
 }
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: number, color: string }) {
   return (
-    <Card className={`text-white ${color} border-none shadow-lg shadow-gray-200`}>
-      <CardBody className="flex items-center gap-4 py-4">
-        <div className="p-3 bg-white/20 rounded-xl flex items-center justify-center">{icon}</div>
+    <Card className={`text-white ${color} border-none shadow-lg`}>
+      <CardBody className="flex items-center gap-4 py-3 px-4">
+        <div className="p-2 bg-white/20 rounded-lg">{icon}</div>
         <div>
-          <p className="text-xs font-medium text-white/80 uppercase tracking-wider">{label}</p>
-          <p className="text-2xl font-bold">{value}</p>
+          <p className="text-[10px] font-medium text-white/70 uppercase tracking-wider">{label}</p>
+          <p className="text-xl font-bold">{value}</p>
         </div>
       </CardBody>
     </Card>
   );
 }
 
-function DetailItem({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
-  return (
-    <div className="p-3 bg-white border border-gray-border/50 rounded-xl shadow-sm">
-      <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-tighter mb-1">{icon} {label}</div>
-      <div className="text-sm font-semibold text-gray-800 truncate">{value}</div>
-    </div>
-  );
-}
-
 function PermissionsGrid({ permissions, onChange }: { permissions: RolePermissions, onChange: (p: RolePermissions) => void }) {
-  const updatePermission = (module: keyof RolePermissions, field: string, value: any) => {
-    onChange({ ...permissions, [module]: { ...(permissions[module] as any), [field]: value } });
+  const toggle = (module: keyof RolePermissions, type: string) => {
+    const next = { ...permissions };
+    const modulePerms = { ...next[module] } as any;
+    if (type in modulePerms) {
+      if (typeof modulePerms[type] === 'boolean') {
+        modulePerms[type] = !modulePerms[type];
+      } else {
+        // Para tipos string (como 'all' | 'own'), el toggle simple no aplica,
+        // pero evitamos el error de tipo. Aquí podrías implementar una lógica de ciclo
+        // o dejarlo para un selector específico. Por ahora evitamos el crash.
+        if (modulePerms[type] === 'all') modulePerms[type] = 'own';
+        else if (modulePerms[type] === 'own') modulePerms[type] = 'none';
+        else modulePerms[type] = 'all';
+      }
+      (next as any)[module] = modulePerms;
+      onChange(next);
+    }
   };
+
+  const modules: { id: keyof RolePermissions, label: string, icon: React.ReactNode }[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={14} /> },
+    { id: 'sales', label: 'Ventas', icon: <ShoppingBag size={14} /> },
+    { id: 'clients', label: 'Clientes', icon: <UsersGroup size={14} /> },
+    { id: 'itineraries', label: 'Itinerarios', icon: <Map size={14} /> },
+    { id: 'users', label: 'Usuarios', icon: <Lock size={14} /> },
+    { id: 'config', label: 'Configuración', icon: <Settings size={14} /> }
+  ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <PermissionModule title="Dashboard" icon={<LayoutDashboard size={18} />} description="Acceso a metricas de rendimiento.">
-        <RadioGroup label="Visibilidad de datos" value={permissions.dashboard.view} options={[{ value: 'own', label: 'Solo lo propio' }, { value: 'all', label: 'Todo el sistema' }]} onChange={(v) => updatePermission('dashboard', 'view', v)} />
-      </PermissionModule>
-      <PermissionModule title="Ventas" icon={<ShoppingBag size={18} />} description="Gestion de registros de ventas.">
-        <Toggle label="Crear nuevas ventas" checked={permissions.sales.create} onChange={(v) => updatePermission('sales', 'create', v)} />
-        <RadioGroup label="Editar registros" value={permissions.sales.edit} options={[{ value: 'none', label: 'Bloqueado' }, { value: 'own', label: 'Solo propios' }, { value: 'all', label: 'Todos' }]} onChange={(v) => updatePermission('sales', 'edit', v)} />
-        <Toggle label="Eliminar ventas" checked={permissions.sales.delete} onChange={(v) => updatePermission('sales', 'delete', v)} />
-      </PermissionModule>
-      <PermissionModule title="Clientes" icon={<UsersGroup size={18} />} description="Base de datos de clientes.">
-        <Toggle label="Crear clientes" checked={permissions.clients.create} onChange={(v) => updatePermission('clients', 'create', v)} />
-        <RadioGroup label="Editar clientes" value={permissions.clients.edit} options={[{ value: 'none', label: 'Bloqueado' }, { value: 'own', label: 'Solo propios' }, { value: 'all', label: 'Todos' }]} onChange={(v) => updatePermission('clients', 'edit', v)} />
-      </PermissionModule>
-      <PermissionModule title="Itinerarios" icon={<Map size={18} />} description="Gestion de vuelos y rutas.">
-        <Toggle label="Ver itinerarios" checked={permissions.itineraries.view} onChange={(v) => updatePermission('itineraries', 'view', v)} />
-        <Toggle label="Editar (Check-in)" checked={permissions.itineraries.edit} onChange={(v) => updatePermission('itineraries', 'edit', v)} />
-      </PermissionModule>
-      <PermissionModule title="Configuracion" icon={<Settings size={18} />} description="Tablas maestras y sistema.">
-        <Toggle label="Acceso a tablas maestras" checked={permissions.config.view} onChange={(v) => updatePermission('config', 'view', v)} />
-        <Toggle label="Modificar catalogos" checked={permissions.config.edit} onChange={(v) => updatePermission('config', 'edit', v)} />
-      </PermissionModule>
+      {modules.map(mod => (
+        <div key={mod.id} className="p-4 border border-gray-border rounded-xl bg-white shadow-sm">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b">
+            <div className="p-1.5 bg-gray-50 text-primary rounded-lg">{mod.icon}</div>
+            <span className="font-bold text-sm text-primary">{mod.label}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {Object.keys(permissions[mod.id]).map(permKey => {
+              const val = (permissions[mod.id] as any)[permKey];
+              return (
+                <div key={permKey} className="flex flex-col gap-1 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">{permKey}</span>
+                  {typeof val === 'boolean' ? (
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="rounded text-primary focus:ring-primary/20 w-4 h-4"
+                        checked={val} 
+                        onChange={() => toggle(mod.id, permKey)} 
+                      />
+                      <span className="text-xs font-medium text-gray-600">{val ? 'Activado' : 'Desactivado'}</span>
+                    </label>
+                  ) : (
+                    <select 
+                      className="text-xs bg-transparent border-none p-0 font-bold text-primary focus:ring-0 cursor-pointer"
+                      value={val}
+                      onChange={(e) => {
+                        const next = { ...permissions };
+                        (next[mod.id] as any)[permKey] = e.target.value;
+                        onChange(next);
+                      }}
+                    >
+                      <option value="all">Todo (All)</option>
+                      <option value="own">Solo Propio (Own)</option>
+                      <option value="none">Ninguno (None)</option>
+                    </select>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
-}
-
-function PermissionModule({ title, icon, description, children }: { title: string, icon: React.ReactNode, description: string, children: React.ReactNode }) {
-  return (
-    <div className="bg-white p-4 rounded-xl border border-gray-border shadow-sm flex flex-col gap-3">
-      <div className="flex items-center gap-3 mb-1">
-        <div className="p-2 bg-primary/5 rounded-lg text-primary">{icon}</div>
-        <div><h3 className="text-sm font-bold text-primary">{title}</h3><p className="text-[11px] text-gray-500">{description}</p></div>
-      </div>
-      <div className="space-y-3 pt-2 border-t border-gray-50">{children}</div>
-    </div>
-  );
-}
-
-function Toggle({ label, checked, onChange }: { label: string, checked: boolean, onChange: (v: boolean) => void }) {
-  return (
-    <label className="flex items-center justify-between cursor-pointer group">
-      <span className="text-xs font-medium text-gray-600 group-hover:text-primary transition-colors">{label}</span>
-      <div onClick={() => onChange(!checked)} className={`w-10 h-5 rounded-full relative transition-all duration-300 ${checked ? 'bg-accent' : 'bg-gray-200'}`}>
-        <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all duration-300 ${checked ? 'left-6' : 'left-1'}`} />
-      </div>
-    </label>
-  );
-}
-
-function RadioGroup({ label, value, options, onChange }: { label: string, value: string, options: { value: string, label: string }[], onChange: (v: any) => void }) {
-  return (
-    <div className="space-y-1.5">
-      <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{label}</div>
-      <div className="flex flex-wrap gap-2">
-        {options.map(opt => (
-          <button key={opt.value} onClick={() => onChange(opt.value)} className={`px-2 py-1 rounded text-[10px] font-bold border transition-all ${value === opt.value ? 'bg-primary border-primary text-white' : 'bg-gray-50 border-gray-border text-gray-500 hover:border-primary/30'}`}>{opt.label.toUpperCase()}</button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SortIcon({ active, direction }: { active: boolean, direction: 'asc' | 'desc' }) {
-  if (!active) return <ArrowUpDown size={12} className="text-gray-300" />;
-  return direction === 'asc' ? <ArrowUp size={12} className="text-primary" /> : <ArrowDown size={12} className="text-primary" />;
 }

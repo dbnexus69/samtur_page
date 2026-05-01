@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Settings, ListTree, Database, Boxes } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
@@ -11,13 +11,13 @@ import { ConfigData } from '../types';
 type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'routes' | 'baggage';
 
 const SECTIONS = [
-  { id: 'cards', label: 'Tarjetas' },
-  { id: 'paymentMethods', label: 'Formas de Pago' },
-  { id: 'documentTypes', label: 'Tipos de Documento' },
-  { id: 'airlines', label: 'Aerolineas' },
-  { id: 'suppliers', label: 'Proveedores' },
-  { id: 'routes', label: 'Rutas' },
-  { id: 'baggage', label: 'Equipaje' }
+  { id: 'cards', label: 'Tarjetas', icon: <Database size={16} /> },
+  { id: 'paymentMethods', label: 'Formas de Pago', icon: <Boxes size={16} /> },
+  { id: 'documentTypes', label: 'Tipos de Documento', icon: <ListTree size={16} /> },
+  { id: 'airlines', label: 'Aerolineas', icon: <Settings size={16} /> },
+  { id: 'suppliers', label: 'Proveedores', icon: <Settings size={16} /> },
+  { id: 'routes', label: 'Rutas', icon: <Settings size={16} /> },
+  { id: 'baggage', label: 'Equipaje', icon: <Settings size={16} /> }
 ] as const;
 
 type SectionId = typeof SECTIONS[number]['id'];
@@ -173,19 +173,28 @@ export default function Config() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header de Sección */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
+          <Settings className="text-accent w-8 h-8" /> Configuración General
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">Administra los catálogos base, parámetros de vuelo y opciones del sistema.</p>
+      </div>
+
       <Card>
         <div className="flex flex-wrap gap-2 p-4 bg-gray-50 border-b">
           {SECTIONS.map(section => (
             <button
               key={section.id}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 currentSection === section.id
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
+                  ? 'bg-primary text-white shadow-md shadow-primary/20 scale-105'
+                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-border'
               }`}
               onClick={() => setCurrentSection(section.id)}
             >
+              {section.icon}
               {section.label}
             </button>
           ))}
@@ -194,7 +203,7 @@ export default function Config() {
         <CardHeader actions={
           <Button onClick={() => handleOpenModal()}>
             <Plus size={18} />
-            Nuevo
+            Nuevo Registro
           </Button>
         }>
           {SECTIONS.find(s => s.id === currentSection)?.label}

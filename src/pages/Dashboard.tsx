@@ -73,22 +73,24 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Date Range */}
-      <Card>
-        <CardBody className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span className="font-semibold">Panel de Control</span>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <input type="date" defaultValue={start} className="border rounded px-2 py-1" />
-              <span>-</span>
-              <input type="date" defaultValue={end} className="border rounded px-2 py-1" />
-            </div>
-          </div>
-          <button className="text-gray-500 hover:text-gray-700 text-sm">
-            Actualizar
+      {/* Header de Sección */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
+        <div>
+          <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
+            Panel de Control
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">Resumen general de operaciones, ingresos y estado de cartera.</p>
+        </div>
+        <div className="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-border">
+          <span className="text-xs font-bold text-gray-400 uppercase ml-2 mr-1">Periodo:</span>
+          <input type="date" defaultValue={start} className="text-xs border-none bg-gray-50 rounded-lg px-2 py-1.5 focus:ring-0 cursor-pointer font-medium text-primary" />
+          <span className="text-gray-300">-</span>
+          <input type="date" defaultValue={end} className="text-xs border-none bg-gray-50 rounded-lg px-2 py-1.5 focus:ring-0 cursor-pointer font-medium text-primary" />
+          <button className="ml-2 p-1.5 hover:bg-gray-50 rounded-lg transition-all text-primary/40 hover:text-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
           </button>
-        </CardBody>
-      </Card>
+        </div>
+      </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-5 gap-4">

@@ -10,10 +10,11 @@ interface DataContextType {
   refreshData: () => void;
   addUser: (user: Omit<User, 'id'>) => User;
   updateUser: (id: number, user: Partial<User>) => void;
+  deleteUser: (id: number) => void;
   updateUserPermissions: (id: number, permissions: RolePermissions) => void;
   addClient: (client: Omit<Client, 'id'>) => Client;
   updateClient: (id: number, client: Partial<Client>) => void;
-  deleteClient: (id: number) => void;
+  toggleClientStatus: (id: number) => void;
   addSale: (sale: Omit<Sale, 'id'>) => Sale;
   updateSale: (id: number, sale: Partial<Sale>) => void;
   updateFlight: (id: number, flight: Partial<Flight>) => void;
@@ -57,6 +58,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const deleteUser = (id: number) => {
+    setData({
+      ...data,
+      users: data.users.filter(u => u.id !== id)
+    });
+  };
+
   const addClient = (client: Omit<Client, 'id'>): Client => {
     const newClient = { ...client, id: generateId(data.clients) };
     setData({ ...data, clients: [...data.clients, newClient] });
@@ -70,11 +78,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const deleteClient = (id: number) => {
-    setData({
-      ...data,
-      clients: data.clients.filter(c => c.id !== id)
-    });
+
+
+  const toggleClientStatus = (id: number) => {
+    const client = data.clients.find(c => c.id === id);
+    if (client) {
+      updateClient(id, { 
+        status: client.status === 'active' ? 'inactive' : 'active' 
+      });
+    }
   };
 
   const addSale = (sale: Omit<Sale, 'id'>): Sale => {
@@ -157,10 +169,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       refreshData,
       addUser,
       updateUser,
+      deleteUser,
       updateUserPermissions,
       addClient,
       updateClient,
-      deleteClient,
+      toggleClientStatus,
       addSale,
       updateSale,
       updateFlight,
