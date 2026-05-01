@@ -70,6 +70,9 @@ export interface Sale {
   status: 'pagado' | 'abonado' | 'pendiente';
   paymentMethod: string;
   observations?: string;
+  isCredit?: boolean;
+  creditDueDate?: string;
+  creditPaidAmount?: number;
 }
 
 export interface Flight {

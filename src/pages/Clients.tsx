@@ -1,15 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Eye, Pencil, UserCheck, UserX, Search, PartyPopper, CheckCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, TrendingUp, Users as UsersIcon, X, Plane } from 'lucide-react';
+import { Plus, Eye, Pencil, UserCheck, UserX, Search, PartyPopper, CheckCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, TrendingUp, Users as UsersIcon, X, Plane, CreditCard, AlertCircle, Clock, DollarSign, Wallet } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
-import { FormField, Input, Select, Textarea } from '../components/ui/Form';
+import { FormField, Input, Select } from '../components/ui/Form';
 import { Table, TableRow, TableCell } from '../components/ui/Table';
 import { useData } from '../context/DataContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { Client } from '../types';
+import { getClientsWithCredit, getClientCreditSales, getCreditSummaryTotals, getClientStatusColor, getStatusColor, CreditSaleInfo, ClientCreditSummary } from '../utils/creditUtils';
 
 const AVATARS = [
   'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
@@ -52,6 +53,10 @@ export default function Clients() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
+  const [activeTab, setActiveTab] = useState<'list' | 'credit'>('list');
+  const [creditFilter, setCreditFilter] = useState<'all' | 'overdue' | 'urgent' | 'pending'>('all');
+  const [selectedCreditClient, setSelectedCreditClient] = useState<ClientCreditSummary | null>(null);
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -65,6 +70,24 @@ export default function Clients() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const clientsWithCredit = useMemo(() => 
+    getClientsWithCredit(data.clients, data.sales), 
+  [data.clients, data.sales]);
+
+  const creditTotals = useMemo(() => 
+    getCreditSummaryTotals(data.clients, data.sales),
+  [data.clients, data.sales]);
+
+  const filteredCreditClients = useMemo(() => {
+    if (creditFilter === 'all') return clientsWithCredit;
+    return clientsWithCredit.filter(c => c.status === creditFilter);
+  }, [clientsWithCredit, creditFilter]);
+
+  const selectedClientCreditSales = useMemo(() => {
+    if (!selectedCreditClient) return [];
+    return getClientCreditSales(selectedCreditClient.client.id, data.sales);
+  }, [selectedCreditClient, data.sales]);
 
   const handleOpenModal = (client?: Client) => {
     if (client && !canEdit('clients')) return;
@@ -102,22 +125,22 @@ export default function Clients() {
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.firstName.trim()) newErrors.firstName = 'El nombre es obligatorio';
-    else if (formData.firstName.length > 50) newErrors.firstName = 'El nombre no puede exceder 50 caracteres';
+    else if (formData.firstName.length > 40) newErrors.firstName = 'El nombre no puede exceder 40 caracteres';
     
     if (!formData.lastName.trim()) newErrors.lastName = 'El apellido es obligatorio';
-    else if (formData.lastName.length > 50) newErrors.lastName = 'El apellido no puede exceder 50 caracteres';
+    else if (formData.lastName.length > 40) newErrors.lastName = 'El apellido no puede exceder 40 caracteres';
     
     if (!formData.docType) newErrors.docType = 'Seleccione un tipo de documento';
     if (!formData.docNumber.trim()) newErrors.docNumber = 'El numero de documento es obligatorio';
-    else if (formData.docNumber.length > 20) newErrors.docNumber = 'El documento no puede exceder 20 caracteres';
+    else if (formData.docNumber.length > 15) newErrors.docNumber = 'El documento no puede exceder 15 caracteres';
     
     if (!formData.phone.trim()) newErrors.phone = 'El telefono es obligatorio';
     else if (!/^\d+$/.test(formData.phone)) newErrors.phone = 'El telefono solo debe contener numeros';
-    else if (formData.phone.length > 20) newErrors.phone = 'El telefono no puede exceder 20 caracteres';
+    else if (formData.phone.length > 15) newErrors.phone = 'El telefono no puede exceder 15 caracteres';
     
     if (!formData.email.trim()) newErrors.email = 'El correo es obligatorio';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'El correo no es valido';
-    else if (formData.email.length > 100) newErrors.email = 'El correo no puede exceder 100 caracteres';
+    else if (!/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = 'El correo no es valido';
+    else if (formData.email.length > 40) newErrors.email = 'El correo no puede exceder 40 caracteres';
     
     if (!formData.birthDate) newErrors.birthDate = 'La fecha de nacimiento es obligatoria';
 
@@ -164,8 +187,6 @@ export default function Clients() {
     if (!canEdit('clients')) return;
     toggleClientStatus(id);
   };
-
-
 
   const handleViewDetail = (client: Client) => {
     setSelectedClient(client);
@@ -269,12 +290,37 @@ export default function Clients() {
 
       {/* Header de Sección */}
       <div className="mb-6 animate-fade-in">
-        <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
-          <UsersIcon className="text-accent w-8 h-8" /> Gestión de Clientes
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">Administra la base de datos de tus viajeros y su historial de compras.</p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
+              <UsersIcon className="text-accent w-8 h-8" /> Gestión de Clientes
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">Administra la base de datos de tus viajeros y su historial de compras.</p>
+          </div>
+          <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-border w-fit h-fit">
+            <button
+              onClick={() => setActiveTab('list')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'list' ? 'bg-primary text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+            >
+              <UsersIcon size={16} /> Lista
+            </button>
+            <button
+              onClick={() => setActiveTab('credit')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${activeTab === 'credit' ? 'bg-primary text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+            >
+              <CreditCard size={16} /> Crédito
+              {clientsWithCredit.filter(c => c.status === 'overdue' || c.status === 'urgent').length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                  {clientsWithCredit.filter(c => c.status === 'overdue' || c.status === 'urgent').length}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
+      {activeTab === 'list' && (
+      <>
       {/* Estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in mb-6">
         <StatCard 
@@ -447,6 +493,165 @@ export default function Clients() {
           </div>
         )}
       </Card>
+      </>
+      )}
+
+      {activeTab === 'credit' && (
+        <div className="animate-fade-in space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2 space-y-4">
+              <Card className="border-none shadow-lg">
+                <CardHeader actions={
+                  <div className="flex gap-2">
+                    <button onClick={() => setCreditFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${creditFilter === 'all' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                      Todos ({clientsWithCredit.length})
+                    </button>
+                    <button onClick={() => setCreditFilter('overdue')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${creditFilter === 'overdue' ? 'bg-red-500 text-white' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}>
+                      Vencidos ({clientsWithCredit.filter(c => c.status === 'overdue').length})
+                    </button>
+                    <button onClick={() => setCreditFilter('urgent')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${creditFilter === 'urgent' ? 'bg-orange-500 text-white' : 'bg-orange-50 text-orange-600 hover:bg-orange-100'}`}>
+                      Pronto ({clientsWithCredit.filter(c => c.status === 'urgent').length})
+                    </button>
+                    <button onClick={() => setCreditFilter('pending')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${creditFilter === 'pending' ? 'bg-yellow-500 text-white' : 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100'}`}>
+                      Pendiente ({clientsWithCredit.filter(c => c.status === 'pending').length})
+                    </button>
+                  </div>
+                }>
+                  Clientes con Crédito Pendiente
+                </CardHeader>
+                <CardBody className="p-0">
+                  {filteredCreditClients.length > 0 ? (
+                    <div className="divide-y divide-gray-border">
+                      {filteredCreditClients.map(creditClient => {
+                        const statusColors = getClientStatusColor(creditClient.status);
+                        return (
+                          <div key={creditClient.client.id} className={`p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors cursor-pointer ${selectedCreditClient?.client.id === creditClient.client.id ? 'bg-primary/5 border-l-4 border-primary' : ''}`} onClick={() => setSelectedCreditClient(creditClient)}>
+                            <div className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${statusColors.bg} ${statusColors.text}`}>
+                                <CreditCard size={24} />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-primary">{creditClient.client.name}</span>
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColors.bg} ${statusColors.text}`}>{statusColors.label}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                                  <span className="flex items-center gap-1"><DollarSign size={12} /> {creditClient.activeCredits} crédito(s)</span>
+                                  <span className="flex items-center gap-1"><Clock size={12} /> {creditClient.nextDueDate ? formatDate(creditClient.nextDueDate) : 'Sin fecha'}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-primary">{formatCurrency(creditClient.pendingAmount)}</p>
+                              <p className="text-xs text-gray-500">pendiente</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-12 text-gray-400">
+                      <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-4"><CheckCircle size={32} /></div>
+                      <p className="font-bold text-gray-600">¡Todo al día!</p>
+                      <p className="text-sm">No hay clientes con crédito pendiente.</p>
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Card className="bg-primary text-white border-none shadow-xl shadow-primary/20">
+                <CardBody className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-white/20 rounded-xl"><Wallet size={24} /></div>
+                    <Badge variant="accent" className="bg-white/20 text-white border-none">CARTERA</Badge>
+                  </div>
+                  <h3 className="text-sm font-medium text-white/80 uppercase tracking-wider">Total Pendiente</h3>
+                  <p className="text-3xl font-bold mt-1">{formatCurrency(creditTotals.totalPending)}</p>
+                  <div className="mt-4 pt-4 border-t border-white/20 space-y-2">
+                    <div className="flex justify-between text-xs text-white/70">
+                      <span>Vencido</span>
+                      <span className="font-bold text-red-300">{formatCurrency(creditTotals.totalOverdue)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-white/70">
+                      <span>Próximo (3 días)</span>
+                      <span className="font-bold text-orange-300">{formatCurrency(creditTotals.totalUrgent)}</span>
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+
+              {selectedCreditClient ? (
+                <Card className="border-none shadow-lg">
+                  <CardHeader>{selectedCreditClient.client.name}</CardHeader>
+                  <CardBody className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-xs text-gray-500">Total Crédito</p>
+                        <p className="text-sm font-bold text-primary">{formatCurrency(selectedCreditClient.totalCredit)}</p>
+                      </div>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-xs text-gray-500">Pendiente</p>
+                        <p className="text-sm font-bold text-orange-600">{formatCurrency(selectedCreditClient.pendingAmount)}</p>
+                      </div>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-xs text-gray-500">Pagado</p>
+                        <p className="text-sm font-bold text-green-600">{formatCurrency(selectedCreditClient.paidAmount)}</p>
+                      </div>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-xs text-gray-500">Vencido</p>
+                        <p className="text-sm font-bold text-red-600">{formatCurrency(selectedCreditClient.overdueAmount)}</p>
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4">
+                      <p className="text-xs font-bold text-gray-500 uppercase mb-3">Ventas a Crédito</p>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {selectedClientCreditSales.map(saleInfo => {
+                          const saleStatusColors = getStatusColor(saleInfo.status);
+                          return (
+                            <div key={saleInfo.sale.id} className="p-3 bg-gray-50 rounded-lg">
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <p className="text-sm font-bold text-primary">Venta #{saleInfo.sale.id}</p>
+                                  <p className="text-xs text-gray-500">{formatDate(saleInfo.sale.date)} · Vence: {saleInfo.sale.creditDueDate ? formatDate(saleInfo.sale.creditDueDate) : 'N/A'}</p>
+                                </div>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${saleStatusColors}`}>
+                                  {saleInfo.status === 'paid' ? 'Liquidado' : saleInfo.status === 'partial' ? 'Parcial' : saleInfo.status === 'overdue' ? 'Vencido' : 'Pendiente'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <span className="text-gray-500">Total: <span className="font-semibold">{formatCurrency(saleInfo.sale.total)}</span></span>
+                                <span className="text-gray-500">Pagado: <span className="font-semibold text-green-600">{formatCurrency(saleInfo.sale.creditPaidAmount || 0)}</span></span>
+                                <span className="text-gray-500">Pendiente: <span className="font-semibold text-orange-600">{formatCurrency(saleInfo.pendingAmount)}</span></span>
+                              </div>
+                              {saleInfo.daysUntilDue <= 3 && saleInfo.daysUntilDue >= 0 && (
+                                <div className="mt-2 flex items-center gap-1 text-[10px] text-orange-600 font-medium"><Clock size={10} /> Vence en {saleInfo.daysUntilDue} día(s)</div>
+                              )}
+                              {saleInfo.daysUntilDue < 0 && (
+                                <div className="mt-2 flex items-center gap-1 text-[10px] text-red-600 font-medium"><AlertCircle size={10} /> Vencido hace {Math.abs(saleInfo.daysUntilDue)} día(s)</div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              ) : (
+                <Card className="border-none shadow-lg">
+                  <CardBody className="flex flex-col items-center justify-center p-8 text-gray-400">
+                    <CreditCard size={48} className="mb-4 opacity-20" />
+                    <p className="font-medium">Selecciona un cliente</p>
+                    <p className="text-sm">para ver sus créditos</p>
+                  </CardBody>
+                </Card>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Modal
         isOpen={isModalOpen}
@@ -494,7 +699,7 @@ export default function Clients() {
                   }}
                   placeholder="Ej: Juan"
                   error={errors.firstName}
-                  maxLength={50}
+                  maxLength={40}
                 />
               </FormField>
               <FormField label="Apellidos" error={errors.lastName}>
@@ -506,7 +711,7 @@ export default function Clients() {
                   }}
                   placeholder="Ej: Perez"
                   error={errors.lastName}
-                  maxLength={50}
+                  maxLength={40}
                 />
               </FormField>
             </div>
@@ -514,7 +719,10 @@ export default function Clients() {
               <FormField label="Tipo de Documento" error={errors.docType}>
                 <Select
                   value={formData.docType}
-                  onChange={e => setFormData({ ...formData, docType: e.target.value })}
+                  onChange={e => {
+                    setFormData({ ...formData, docType: e.target.value });
+                    if (errors.docType) setErrors(prev => ({ ...prev, docType: '' }));
+                  }}
                   options={[{ value: '', label: 'Seleccionar...' }, ...data.config.documentTypes.map(d => ({ value: d.name, label: d.name }))]}
                   error={errors.docType}
                 />
@@ -528,7 +736,7 @@ export default function Clients() {
                   }}
                   placeholder="Número de documento"
                   error={errors.docNumber}
-                  maxLength={20}
+                  maxLength={15}
                 />
               </FormField>
             </div>
@@ -542,14 +750,17 @@ export default function Clients() {
                   }}
                   placeholder="3001234567"
                   error={errors.phone}
-                  maxLength={20}
+                  maxLength={15}
                 />
               </FormField>
               <FormField label="Fecha de Nacimiento" error={errors.birthDate}>
                 <Input
                   type="date"
                   value={formData.birthDate}
-                  onChange={e => setFormData({ ...formData, birthDate: e.target.value })}
+                  onChange={e => {
+                    setFormData({ ...formData, birthDate: e.target.value });
+                    if (errors.birthDate) setErrors(prev => ({ ...prev, birthDate: '' }));
+                  }}
                   error={errors.birthDate}
                 />
               </FormField>
@@ -571,7 +782,7 @@ export default function Clients() {
                   }}
                   placeholder="correo@ejemplo.com"
                   error={errors.email}
-                  maxLength={100}
+                  maxLength={40}
                 />
               </FormField>
               <FormField label="Estado">

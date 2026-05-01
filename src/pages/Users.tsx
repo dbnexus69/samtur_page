@@ -15,7 +15,7 @@ import { Table, TableRow, TableCell } from '../components/ui/Table';
 import { Modal } from '../components/ui/Modal';
 import { Badge } from '../components/ui/Badge';
 import { Input, Select, FormField } from '../components/ui/Form';
-import { User, RolePermissions, DEFAULT_VENDOR_PERMISSIONS } from '../types';
+import { User, RolePermissions, DEFAULT_VENDOR_PERMISSIONS, ADMIN_PERMISSIONS } from '../types';
 
 const AVATARS = [
   'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
@@ -158,22 +158,22 @@ export default function Users() {
     if (!formData.firstName.trim()) newErrors.firstName = 'El nombre es obligatorio';
     if (!formData.lastName.trim()) newErrors.lastName = 'El apellido es obligatorio';
     if (!formData.email.trim()) newErrors.email = 'El correo es obligatorio';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'El correo no es valido';
+    else if (!/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = 'El correo no es valido';
     
     if (!editingUser && !formData.password.trim()) newErrors.password = 'La contraseña es obligatoria';
     
     if (!formData.docNumber.trim()) newErrors.docNumber = 'El numero de documento es obligatorio';
-    else if (formData.docNumber.length > 20) newErrors.docNumber = 'El documento no puede exceder 20 caracteres';
+    else if (formData.docNumber.length > 15) newErrors.docNumber = 'El documento no puede exceder 15 caracteres';
     
     if (!formData.phone.trim()) newErrors.phone = 'El telefono es obligatorio';
     else if (!/^\d+$/.test(formData.phone)) newErrors.phone = 'El telefono solo debe contener numeros';
-    else if (formData.phone.length > 20) newErrors.phone = 'El telefono no puede exceder 20 caracteres';
+    else if (formData.phone.length > 15) newErrors.phone = 'El telefono no puede exceder 15 caracteres';
     
     if (!formData.birthDate) newErrors.birthDate = 'La fecha de nacimiento es obligatoria';
 
-    if (formData.firstName.length > 50) newErrors.firstName = 'El nombre no puede exceder 50 caracteres';
-    if (formData.lastName.length > 50) newErrors.lastName = 'El apellido no puede exceder 50 caracteres';
-    if (formData.email.length > 100) newErrors.email = 'El correo no puede exceder 100 caracteres';
+    if (formData.firstName.length > 40) newErrors.firstName = 'El nombre no puede exceder 40 caracteres';
+    if (formData.lastName.length > 40) newErrors.lastName = 'El apellido no puede exceder 40 caracteres';
+    if (formData.email.length > 40) newErrors.email = 'El correo no puede exceder 40 caracteres';
 
     // Verificar duplicados (Email y Documento)
     const isDuplicateEmail = data.users.some(u => 
@@ -239,7 +239,8 @@ export default function Users() {
 
   const handleOpenPermissions = (user: User) => {
     setSelectedUserForPermissions(user);
-    setEditingUserPermissions(user.customPermissions || data.config.rolePermissions[user.role]);
+    const defaultPerms = user.role === 'admin' ? ADMIN_PERMISSIONS : data.config.rolePermissions.vendor;
+    setEditingUserPermissions(user.customPermissions || defaultPerms);
     setIsPermissionsModalOpen(true);
   };
 
@@ -456,17 +457,17 @@ export default function Users() {
 
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Nombres" error={errors.firstName}>
-            <Input value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
+            <Input maxLength={40} value={formData.firstName} onChange={e => { setFormData({...formData, firstName: e.target.value}); if (errors.firstName) setErrors(p => ({...p, firstName: ''})); }} />
           </FormField>
           <FormField label="Apellidos" error={errors.lastName}>
-            <Input value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+            <Input maxLength={40} value={formData.lastName} onChange={e => { setFormData({...formData, lastName: e.target.value}); if (errors.lastName) setErrors(p => ({...p, lastName: ''})); }} />
           </FormField>
           <FormField label="Correo" error={errors.email}>
-            <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+            <Input maxLength={40} type="email" value={formData.email} onChange={e => { setFormData({...formData, email: e.target.value}); if (errors.email) setErrors(p => ({...p, email: ''})); }} />
           </FormField>
           <FormField label="Contraseña" error={errors.password}>
             <div className="relative">
-              <Input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+              <Input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={e => { setFormData({...formData, password: e.target.value}); if (errors.password) setErrors(p => ({...p, password: ''})); }} />
               <button onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -487,13 +488,13 @@ export default function Users() {
             />
           </FormField>
           <FormField label="Documento" error={errors.docNumber}>
-            <Input value={formData.docNumber} onChange={e => setFormData({...formData, docNumber: e.target.value})} />
+            <Input maxLength={15} value={formData.docNumber} onChange={e => { setFormData({...formData, docNumber: e.target.value}); if (errors.docNumber) setErrors(p => ({...p, docNumber: ''})); }} />
           </FormField>
           <FormField label="Teléfono" error={errors.phone}>
-            <Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+            <Input maxLength={15} value={formData.phone} onChange={e => { setFormData({...formData, phone: e.target.value}); if (errors.phone) setErrors(p => ({...p, phone: ''})); }} />
           </FormField>
           <FormField label="Fecha Nacimiento" error={errors.birthDate}>
-            <Input type="date" value={formData.birthDate} onChange={e => setFormData({...formData, birthDate: e.target.value})} />
+            <Input type="date" value={formData.birthDate} onChange={e => { setFormData({...formData, birthDate: e.target.value}); if (errors.birthDate) setErrors(p => ({...p, birthDate: ''})); }} />
           </FormField>
           <FormField label="Estado">
             <Select 
@@ -577,9 +578,6 @@ function PermissionsGrid({ permissions, onChange }: { permissions: RolePermissio
       if (typeof modulePerms[type] === 'boolean') {
         modulePerms[type] = !modulePerms[type];
       } else {
-        // Para tipos string (como 'all' | 'own'), el toggle simple no aplica,
-        // pero evitamos el error de tipo. Aquí podrías implementar una lógica de ciclo
-        // o dejarlo para un selector específico. Por ahora evitamos el crash.
         if (modulePerms[type] === 'all') modulePerms[type] = 'own';
         else if (modulePerms[type] === 'own') modulePerms[type] = 'none';
         else modulePerms[type] = 'all';
@@ -590,41 +588,43 @@ function PermissionsGrid({ permissions, onChange }: { permissions: RolePermissio
   };
 
   const modules: { id: keyof RolePermissions, label: string, icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={14} /> },
-    { id: 'sales', label: 'Ventas', icon: <ShoppingBag size={14} /> },
-    { id: 'clients', label: 'Clientes', icon: <UsersGroup size={14} /> },
-    { id: 'itineraries', label: 'Itinerarios', icon: <Map size={14} /> },
-    { id: 'users', label: 'Usuarios', icon: <Lock size={14} /> },
-    { id: 'config', label: 'Configuración', icon: <Settings size={14} /> }
+    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+    { id: 'sales', label: 'Ventas', icon: <ShoppingBag size={18} /> },
+    { id: 'clients', label: 'Clientes', icon: <UsersGroup size={18} /> },
+    { id: 'itineraries', label: 'Itinerarios', icon: <Map size={18} /> },
+    { id: 'users', label: 'Usuarios', icon: <Lock size={18} /> },
+    { id: 'config', label: 'Configuración', icon: <Settings size={18} /> }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {modules.map(mod => (
-        <div key={mod.id} className="p-4 border border-gray-border rounded-xl bg-white shadow-sm">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b">
-            <div className="p-1.5 bg-gray-50 text-primary rounded-lg">{mod.icon}</div>
-            <span className="font-bold text-sm text-primary">{mod.label}</span>
+        <div key={mod.id} className="p-5 border border-gray-border rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
+            <div className="p-2.5 bg-primary/10 text-primary rounded-xl">{mod.icon}</div>
+            <span className="font-bold text-base text-gray-800">{mod.label}</span>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-3">
             {Object.keys(permissions[mod.id]).map(permKey => {
               const val = (permissions[mod.id] as any)[permKey];
+              const permLabels: Record<string, string> = {
+                view: 'Ver', create: 'Crear', edit: 'Editar', delete: 'Eliminar'
+              };
+              const displayLabel = permLabels[permKey] || permKey;
+              
               return (
-                <div key={permKey} className="flex flex-col gap-1 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase">{permKey}</span>
+                <div key={permKey} className="flex items-center justify-between p-2.5 bg-gray-50/50 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
+                  <span className="text-xs font-bold text-gray-600 capitalize">{displayLabel}</span>
                   {typeof val === 'boolean' ? (
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        className="rounded text-primary focus:ring-primary/20 w-4 h-4"
-                        checked={val} 
-                        onChange={() => toggle(mod.id, permKey)} 
-                      />
-                      <span className="text-xs font-medium text-gray-600">{val ? 'Activado' : 'Desactivado'}</span>
-                    </label>
+                    <div 
+                      className={`w-10 h-5 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${val ? 'bg-green-500' : 'bg-gray-300'}`}
+                      onClick={() => toggle(mod.id, permKey)}
+                    >
+                      <div className={`bg-white w-3.5 h-3.5 rounded-full shadow-sm transform transition-transform duration-300 ${val ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </div>
                   ) : (
                     <select 
-                      className="text-xs bg-transparent border-none p-0 font-bold text-primary focus:ring-0 cursor-pointer"
+                      className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1 font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                       value={val}
                       onChange={(e) => {
                         const next = { ...permissions };
@@ -632,9 +632,9 @@ function PermissionsGrid({ permissions, onChange }: { permissions: RolePermissio
                         onChange(next);
                       }}
                     >
-                      <option value="all">Todo (All)</option>
-                      <option value="own">Solo Propio (Own)</option>
-                      <option value="none">Ninguno (None)</option>
+                      <option value="all">Todos</option>
+                      <option value="own">Propios</option>
+                      <option value="none">Ninguno</option>
                     </select>
                   )}
                 </div>

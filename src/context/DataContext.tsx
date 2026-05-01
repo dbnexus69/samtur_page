@@ -17,6 +17,7 @@ interface DataContextType {
   toggleClientStatus: (id: number) => void;
   addSale: (sale: Omit<Sale, 'id'>) => Sale;
   updateSale: (id: number, sale: Partial<Sale>) => void;
+  registerCreditPayment: (saleId: number, amount: number, isTotal: boolean) => void;
   updateFlight: (id: number, flight: Partial<Flight>) => void;
   addConfigItem: (section: ConfigSection, item: Record<string, unknown>) => Record<string, unknown>;
   updateConfigItem: (section: ConfigSection, id: number, item: Record<string, unknown>) => void;
@@ -102,6 +103,24 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const registerCreditPayment = (saleId: number, amount: number, isTotal: boolean) => {
+    const sale = data.sales.find(s => s.id === saleId);
+    if (!sale) return;
+    
+    const currentPaid = sale.creditPaidAmount || 0;
+    const newPaidAmount = isTotal ? sale.total : currentPaid + amount;
+    const newStatus: 'pagado' | 'abonado' = isTotal || newPaidAmount >= sale.total ? 'pagado' : 'abonado';
+    
+    setData({
+      ...data,
+      sales: data.sales.map(s => s.id === saleId ? {
+        ...s,
+        creditPaidAmount: newPaidAmount,
+        status: newStatus
+      } : s)
+    });
+  };
+
   const updateFlight = (id: number, flightUpdate: Partial<Flight>) => {
     setData({
       ...data,
@@ -176,6 +195,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       toggleClientStatus,
       addSale,
       updateSale,
+      registerCreditPayment,
       updateFlight,
       addConfigItem,
       updateConfigItem,

@@ -263,24 +263,28 @@ export default function Itineraries() {
                       </div>
 
                       <div className="space-y-1">
-                        {displayFlights.map(flight => (
+                        {displayFlights.map(flight => {
+                          const client = data.clients.find(c => c.name === flight.passenger);
+                          const docInfo = client ? `\n${client.docType}: ${client.docNumber}` : '';
+                          return (
                           <div
                             key={flight.id}
-                            title={`${flight.passenger} | ${flight.time} | Check-in: ${flight.checkin}`}
+                            title={`${flight.passenger}${docInfo}\nHora: ${flight.time}\nCheck-in: ${flight.checkin}`}
                             className={`px-2 py-1 rounded-md text-[10px] font-semibold border flex items-center gap-1 shadow-sm transition-transform hover:scale-[1.02] ${
                               flight.type === 'ida' 
                                 ? 'bg-blue-50 border-blue-100 text-blue-700' 
                                 : 'bg-indigo-50 border-indigo-100 text-indigo-800'
                             }`}
                           >
-                            {flight.type === 'ida' ? <PlaneTakeoff size={10} /> : <PlaneLanding size={10} />}
+                            {flight.type === 'ida' ? <PlaneTakeoff size={10} className="shrink-0" /> : <PlaneLanding size={10} className="shrink-0" />}
                             <span className="truncate flex-1">{flight.passenger}</span>
-                            <span className="opacity-60">{flight.time}</span>
+                            <span className="opacity-60 shrink-0">{flight.time}</span>
                             <span title={flight.checkin === 'realizado' ? 'Check-in realizado' : 'Check-in pendiente'}
                               className={`w-1.5 h-1.5 rounded-full shrink-0 ${flight.checkin === 'realizado' ? 'bg-green-500' : 'bg-yellow-400'}`}
                             />
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
                       {dayFlights.length > 3 && (

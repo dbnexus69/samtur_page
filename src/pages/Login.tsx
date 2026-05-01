@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Loader2, Plane, ShieldCheck, ChevronRight, Info } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Plane, ShieldCheck, ChevronRight, Info, Star, MapPin, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Input, FormField } from '../components/ui/Form';
@@ -57,8 +57,8 @@ export default function Login() {
           <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 border border-white/20 shadow-xl">
             <Plane className="text-white w-10 h-10 -rotate-45" />
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">Samtour</h1>
-          <p className="text-white/60 mt-1 font-medium">Agencia de Viajes & Turismo</p>
+          <h1 className="text-4xl font-bold text-white tracking-tight">ITEA</h1>
+          <p className="text-white/60 mt-1 font-medium">SISTEMA DE GESTIÓN INTEGRAL</p>
         </div>
 
         {/* Tarjeta de Login Glassmorphism */}
@@ -159,14 +159,14 @@ export default function Login() {
             
             {showDemo && (
               <div className="mt-4 grid grid-cols-1 gap-2 animate-fade-in">
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between group hover:border-primary/30 transition-all cursor-pointer" onClick={() => {setEmail('admin@samtour.com'); setPassword('admin123');}}>
+                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between group hover:border-primary/30 transition-all cursor-pointer" onClick={() => {setEmail('admin@samtour.com'); setPassword('Admin123');}}>
                   <div>
                     <p className="text-[10px] font-bold text-primary/60 uppercase">Administrador</p>
                     <p className="text-xs text-gray-600">admin@samtour.com</p>
                   </div>
                   <ShieldCheck size={16} className="text-primary/20 group-hover:text-primary transition-colors" />
                 </div>
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between group hover:border-accent/30 transition-all cursor-pointer" onClick={() => {setEmail('juan@samtour.com'); setPassword('vendor123');}}>
+                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between group hover:border-accent/30 transition-all cursor-pointer" onClick={() => {setEmail('juan@samtour.com'); setPassword('Vendor123');}}>
                   <div>
                     <p className="text-[10px] font-bold text-accent/60 uppercase">Vendedor</p>
                     <p className="text-xs text-gray-600">juan@samtour.com</p>
