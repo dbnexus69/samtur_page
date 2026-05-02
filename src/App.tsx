@@ -5,6 +5,7 @@ import { PermissionsProvider } from './context/PermissionsContext';
 import { Layout } from './components/layout/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import StatsView from './pages/StatsView';
 import Sales from './pages/Sales';
 import Clients from './pages/Clients';
 import Itineraries from './pages/Itineraries';
@@ -38,6 +39,7 @@ function AppRoutes() {
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
+        <Route path="stats" element={<StatsView />} />
         <Route path="sales" element={<Sales />} />
         <Route path="clients" element={<Clients />} />
         <Route path="itineraries" element={<Itineraries />} />

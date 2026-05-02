@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { AppData, User, Client, Sale, Flight, RolePermissions } from '../types';
 import { mockData } from '../data/mockData';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 
 type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'routes' | 'baggage';
 
@@ -25,13 +24,27 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
+function initializeData(): AppData {
+  const stored = localStorage.getItem('samtour_data');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (parsed.salesHistory && parsed.salesHistory.length > 0) {
+        return parsed;
+      }
+    } catch {
+      // continue to default
+    }
+  }
+  return mockData;
+}
+
 export function DataProvider({ children }: { children: ReactNode }) {
-  localStorage.removeItem('samtour_data');
-  const [data, setData] = useLocalStorage<AppData>('samtour_data', mockData);
+  const [data, setData] = useState<AppData>(initializeData);
 
   useEffect(() => {
-    setData(mockData);
-  }, []);
+    localStorage.setItem('samtour_data', JSON.stringify(data));
+  }, [data]);
 
   const refreshData = () => {
     const stored = localStorage.getItem('samtour_data');
@@ -54,6 +67,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setData({
       ...data,
       users: data.users.map(u => u.id === id ? { ...u, ...userUpdate } : u)
+    });
+  };
+
+  const updateUserPermissions = (id: number, permissions: RolePermissions) => {
+    setData({
+      ...data,
+      users: data.users.map(u => u.id === id ? { ...u, customPermissions: permissions } : u)
     });
   };
 
@@ -98,20 +118,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const addConfigItem = (section: ConfigSection, item: Record<string, unknown>): Record<string, unknown> => {
-    const sectionData = data.config[section] as any[];
-    const newItem = { ...item, id: generateId(sectionData) };
+    const sectionData = (data.config[section] as Record<string, unknown>[]) || [];
+    const newItem = { ...item, id: generateId(sectionData as { id: number }[]) };
     setData({
       ...data,
       config: {
         ...data.config,
-        [section]: [...sectionData, newItem]
+        [section]: [...(sectionData as { id: number }[]), newItem as { id: number }]
       }
     });
     return newItem;
   };
 
   const updateConfigItem = (section: ConfigSection, id: number, itemUpdate: Record<string, unknown>) => {
-    const sectionData = data.config[section] as Record<string, unknown>[];
+    const sectionData = (data.config[section] as Record<string, unknown>[]) || [];
     setData({
       ...data,
       config: {
@@ -122,7 +142,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteConfigItem = (section: ConfigSection, id: number) => {
-    const sectionData = data.config[section] as Record<string, unknown>[];
+    const sectionData = (data.config[section] as Record<string, unknown>[]) || [];
     setData({
       ...data,
       config: {
@@ -141,13 +161,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
           vendor: permissions
         }
       }
-    });
-  };
-
-  const updateUserPermissions = (id: number, permissions: RolePermissions) => {
-    setData({
-      ...data,
-      users: data.users.map(u => u.id === id ? { ...u, customPermissions: permissions } : u)
     });
   };
 

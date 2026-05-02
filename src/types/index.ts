@@ -95,4 +95,109 @@ export interface AppData {
   sales: Sale[];
   flights: Flight[];
   config: ConfigData;
+  salesHistory: MonthlySale[];
+}
+
+export interface MonthlySale {
+  id: number;
+  year: number;
+  month: number;
+  total: number;
+  count: number;
+  category: {
+    hotels: number;
+    flights: number;
+    packages: number;
+    insurance: number;
+    transfers: number;
+  };
+}
+
+export interface DashboardStats {
+  totalRevenue: number;
+  previousYearRevenue: number;
+  revenueGrowth: number;
+  totalOperations: number;
+  operationsGrowth: number;
+  pendingBalance: number;
+  pendingCount: number;
+  suppliersTotal: number;
+  monthlyRevenue: number;
+  categoryDistribution: CategoryData[];
+  carteraStatus: CarteraData[];
+  monthlyTrend: TrendData[];
+}
+
+export interface CategoryData {
+  name: string;
+  value: number;
+  percentage: number;
+}
+
+export interface CarteraData {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export interface TrendData {
+  month: number;
+  currentYear: number;
+  previousYear: number;
+}
+
+export type SortField = 'date' | 'clientName' | 'vendorName' | 'total' | 'status';
+export type SortDirection = 'asc' | 'desc';
+
+export interface PaginationState {
+  page: number;
+  perPage: number;
+  total: number;
+}
+
+export interface DesgloseCategorias {
+  documentos: number;
+  hoteles: number;
+  planes: number;
+  seguros: number;
+  tiquetes: number;
+  otros: number;
+}
+
+export interface KPIData {
+  vuelosVendidos: number;
+  ordenes: {
+    total: number;
+    desglose: DesgloseCategorias;
+  };
+  taIngresada: {
+    total: number;
+    desglose: DesgloseCategorias;
+  };
+  taPendiente: {
+    total: number;
+    desglose: DesgloseCategorias;
+  };
+  proveedores: {
+    total: number;
+    desglose: DesgloseCategorias;
+  };
+}
+
+export const EMPTY_DESGLOSE: DesgloseCategorias = {
+  documentos: 0,
+  hoteles: 0,
+  planes: 0,
+  seguros: 0,
+  tiquetes: 0,
+  otros: 0,
+};
+
+export const CATEGORIA_LABELS: Record<keyof DesgloseCategorias, string> = {
+  documentos: 'Documentos',
+  hoteles: 'Hoteles',
+  planes: 'Planes',
+  seguros: 'Seguros',
+  tiquetes: 'Tiquetes',
+  otros: 'Otros',
 };

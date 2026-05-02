@@ -34,8 +34,13 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-primary text-white flex flex-col">
       <div className="p-6 border-b border-primary-light">
-        <h1 className="text-2xl font-bold font-heading text-accent">Samtur</h1>
-        <p className="text-xs text-gray-400 mt-1">Agencia de Viajes</p>
+        <div className="flex items-center gap-2">
+          <img src="/logo_samtur.png" alt="Samtur" className="w-10 h-10 object-contain" />
+          <div>
+            <h1 className="text-xl font-bold font-heading text-accent">Samtur</h1>
+            <p className="text-xs text-gray-400">Agencia de Viajes</p>
+          </div>
+        </div>
       </div>
 
       <nav className="flex-1 py-4">

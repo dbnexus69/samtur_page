@@ -1,4 +1,63 @@
-import { AppData, DEFAULT_VENDOR_PERMISSIONS } from '../types';
+import { AppData, DEFAULT_VENDOR_PERMISSIONS, MonthlySale } from '../types';
+
+const SEASONALITY: Record<number, number> = {
+  1: 2.2,   // Enero - inicio año, peak
+  2: 0.7,   // Febrero - baja
+  3: 1.1,   // Marzo - pickup Semana Santa
+  4: 0.65,  // Abril - baja
+  5: 0.7,   // Mayo - baja
+  6: 1.3,   // Junio - inicio vacaciones
+  7: 2.5,   // Julio - peak vacances escolares
+  8: 2.3,   // Agosto - continue peak
+  9: 0.8,   // Septiembre - baja post-vacaciones
+  10: 0.9,  // Octubre - recovery
+  11: 1.2,  // Noviembre - pre-peak fin año
+  12: 2.8,  // Diciembre - peak máximo fin año
+};
+
+const BASE_REVENUE = 8500000;
+const YEARS = [2025, 2026];
+
+function generateMonthlySales(): MonthlySale[] {
+  const sales: MonthlySale[] = [];
+  let id = 1;
+
+  YEARS.forEach(year => {
+    for (let month = 1; month <= 12; month++) {
+      const seasonFactor = SEASONALITY[month];
+      const yearFactor = year === 2026 ? 1.2 : 1;
+      const randomVariance = 0.85 + Math.random() * 0.3;
+      
+      const total = Math.round(BASE_REVENUE * seasonFactor * yearFactor * randomVariance);
+      const count = Math.round(8 * seasonFactor * randomVariance);
+
+      const hotelShare = 0.32;
+      const flightShare = 0.28;
+      const packageShare = 0.22;
+      const insuranceShare = 0.10;
+      const transferShare = 0.08;
+
+      sales.push({
+        id: id++,
+        year,
+        month,
+        total,
+        count,
+        category: {
+          hotels: Math.round(total * hotelShare),
+          flights: Math.round(total * flightShare),
+          packages: Math.round(total * packageShare),
+          insurance: Math.round(total * insuranceShare),
+          transfers: Math.round(total * transferShare),
+        },
+      });
+    }
+  });
+
+  return sales;
+}
+
+const salesHistory = generateMonthlySales();
 
 export const mockData: AppData = {
   users: [
@@ -97,5 +156,6 @@ export const mockData: AppData = {
     rolePermissions: {
       vendor: DEFAULT_VENDOR_PERMISSIONS
     }
-  }
+  },
+  salesHistory
 };
