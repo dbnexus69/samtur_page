@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, ReactNode } from 'react';
 import { AppData, User, Client, Sale, Flight, RolePermissions } from '../types';
 import { mockData } from '../data/mockData';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'routes' | 'baggage';
 
@@ -9,12 +10,14 @@ interface DataContextType {
   refreshData: () => void;
   addUser: (user: Omit<User, 'id'>) => User;
   updateUser: (id: number, user: Partial<User>) => void;
+  deleteUser: (id: number) => void;
   updateUserPermissions: (id: number, permissions: RolePermissions) => void;
   addClient: (client: Omit<Client, 'id'>) => Client;
   updateClient: (id: number, client: Partial<Client>) => void;
-  deleteClient: (id: number) => void;
+  toggleClientStatus: (id: number) => void;
   addSale: (sale: Omit<Sale, 'id'>) => Sale;
   updateSale: (id: number, sale: Partial<Sale>) => void;
+  registerCreditPayment: (saleId: number, amount: number, isTotal: boolean) => void;
   updateFlight: (id: number, flight: Partial<Flight>) => void;
   addConfigItem: (section: ConfigSection, item: Record<string, unknown>) => Record<string, unknown>;
   updateConfigItem: (section: ConfigSection, id: number, item: Record<string, unknown>) => void;
@@ -24,27 +27,13 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-function initializeData(): AppData {
-  const stored = localStorage.getItem('samtour_data');
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (parsed.salesHistory && parsed.salesHistory.length > 0) {
-        return parsed;
-      }
-    } catch {
-      // continue to default
-    }
-  }
-  return mockData;
-}
-
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppData>(initializeData);
+  localStorage.removeItem('samtour_data');
+  const [data, setData] = useLocalStorage<AppData>('samtour_data', mockData);
 
   useEffect(() => {
-    localStorage.setItem('samtour_data', JSON.stringify(data));
-  }, [data]);
+    setData(mockData);
+  }, []);
 
   const refreshData = () => {
     const stored = localStorage.getItem('samtour_data');
@@ -70,10 +59,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const updateUserPermissions = (id: number, permissions: RolePermissions) => {
+  const deleteUser = (id: number) => {
     setData({
       ...data,
-      users: data.users.map(u => u.id === id ? { ...u, customPermissions: permissions } : u)
+      users: data.users.filter(u => u.id !== id)
     });
   };
 
@@ -90,11 +79,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const deleteClient = (id: number) => {
-    setData({
-      ...data,
-      clients: data.clients.filter(c => c.id !== id)
-    });
+
+
+  const toggleClientStatus = (id: number) => {
+    const client = data.clients.find(c => c.id === id);
+    if (client) {
+      updateClient(id, { 
+        status: client.status === 'active' ? 'inactive' : 'active' 
+      });
+    }
   };
 
   const addSale = (sale: Omit<Sale, 'id'>): Sale => {
@@ -110,6 +103,24 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const registerCreditPayment = (saleId: number, amount: number, isTotal: boolean) => {
+    const sale = data.sales.find(s => s.id === saleId);
+    if (!sale) return;
+    
+    const currentPaid = sale.creditPaidAmount || 0;
+    const newPaidAmount = isTotal ? sale.total : currentPaid + amount;
+    const newStatus: 'pagado' | 'abonado' = isTotal || newPaidAmount >= sale.total ? 'pagado' : 'abonado';
+    
+    setData({
+      ...data,
+      sales: data.sales.map(s => s.id === saleId ? {
+        ...s,
+        creditPaidAmount: newPaidAmount,
+        status: newStatus
+      } : s)
+    });
+  };
+
   const updateFlight = (id: number, flightUpdate: Partial<Flight>) => {
     setData({
       ...data,
@@ -118,20 +129,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const addConfigItem = (section: ConfigSection, item: Record<string, unknown>): Record<string, unknown> => {
-    const sectionData = (data.config[section] as Record<string, unknown>[]) || [];
-    const newItem = { ...item, id: generateId(sectionData as { id: number }[]) };
+    const sectionData = data.config[section] as any[];
+    const newItem = { ...item, id: generateId(sectionData) };
     setData({
       ...data,
       config: {
         ...data.config,
-        [section]: [...(sectionData as { id: number }[]), newItem as { id: number }]
+        [section]: [...sectionData, newItem]
       }
     });
     return newItem;
   };
 
   const updateConfigItem = (section: ConfigSection, id: number, itemUpdate: Record<string, unknown>) => {
-    const sectionData = (data.config[section] as Record<string, unknown>[]) || [];
+    const sectionData = data.config[section] as Record<string, unknown>[];
     setData({
       ...data,
       config: {
@@ -142,7 +153,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteConfigItem = (section: ConfigSection, id: number) => {
-    const sectionData = (data.config[section] as Record<string, unknown>[]) || [];
+    const sectionData = data.config[section] as Record<string, unknown>[];
     setData({
       ...data,
       config: {
@@ -164,18 +175,27 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const updateUserPermissions = (id: number, permissions: RolePermissions) => {
+    setData({
+      ...data,
+      users: data.users.map(u => u.id === id ? { ...u, customPermissions: permissions } : u)
+    });
+  };
+
   return (
     <DataContext.Provider value={{
       data,
       refreshData,
       addUser,
       updateUser,
+      deleteUser,
       updateUserPermissions,
       addClient,
       updateClient,
-      deleteClient,
+      toggleClientStatus,
       addSale,
       updateSale,
+      registerCreditPayment,
       updateFlight,
       addConfigItem,
       updateConfigItem,

@@ -36,7 +36,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
 }
 
 interface TableProps {
-  headers: string[];
+  headers: React.ReactNode[];
   children: React.ReactNode;
 }
 

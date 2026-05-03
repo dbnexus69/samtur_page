@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, ShoppingBag, Receipt, TrendingUp, Wallet } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -24,7 +24,9 @@ export default function Sales() {
     total: '',
     paymentMethod: '',
     status: 'pendiente',
-    observations: ''
+    observations: '',
+    isCredit: false,
+    creditDueDate: ''
   });
 
   const filteredSales = useMemo(() => {
@@ -58,11 +60,13 @@ export default function Sales() {
         total: String(sale.total),
         paymentMethod: sale.paymentMethod,
         status: sale.status,
-        observations: sale.observations || ''
+        observations: sale.observations || '',
+        isCredit: sale.isCredit || false,
+        creditDueDate: sale.creditDueDate || ''
       });
     } else {
       setEditingSale(null);
-      setFormData({ clientId: '', total: '', paymentMethod: '', status: 'pendiente', observations: '' });
+      setFormData({ clientId: '', total: '', paymentMethod: '', status: 'pendiente', observations: '', isCredit: false, creditDueDate: '' });
     }
     setIsModalOpen(true);
   };
@@ -71,26 +75,26 @@ export default function Sales() {
     const client = data.clients.find(c => c.id === Number(formData.clientId));
     if (!client) return;
 
+    const saleData = {
+      clientId: Number(formData.clientId),
+      clientName: client.name,
+      total: Number(formData.total),
+      paymentMethod: formData.paymentMethod,
+      status: formData.status as Sale['status'],
+      observations: formData.observations,
+      isCredit: formData.isCredit,
+      creditDueDate: formData.isCredit ? formData.creditDueDate : undefined,
+      creditPaidAmount: formData.isCredit ? 0 : undefined
+    };
+
     if (editingSale) {
-      updateSale(editingSale.id, {
-        clientId: Number(formData.clientId),
-        clientName: client.name,
-        total: Number(formData.total),
-        paymentMethod: formData.paymentMethod,
-        status: formData.status as Sale['status'],
-        observations: formData.observations
-      });
+      updateSale(editingSale.id, saleData);
     } else {
       addSale({
-        clientId: Number(formData.clientId),
-        clientName: client.name,
+        ...saleData,
         vendorId: user!.id,
         vendorName: user!.name,
-        date: new Date().toISOString().split('T')[0],
-        total: Number(formData.total),
-        paymentMethod: formData.paymentMethod,
-        status: formData.status as Sale['status'],
-        observations: formData.observations
+        date: new Date().toISOString().split('T')[0]
       });
     }
     setIsModalOpen(false);
@@ -98,24 +102,36 @@ export default function Sales() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardBody className="grid grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-500">Total Ventas</p>
-            <p className="text-xl font-bold">{formatCurrency(totals.total)}</p>
-          </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <p className="text-sm text-gray-500">Pagado</p>
-            <p className="text-xl font-bold text-green-600">{formatCurrency(totals.pagado)}</p>
-          </div>
-          <div className="text-center p-4 bg-yellow-50 rounded-lg">
-            <p className="text-sm text-gray-500">Pendiente</p>
-            <p className="text-xl font-bold text-yellow-600">{formatCurrency(totals.pendiente)}</p>
-          </div>
-        </CardBody>
-      </Card>
+      {/* Header de Sección */}
+      <div className="mb-6 animate-fade-in">
+        <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
+          <ShoppingBag className="text-accent w-8 h-8" /> Gestión de Ventas
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">Control de ingresos, facturación y estados de pago de tus clientes.</p>
+      </div>
 
-      <Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
+        <StatCard 
+          icon={<Receipt size={24} />} 
+          label="Total Ventas" 
+          value={formatCurrency(totals.total)} 
+          color="bg-primary" 
+        />
+        <StatCard 
+          icon={<TrendingUp size={24} />} 
+          label="Recaudado (Pagado)" 
+          value={formatCurrency(totals.pagado)} 
+          color="bg-green-500" 
+        />
+        <StatCard 
+          icon={<Wallet size={24} />} 
+          label="Por Cobrar (Pendiente)" 
+          value={formatCurrency(totals.pendiente)} 
+          color="bg-amber-500" 
+        />
+      </div>
+
+      <Card className="animate-fade-in">
         <CardHeader actions={
           canCreate('sales') ? (
             <Button onClick={() => handleOpenModal()}>
@@ -193,6 +209,31 @@ export default function Sales() {
             ]}
           />
         </FormField>
+        
+        <div className="flex items-center gap-3 py-2 border-t border-gray-border mt-4">
+          <input
+            type="checkbox"
+            id="isCredit"
+            checked={formData.isCredit}
+            onChange={e => setFormData({ ...formData, isCredit: e.target.checked, creditDueDate: e.target.checked ? formData.creditDueDate : '' })}
+            className="w-4 h-4 rounded border-gray-border text-primary focus:ring-primary"
+          />
+          <label htmlFor="isCredit" className="text-sm font-medium text-gray-700">
+            Venta a crédito
+          </label>
+        </div>
+        
+        {formData.isCredit && (
+          <FormField label="Fecha de Vencimiento">
+            <Input
+              type="date"
+              value={formData.creditDueDate}
+              onChange={e => setFormData({ ...formData, creditDueDate: e.target.value })}
+              min={new Date().toISOString().split('T')[0]}
+            />
+          </FormField>
+        )}
+        
         <FormField label="Observaciones">
           <Textarea
             value={formData.observations}
@@ -203,5 +244,19 @@ export default function Sales() {
         </FormField>
       </Modal>
     </div>
+  );
+}
+
+function StatCard({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) {
+  return (
+    <Card className={`text-white ${color} border-none shadow-lg shadow-gray-200`}>
+      <CardBody className="flex items-center gap-4 py-4">
+        <div className="p-3 bg-white/20 rounded-xl flex items-center justify-center">{icon}</div>
+        <div>
+          <p className="text-xs font-medium text-white/80 uppercase tracking-wider">{label}</p>
+          <p className="text-2xl font-bold">{value}</p>
+        </div>
+      </CardBody>
+    </Card>
   );
 }

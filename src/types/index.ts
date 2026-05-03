@@ -1,5 +1,7 @@
 export interface User {
   id: number;
+  firstName?: string;
+  lastName?: string;
   name: string;
   docType: string;
   docNumber: string;
@@ -18,7 +20,7 @@ export interface User {
 export interface RolePermissions {
   dashboard: { view: 'all' | 'own' };
   sales: { create: boolean; edit: 'all' | 'own' | 'none'; delete: boolean };
-  clients: { create: boolean; edit: 'all' | 'own' | 'none'; delete: boolean };
+  clients: { create: boolean; edit: 'all' | 'own' | 'none' };
   itineraries: { view: boolean; edit: boolean; delete: boolean };
   users: { view: boolean; create: boolean; edit: boolean; delete: boolean };
   config: { view: boolean; edit: boolean };
@@ -27,7 +29,7 @@ export interface RolePermissions {
 export const DEFAULT_VENDOR_PERMISSIONS: RolePermissions = {
   dashboard: { view: 'own' },
   sales: { create: true, edit: 'own', delete: false },
-  clients: { create: true, edit: 'none', delete: false },
+  clients: { create: true, edit: 'none' },
   itineraries: { view: true, edit: false, delete: false },
   users: { view: false, create: false, edit: false, delete: false },
   config: { view: false, edit: false }
@@ -36,7 +38,7 @@ export const DEFAULT_VENDOR_PERMISSIONS: RolePermissions = {
 export const ADMIN_PERMISSIONS: RolePermissions = {
   dashboard: { view: 'all' },
   sales: { create: true, edit: 'all', delete: true },
-  clients: { create: true, edit: 'all', delete: true },
+  clients: { create: true, edit: 'all' },
   itineraries: { view: true, edit: true, delete: true },
   users: { view: true, create: true, edit: true, delete: true },
   config: { view: true, edit: true }
@@ -44,11 +46,16 @@ export const ADMIN_PERMISSIONS: RolePermissions = {
 
 export interface Client {
   id: number;
+  firstName: string;
+  lastName: string;
   name: string;
   docType: string;
   docNumber: string;
   phone: string;
   email: string;
+  birthDate?: string;
+  status: 'active' | 'inactive';
+  avatar?: string;
   registrationDate: string;
 }
 
@@ -63,6 +70,9 @@ export interface Sale {
   status: 'pagado' | 'abonado' | 'pendiente';
   paymentMethod: string;
   observations?: string;
+  isCredit?: boolean;
+  creditDueDate?: string;
+  creditPaidAmount?: number;
 }
 
 export interface Flight {
