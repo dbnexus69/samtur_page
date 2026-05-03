@@ -1,47 +1,101 @@
-import { useMemo } from 'react';
-import { Card, CardHeader, CardBody } from '../components/ui/Card';
-import { useData } from '../context/DataContext';
-import { formatCurrency, getCurrentMonth } from '../utils/formatters';
+import { useMemo, useState } from "react";
+import { Card, CardHeader, CardBody } from "../components/ui/Card";
+import { useData } from "../context/DataContext";
+import { formatCurrency, getCurrentMonth } from "../utils/formatters";
 import {
   PieChart,
   Pie,
   Cell,
   ResponsiveContainer,
+  Tooltip,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Legend,
-  Tooltip
-} from 'recharts';
+} from "recharts";
+import {
+  Building,
+  ShieldCheck,
+  Briefcase,
+  Plane,
+  Users,
+  DollarSign,
+  CreditCard,
+  Map,
+} from "lucide-react";
+import Datepicker from "react-tailwindcss-datepicker";
 
 export default function Dashboard() {
   const { data } = useData();
   const { start, end } = getCurrentMonth();
+  const [dateRange, setDateRange] = useState<any>({
+    startDate: new Date(start),
+    endDate: new Date(end),
+  });
 
   const stats = useMemo(() => {
     const totalVentas = data.sales.reduce((sum, s) => sum + s.total, 0);
-    const monthVentas = data.sales.filter(s => {
+    const monthVentas = data.sales.filter((s) => {
+      if (!dateRange.startDate || !dateRange.endDate) return true;
       const fecha = new Date(s.date);
-      const now = new Date();
-      return fecha.getMonth() === now.getMonth() && fecha.getFullYear() === now.getFullYear();
+      const startD = new Date(dateRange.startDate);
+      const endD = new Date(dateRange.endDate);
+      return fecha >= startD && fecha <= endD;
     });
     const monthIngresos = monthVentas.reduce((sum, s) => sum + s.total, 0);
 
-    const flightsIda = data.flights.filter(f => f.type === 'ida');
-    const nationalFlights = flightsIda.filter(f =>
-      f.route.includes('BOG') || f.route.includes('MDE') || f.route.includes('CTG')
+    const flightsIda = data.flights.filter((f) => f.type === "ida");
+    const nationalFlights = flightsIda.filter(
+      (f) =>
+        f.route.includes("BOG") ||
+        f.route.includes("MDE") ||
+        f.route.includes("CTG"),
     ).length;
     const internationalFlights = flightsIda.length - nationalFlights;
 
-    const pendiente = data.sales.filter(s => s.status === 'pendiente');
+    const activeClients = data.clients.filter(
+      (c) => c.status === "active",
+    ).length;
+
+    const pendiente = data.sales.filter((s) => s.status === "pendiente");
     const PendienteTotal = pendiente.reduce((sum, s) => sum + s.total, 0);
-    const abonado = data.sales.filter(s => s.status === 'abonado');
+    const abonado = data.sales.filter((s) => s.status === "abonado");
     const abonadoTotal = abonado.reduce((sum, s) => sum + s.total, 0);
-    const pagado = data.sales.filter(s => s.status === 'pagado');
+    const pagado = data.sales.filter((s) => s.status === "pagado");
     const pagadoTotal = pagado.reduce((sum, s) => sum + s.total, 0);
+    const hotelesVendidos = data.sales.filter(
+      (sale) => sale.category === "hoteles",
+    ).length;
+    const hotelesIngresos = data.sales
+      .filter((s) => s.category === "hoteles")
+      .reduce((acc, s) => acc + s.total, 0);
+    const segurosVendidos = data.sales.filter(
+      (sale) => sale.category === "seguros",
+    ).length;
+    const segurosIngresos = data.sales
+      .filter((s) => s.category === "seguros")
+      .reduce((acc, s) => acc + s.total, 0);
+    const planesVendidos = data.sales.filter(
+      (sale) => sale.category === "planes",
+    ).length;
+    const planesIngresos = data.sales
+      .filter((s) => s.category === "planes")
+      .reduce((acc, s) => acc + s.total, 0);
+    const vuelosIngresos = data.sales
+      .filter((s) => s.category === "vuelos")
+      .reduce((acc, s) => acc + s.total, 0);
+    const otrosIngresos = data.sales
+      .filter((s) => s.category === "otros" || !s.category)
+      .reduce((acc, s) => acc + s.total, 0);
 
     return {
       totalFlights: flightsIda.length,
       nationalFlights,
       internationalFlights,
-      totalOrders: data.sales.length + data.flights.length,
+      activeClients,
+      totalClients: data.clients.length,
       totalIngresos: totalVentas,
       monthIngresos,
       totalPendiente: PendienteTotal,
@@ -50,26 +104,59 @@ export default function Dashboard() {
       totalProveedores: Math.round(totalVentas * 0.75),
       Pendiente: PendienteTotal,
       abonado: abonadoTotal,
-      pagado: pagadoTotal
+      pagado: pagadoTotal,
+      hotelesVendidos,
+      hotelesIngresos,
+      segurosVendidos,
+      segurosIngresos,
+      planesVendidos,
+      planesIngresos,
+      vuelosIngresos,
+      otrosIngresos,
     };
-  }, [data]);
+  }, [data, dateRange]);
 
-  const categoryData = [
-    { name: 'Hoteles', value: Math.round(stats.totalIngresos * 0.35) },
-    { name: 'Planes', value: Math.round(stats.totalIngresos * 0.25) },
-    { name: 'Seguros', value: Math.round(stats.totalIngresos * 0.10) },
-    { name: 'Tiquetes', value: Math.round(stats.totalIngresos * 0.25) },
-    { name: 'Traslados', value: Math.round(stats.totalIngresos * 0.05) }
-  ];
+  const currentYear = new Date().getFullYear();
+  const yearlyTrendData = useMemo(() => {
+    const MONTH_NAMES = [
+      "Ene",
+      "Feb",
+      "Mar",
+      "Abr",
+      "May",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dic",
+    ];
+    return MONTH_NAMES.map((monthName, index) => {
+      const monthNum = index + 1;
+      const current = data.salesHistory?.find(
+        (s) => s.year === currentYear && s.month === monthNum,
+      );
+      const prev = data.salesHistory?.find(
+        (s) => s.year === currentYear - 1 && s.month === monthNum,
+      );
+
+      return {
+        name: monthName,
+        [currentYear]: current ? current.total : 0,
+        [currentYear - 1]: prev ? prev.total : 0,
+      };
+    });
+  }, [data.salesHistory, currentYear]);
 
   const carteraData = [
-    { name: 'Pagado', value: stats.pagado },
-    { name: 'Abonado', value: stats.abonado },
-    { name: 'Pendiente', value: stats.Pendiente }
+    { name: "Pagado", value: stats.pagado },
+    { name: "Abonado", value: stats.abonado },
+    { name: "Pendiente", value: stats.Pendiente },
   ];
 
-  const COLORS = ['#102846', '#f2892f', '#06b6d4', '#8b5cf6', '#22c55e'];
-  const CARTERA_COLORS = ['#16a34a', '#f2892f', '#f59e0b'];
+  const COLORS = ["#102846", "#f2892f", "#06b6d4", "#8b5cf6", "#22c55e"];
+  const CARTERA_COLORS = ["#10b981", "#3b82f6", "#f59e0b"];
 
   return (
     <div className="space-y-6">
@@ -79,35 +166,130 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
             Panel de Control
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Resumen general de operaciones, ingresos y estado de cartera.</p>
+          <p className="text-gray-500 text-sm mt-1">
+            Resumen general de operaciones, ingresos y estado de cartera.
+          </p>
         </div>
-        <div className="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-border">
-          <span className="text-xs font-bold text-gray-400 uppercase ml-2 mr-1">Periodo:</span>
-          <input type="date" defaultValue={start} className="text-xs border-none bg-gray-50 rounded-lg px-2 py-1.5 focus:ring-0 cursor-pointer font-medium text-primary" />
-          <span className="text-gray-300">-</span>
-          <input type="date" defaultValue={end} className="text-xs border-none bg-gray-50 rounded-lg px-2 py-1.5 focus:ring-0 cursor-pointer font-medium text-primary" />
-          <button className="ml-2 p-1.5 hover:bg-gray-50 rounded-lg transition-all text-primary/40 hover:text-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-          </button>
+        <div className="flex items-center bg-white p-1 rounded-xl shadow-sm border border-gray-200 relative z-20">
+          <div className="w-72">
+            <Datepicker
+              value={dateRange as any}
+              onChange={(newValue: any) => setDateRange(newValue)}
+              showShortcuts={true}
+              primaryColor={"blue"}
+              displayFormat={"DD/MMM/YYYY"}
+              placeholder={"Selecciona un periodo"}
+              separator={" - "}
+              inputClassName="w-full text-xs font-bold text-gray-600 bg-gray-50 border-none rounded-lg py-2.5 px-4 focus:ring-2 focus:ring-blue-100 cursor-pointer transition-all"
+            />
+          </div>
         </div>
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'OPERACIONES', value: stats.totalFlights, subtitle: 'Vuelos Vendidos', detail: `Nacionales: ${stats.nationalFlights}`, color: 'text-cyan-500', bg: 'bg-cyan-50' },
-          { label: 'GESTION DOCUMENTAL', value: stats.totalOrders, subtitle: 'Ordenes Generadas', detail: '', color: 'text-violet-500', bg: 'bg-violet-50' },
-          { label: 'INGRESOS BRUTOS', value: formatCurrency(stats.totalIngresos), subtitle: 'T.A. Ingresada', detail: `+${formatCurrency(stats.monthIngresos)} este mes`, color: 'text-pink-500', bg: 'bg-pink-50' },
-          { label: 'PENDIENTES', value: formatCurrency(stats.totalPendiente), subtitle: 'T.A. Pendiente', detail: `${stats.PendienteCount} transacciones`, color: 'text-orange-500', bg: 'bg-orange-50' },
-          { label: 'PROVEEDORES', value: formatCurrency(stats.totalProveedores), subtitle: 'Total Proveedores', detail: `${stats.supplierCount} activos`, color: 'text-green-500', bg: 'bg-green-50' }
+          {
+            label: "OPERACIONES",
+            value: stats.totalFlights,
+            subtitle: "Tiquetes Emitidos",
+            detail: `${stats.nationalFlights} Nacs | ${stats.internationalFlights} Ints`,
+            icon: <Plane size={22} />,
+            color: "text-blue-600",
+            bg: "bg-blue-100",
+          },
+          {
+            label: "CLIENTES",
+            value: stats.totalClients,
+            subtitle: "Total Registrados",
+            detail: `${stats.activeClients} Activos`,
+            icon: <Users size={22} />,
+            color: "text-indigo-600",
+            bg: "bg-indigo-100",
+          },
+          {
+            label: "INGRESOS BRUTOS",
+            value: formatCurrency(stats.totalIngresos),
+            subtitle: "Ventas Totales",
+            detail: `+${formatCurrency(stats.monthIngresos)} en el periodo`,
+            icon: <DollarSign size={22} />,
+            color: "text-emerald-600",
+            bg: "bg-emerald-100",
+          },
+          {
+            label: "PENDIENTES",
+            value: formatCurrency(stats.totalPendiente),
+            subtitle: "Cuentas por Cobrar",
+            detail: `${stats.PendienteCount} transacciones`,
+            icon: <CreditCard size={22} />,
+            color: "text-orange-600",
+            bg: "bg-orange-100",
+          },
+          {
+            label: "PROVEEDORES",
+            value: formatCurrency(stats.totalProveedores),
+            subtitle: "Costos Operativos",
+            detail: `${stats.supplierCount} activos`,
+            icon: <Briefcase size={22} />,
+            color: "text-rose-600",
+            bg: "bg-rose-100",
+          },
+          {
+            label: "HOTELES",
+            value: stats.hotelesVendidos,
+            subtitle: "Reservas Generadas",
+            detail: `Ingresos: ${formatCurrency(stats.hotelesIngresos)}`,
+            icon: <Building size={22} />,
+            color: "text-cyan-600",
+            bg: "bg-cyan-100",
+          },
+          {
+            label: "SEGUROS",
+            value: stats.segurosVendidos,
+            subtitle: "Pólizas Emitidas",
+            detail: `Ingresos: ${formatCurrency(stats.segurosIngresos)}`,
+            icon: <ShieldCheck size={22} />,
+            color: "text-violet-600",
+            bg: "bg-violet-100",
+          },
+          {
+            label: "PLANES",
+            value: stats.planesVendidos,
+            subtitle: "Paquetes Turísticos",
+            detail: `Ingresos: ${formatCurrency(stats.planesIngresos)}`,
+            icon: <Map size={22} />,
+            color: "text-fuchsia-600",
+            bg: "bg-fuchsia-100",
+          },
         ].map((kpi, i) => (
-          <Card key={i} className="relative overflow-hidden">
-            <div className={`absolute left-0 top-0 bottom-0 w-1 ${kpi.bg}`} />
-            <CardBody className="pl-4">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{kpi.label}</p>
-              <p className={`text-2xl font-bold mt-2 ${kpi.color}`}>{kpi.value}</p>
-              <p className="text-xs text-gray-400 mt-1">{kpi.subtitle}</p>
-              {kpi.detail && <p className="text-xs text-gray-400 mt-2 pt-2 border-t">{kpi.detail}</p>}
+          <Card
+            key={i}
+            className="hover:shadow-lg transition-all duration-300 border border-gray-200 shadow-md bg-white rounded-xl"
+          >
+            <CardBody className="p-5 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex justify-between items-start mb-4">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    {kpi.label}
+                  </p>
+                  <div className={`p-2.5 rounded-xl ${kpi.bg} ${kpi.color}`}>
+                    {kpi.icon}
+                  </div>
+                </div>
+                <h3 className="text-2xl font-black text-gray-800 mb-1">
+                  {kpi.value}
+                </h3>
+              </div>
+              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+                <span className="text-xs text-gray-500 font-medium truncate">
+                  {kpi.subtitle}
+                </span>
+                {kpi.detail && (
+                  <span className="text-[10px] font-bold text-gray-500 bg-gray-50/80 px-2 py-1 rounded-md whitespace-nowrap">
+                    {kpi.detail}
+                  </span>
+                )}
+              </div>
             </CardBody>
           </Card>
         ))}
@@ -116,48 +298,91 @@ export default function Dashboard() {
       {/* Charts */}
       <div className="grid grid-cols-3 gap-6">
         <Card className="col-span-2">
-          <CardHeader>Distribucion por Categoria</CardHeader>
+          <CardHeader>
+            Comparativa de Ingresos ({currentYear - 1} vs {currentYear})
+          </CardHeader>
           <CardBody>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={2}
-                      dataKey="value"
+            <div className="h-64 w-full mt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={yearlyTrendData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="colorCurrent"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
                     >
-                      {categoryData.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="space-y-4">
-                {categoryData.map((cat, i) => (
-                  <div key={i}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>{cat.name}</span>
-                      <span className="font-semibold">{formatCurrency(cat.value)}</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{
-                          width: `${(cat.value / stats.totalIngresos) * 100}%`,
-                          backgroundColor: COLORS[i]
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                      <stop offset="5%" stopColor="#102846" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#102846" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorPrev" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#94a3b8" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#e2e8f0"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: "#64748b" }}
+                    dy={10}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: "#64748b" }}
+                    tickFormatter={(value) =>
+                      `$${(value / 1000000).toFixed(1)}M`
+                    }
+                    width={80}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "none",
+                      boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+                    }}
+                  />
+                  <Legend
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey={currentYear}
+                    name={`Ingresos ${currentYear}`}
+                    stroke="#102846"
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#colorCurrent)"
+                    activeDot={{
+                      r: 6,
+                      fill: "#102846",
+                      stroke: "#fff",
+                      strokeWidth: 2,
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey={currentYear - 1}
+                    name={`Ingresos ${currentYear - 1}`}
+                    stroke="#94a3b8"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorPrev)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </CardBody>
         </Card>
@@ -165,34 +390,74 @@ export default function Dashboard() {
         <Card>
           <CardHeader>Estado de Cartera</CardHeader>
           <CardBody>
-            <div className="h-48">
+            <div className="relative h-48 flex items-center justify-center mt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={carteraData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={50}
-                    outerRadius={70}
-                    paddingAngle={2}
+                    innerRadius={65}
+                    outerRadius={85}
+                    paddingAngle={4}
                     dataKey="value"
+                    stroke="none"
+                    cornerRadius={6}
                   >
                     {carteraData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={CARTERA_COLORS[index % CARTERA_COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CARTERA_COLORS[index % CARTERA_COLORS.length]}
+                      />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "none",
+                      boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+                      padding: "8px 12px",
+                    }}
+                    itemStyle={{
+                      color: "#102846",
+                      fontWeight: "900",
+                      fontSize: "14px",
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
+              {/* Valor Total en el Centro */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">
+                  Total
+                </span>
+                <span className="text-lg font-black text-primary">
+                  {formatCurrency(stats.totalIngresos)}
+                </span>
+              </div>
             </div>
-            <div className="mt-4 space-y-2">
+            <div className="mt-6 grid grid-cols-3 gap-2">
               {carteraData.map((item, i) => (
-                <div key={i} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded" style={{ backgroundColor: CARTERA_COLORS[i] }} />
-                    <span>{item.name}</span>
+                <div
+                  key={i}
+                  className="flex flex-col items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden"
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shadow-sm shrink-0"
+                      style={{ backgroundColor: CARTERA_COLORS[i] }}
+                    />
+                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider truncate">
+                      {item.name}
+                    </span>
                   </div>
-                  <span className="font-semibold">{formatCurrency(item.value)}</span>
+                  <span
+                    className="text-[11px] font-black text-gray-800 truncate w-full text-center"
+                    title={formatCurrency(item.value)}
+                  >
+                    {formatCurrency(item.value)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -215,18 +480,24 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {data.sales.slice(0, 5).map(sale => (
+              {data.sales.slice(0, 5).map((sale) => (
                 <tr key={sale.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">{sale.clientName}</td>
                   <td className="px-4 py-3">{sale.vendorName}</td>
                   <td className="px-4 py-3">{sale.date}</td>
-                  <td className="px-4 py-3 font-semibold">{formatCurrency(sale.total)}</td>
+                  <td className="px-4 py-3 font-semibold">
+                    {formatCurrency(sale.total)}
+                  </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      sale.status === 'pagado' ? 'bg-green-100 text-green-800' :
-                      sale.status === 'abonado' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        sale.status === "pagado"
+                          ? "bg-green-100 text-green-800"
+                          : sale.status === "abonado"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
                       {sale.status}
                     </span>
                   </td>

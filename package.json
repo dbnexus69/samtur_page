@@ -20,6 +20,7 @@
   "dependencies": {
     "lucide-react": "^1.9.0",
     "react-router-dom": "^7.14.2",
+    "react-tailwindcss-datepicker": "^2.0.0",
     "recharts": "^3.8.1"
   }
 }

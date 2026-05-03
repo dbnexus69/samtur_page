@@ -1,119 +1,130 @@
-import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Card, CardHeader, CardBody } from '../components/ui/Card';
-import { useData } from '../context/DataContext';
-import { formatCurrency } from '../utils/formatters';
-import { TrendingUp, Users, User, Award } from 'lucide-react';
+import { useMemo } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  ComposedChart,
+  Line,
+  CartesianGrid,
+  Legend,
+  PieChart,
+  Pie,
+} from "recharts";
+import { Card, CardHeader, CardBody } from "../components/ui/Card";
+import { useData } from "../context/DataContext";
+import { formatCurrency } from "../utils/formatters";
+import { Users, Award, PieChart as PieChartIcon } from "lucide-react";
 
-interface RankItem {
-  name: string;
-  value: number;
-  count: number;
-  percentage: number;
-}
-
-const PRIMARY_COLOR = '#102846';
-const ACCENT_COLORS = ['#102846', '#1e3a5f', '#2d4a6f', '#3d5a7f', '#4d6a8f'];
-
-function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
+function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
-  
+
   return (
-    <div className="bg-white border border-gray-border rounded-lg shadow-lg p-3">
-      <p className="text-sm font-semibold text-primary mb-1">{label}</p>
-      <p className="text-xs text-gray-600">
-        Ventas: <span className="font-semibold">{formatCurrency(payload[0].value)}</span>
-      </p>
+    <div className="bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl shadow-xl p-4 min-w-[160px]">
+      {label && (
+        <p className="text-sm font-black text-gray-800 mb-3 border-b border-gray-100 pb-2">
+          {label}
+        </p>
+      )}
+      <div className="space-y-2">
+        {payload.map((entry: any, index: number) => {
+          const nameStr = (entry.name || "").toLowerCase();
+          const isCount =
+            nameStr.includes("cantidad") || nameStr.includes("vendidos");
+
+          let displayValue = entry.value;
+          if (!isCount) {
+            displayValue = formatCurrency(entry.value);
+          }
+
+          return (
+            <div
+              key={index}
+              className="flex items-center justify-between gap-6 text-xs font-medium"
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-2.5 h-2.5 rounded-full shadow-sm"
+                  style={{ backgroundColor: entry.color || entry.fill }}
+                />
+                <span className="text-gray-600">{entry.name || "Valor"}:</span>
+              </div>
+              <span className="font-bold text-gray-900">{displayValue}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 function TopClients() {
   const { data } = useData();
-  
+
   const topClients = useMemo(() => {
-    const clientMap = new Map<number, { name: string; total: number; count: number }>();
-    
-    data.sales.forEach(sale => {
+    const clientMap = new Map<number, { name: string; total: number }>();
+
+    data.sales.forEach((sale) => {
       const existing = clientMap.get(sale.clientId);
       if (existing) {
         existing.total += sale.total;
-        existing.count += 1;
       } else {
         clientMap.set(sale.clientId, {
           name: sale.clientName,
           total: sale.total,
-          count: 1
         });
       }
     });
-    
-    const sorted = Array.from(clientMap.values())
+
+    return Array.from(clientMap.values())
       .sort((a, b) => b.total - a.total)
       .slice(0, 8);
-    
-    const maxValue = sorted[0]?.total || 1;
-    
-    return sorted.map((item, idx) => ({
-      name: item.name,
-      value: item.total,
-      count: item.count,
-      percentage: Math.round((item.total / maxValue) * 100)
-    }));
   }, [data.sales]);
 
   if (topClients.length === 0) {
     return (
-      <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+      <div className="h-72 flex items-center justify-center text-gray-400 text-sm">
         No hay datos de clientes
       </div>
     );
   }
 
   return (
-    <div className="h-72">
+    <div className="h-72 w-full mt-2">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={topClients}
           layout="vertical"
-          margin={{ top: 10, right: 30, left: 10, bottom: 10 }}
+          margin={{ top: 0, right: 30, left: 10, bottom: 0 }}
         >
           <defs>
             <linearGradient id="gradientClient" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#102846" stopOpacity={0.8}/>
-              <stop offset="100%" stopColor="#102846" stopOpacity={0.3}/>
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8} />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.8} />
             </linearGradient>
           </defs>
-          <XAxis 
-            type="number"
-            tick={{ fontSize: 10, fill: '#6b7280' }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(val) => `$${(val / 1000000).toFixed(0)}M`}
-          />
-          <YAxis 
+          <XAxis type="number" hide />
+          <YAxis
             type="category"
             dataKey="name"
-            tick={{ fontSize: 11, fill: '#102846' }}
+            tick={{ fontSize: 11, fill: "#475569", fontWeight: 600 }}
             axisLine={false}
             tickLine={false}
-            width={100}
+            width={120}
           />
-          <Tooltip 
-            content={<CustomTooltip />}
-            formatter={(val: number) => formatCurrency(val)}
-          />
-          <Bar 
-            dataKey="value" 
-            radius={[0, 4, 4, 0]}
-            maxBarSize={20}
+          <Tooltip cursor={{ fill: "#f8fafc" }} content={<CustomTooltip />} />
+          <Bar
+            dataKey="total"
+            name="Total Invertido"
+            radius={[0, 6, 6, 0] as any}
+            barSize={22}
+            background={{ fill: "#f1f5f9", radius: [0, 6, 6, 0] as any }}
           >
             {topClients.map((_, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={index === 0 ? PRIMARY_COLOR : `url(#gradientClient)`}
-                fillOpacity={index === 0 ? 1 : 0.6 - (index * 0.05)}
-              />
+              <Cell key={`cell-${index}`} fill="url(#gradientClient)" />
             ))}
           </Bar>
         </BarChart>
@@ -124,11 +135,14 @@ function TopClients() {
 
 function TopVendors() {
   const { data } = useData();
-  
+
   const topVendors = useMemo(() => {
-    const vendorMap = new Map<number, { name: string; total: number; count: number }>();
-    
-    data.sales.forEach(sale => {
+    const vendorMap = new Map<
+      number,
+      { name: string; total: number; count: number }
+    >();
+
+    data.sales.forEach((sale) => {
       const existing = vendorMap.get(sale.vendorId);
       if (existing) {
         existing.total += sale.total;
@@ -137,80 +151,158 @@ function TopVendors() {
         vendorMap.set(sale.vendorId, {
           name: sale.vendorName,
           total: sale.total,
-          count: 1
+          count: 1,
         });
       }
     });
-    
-    const sorted = Array.from(vendorMap.values())
+
+    return Array.from(vendorMap.values())
       .sort((a, b) => b.total - a.total)
       .slice(0, 6);
-    
-    const maxValue = sorted[0]?.total || 1;
-    
-    return sorted.map((item, idx) => ({
-      name: item.name,
-      value: item.total,
-      count: item.count,
-      percentage: Math.round((item.total / maxValue) * 100)
-    }));
   }, [data.sales]);
 
   if (topVendors.length === 0) {
     return (
-      <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+      <div className="h-72 flex items-center justify-center text-gray-400 text-sm">
         No hay datos de asesores
       </div>
     );
   }
 
   return (
-    <div className="h-72">
+    <div className="h-80 w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart
+        <ComposedChart
           data={topVendors}
-          layout="vertical"
-          margin={{ top: 10, right: 30, left: 10, bottom: 10 }}
+          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
         >
           <defs>
             <linearGradient id="gradientVendor" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#f2892f" stopOpacity={0.9}/>
-              <stop offset="100%" stopColor="#f2892f" stopOpacity={0.3}/>
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.8} />
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.2} />
             </linearGradient>
           </defs>
-          <XAxis 
-            type="number"
-            tick={{ fontSize: 10, fill: '#6b7280' }}
+          <CartesianGrid
+            strokeDasharray="3 3"
+            vertical={false}
+            stroke="#f1f5f9"
+          />
+          <XAxis
+            dataKey="name"
             axisLine={false}
             tickLine={false}
+            tick={{ fontSize: 11, fill: "#475569", fontWeight: 600 }}
+            dy={10}
+          />
+          <YAxis
+            yAxisId="left"
+            orientation="left"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 11, fill: "#94a3b8" }}
             tickFormatter={(val) => `$${(val / 1000000).toFixed(0)}M`}
           />
-          <YAxis 
-            type="category"
-            dataKey="name"
-            tick={{ fontSize: 11, fill: '#102846' }}
+          <YAxis
+            yAxisId="right"
+            orientation="right"
             axisLine={false}
             tickLine={false}
-            width={100}
+            tick={{ fontSize: 11, fill: "#94a3b8" }}
           />
-          <Tooltip 
-            content={<CustomTooltip />}
-            formatter={(val: number) => formatCurrency(val)}
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f8fafc" }} />
+          <Legend
+            wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
+            iconType="circle"
           />
-          <Bar 
-            dataKey="value" 
-            radius={[0, 4, 4, 0]}
-            maxBarSize={20}
+          <Bar
+            yAxisId="left"
+            dataKey="total"
+            name="Ingresos Generados"
+            fill="url(#gradientVendor)"
+            radius={[6, 6, 0, 0] as any}
+            maxBarSize={45}
+          />
+          <Line
+            yAxisId="right"
+            type="monotone"
+            dataKey="count"
+            name="Ventas (Cantidad)"
+            stroke="#10b981"
+            strokeWidth={3}
+            dot={{ r: 4, strokeWidth: 2, fill: "#fff" }}
+            activeDot={{ r: 6 }}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function CategoryDistribution() {
+  const { data } = useData();
+
+  const catData = useMemo(() => {
+    const categories = {
+      vuelos: 0,
+      hoteles: 0,
+      seguros: 0,
+      planes: 0,
+      otros: 0,
+    };
+
+    data.sales.forEach((s) => {
+      const c = (s.category || "otros") as keyof typeof categories;
+      if (categories[c] !== undefined) {
+        categories[c] += s.total;
+      } else {
+        categories.otros += s.total;
+      }
+    });
+
+    return [
+      { name: "Tiquetes / Vuelos", value: categories.vuelos },
+      { name: "Hoteles", value: categories.hoteles },
+      { name: "Seguros", value: categories.seguros },
+      { name: "Paquetes", value: categories.planes },
+      { name: "Otros", value: categories.otros },
+    ].filter((d) => d.value > 0);
+  }, [data.sales]);
+
+  const COLORS = ["#3b82f6", "#0ea5e9", "#10b981", "#8b5cf6", "#f43f5e"];
+
+  if (catData.length === 0) {
+    return (
+      <div className="h-72 flex items-center justify-center text-gray-400 text-sm">
+        No hay ventas registradas
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-72 w-full mt-2">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={catData}
+            cx="50%"
+            cy="50%"
+            innerRadius={75}
+            outerRadius={95}
+            paddingAngle={4}
+            dataKey="value"
+            stroke="none"
+            cornerRadius={6}
           >
-            {topVendors.map((_, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={index === 0 ? '#f2892f' : `url(#gradientVendor)`}
-                fillOpacity={index === 0 ? 1 : 0.6 - (index * 0.05)}
+            {catData.map((_, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
               />
             ))}
-          </Bar>
-        </BarChart>
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+          <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
+        </PieChart>
       </ResponsiveContainer>
     </div>
   );
@@ -218,13 +310,25 @@ function TopVendors() {
 
 export default function StatsView() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
+      <Card className="w-full shadow-lg border-gray-100">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Award className="w-5 h-5 text-amber-500" />
+            Rendimiento de Asesores (Ingresos vs Volumen)
+          </div>
+        </CardHeader>
+        <CardBody>
+          <TopVendors />
+        </CardBody>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="shadow-md border-gray-100">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              Top Clientes
+              <Users className="w-5 h-5 text-blue-500" />
+              Top Clientes (Inversión)
             </div>
           </CardHeader>
           <CardBody>
@@ -232,15 +336,15 @@ export default function StatsView() {
           </CardBody>
         </Card>
 
-        <Card>
+        <Card className="shadow-md border-gray-100">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-accent" />
-              Top Asesores
+              <PieChartIcon className="w-5 h-5 text-emerald-500" />
+              Distribución de Ventas por Categoría
             </div>
           </CardHeader>
           <CardBody>
-            <TopVendors />
+            <CategoryDistribution />
           </CardBody>
         </Card>
       </div>
