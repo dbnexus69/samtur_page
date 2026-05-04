@@ -74,6 +74,11 @@ export interface Sale {
   isCredit?: boolean;
   creditDueDate?: string;
   creditPaidAmount?: number;
+  commissionAgent?: string;
+  commissionAmount?: number;
+  commissionPaymentMethod?: string;
+  ta?: number;
+  supplierCost?: number;
 }
 
 export interface Flight {
