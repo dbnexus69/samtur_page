@@ -1,512 +1,67 @@
-import { useMemo, useState } from "react";
-import { Card, CardHeader, CardBody } from "../components/ui/Card";
+import { useState } from "react";
 import { useData } from "../context/DataContext";
+import { useDashboard } from "../hooks/useDashboard";
 import { formatCurrency, getCurrentMonth } from "../utils/formatters";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Legend,
-} from "recharts";
-import {
-  Building,
-  ShieldCheck,
-  Briefcase,
-  Plane,
-  Users,
-  DollarSign,
-  CreditCard,
-  Map,
-} from "lucide-react";
 import Datepicker from "react-tailwindcss-datepicker";
+import {
+  Card,
+  CardHeader,
+} from "../components/ui/Card";
+import {
+  DashboardHeader,
+  DashboardKPIs,
+  DashboardCharts,
+  RecentSalesTable,
+} from "../components/dashboard";
 
 export default function Dashboard() {
   const { data } = useData();
   const { start, end } = getCurrentMonth();
-  const [dateRange, setDateRange] = useState<any>({
+  const [dateRange, setDateRange] = useState({
     startDate: new Date(start),
     endDate: new Date(end),
   });
 
-  const stats = useMemo(() => {
-    const totalVentas = data.sales.reduce((sum, s) => sum + s.total, 0);
-    const monthVentas = data.sales.filter((s) => {
-      if (!dateRange.startDate || !dateRange.endDate) return true;
-      const fecha = new Date(s.date);
-      const startD = new Date(dateRange.startDate);
-      const endD = new Date(dateRange.endDate);
-      return fecha >= startD && fecha <= endD;
-    });
-    const monthIngresos = monthVentas.reduce((sum, s) => sum + s.total, 0);
+  const { stats, yearlyTrendData, carteraData, currentYear } = useDashboard(dateRange);
 
-    const flightsIda = data.flights.filter((f) => f.type === "ida");
-    const nationalFlights = flightsIda.filter(
-      (f) =>
-        f.route.includes("BOG") ||
-        f.route.includes("MDE") ||
-        f.route.includes("CTG"),
-    ).length;
-    const internationalFlights = flightsIda.length - nationalFlights;
-
-    const activeClients = data.clients.filter(
-      (c) => c.status === "active",
-    ).length;
-
-    const pendiente = data.sales.filter((s) => s.status === "pendiente");
-    const PendienteTotal = pendiente.reduce((sum, s) => sum + s.total, 0);
-    const abonado = data.sales.filter((s) => s.status === "abonado");
-    const abonadoTotal = abonado.reduce((sum, s) => sum + s.total, 0);
-    const pagado = data.sales.filter((s) => s.status === "pagado");
-    const pagadoTotal = pagado.reduce((sum, s) => sum + s.total, 0);
-    const hotelesVendidos = data.sales.filter(
-      (sale) => sale.category === "hoteles",
-    ).length;
-    const hotelesIngresos = data.sales
-      .filter((s) => s.category === "hoteles")
-      .reduce((acc, s) => acc + s.total, 0);
-    const segurosVendidos = data.sales.filter(
-      (sale) => sale.category === "seguros",
-    ).length;
-    const segurosIngresos = data.sales
-      .filter((s) => s.category === "seguros")
-      .reduce((acc, s) => acc + s.total, 0);
-    const planesVendidos = data.sales.filter(
-      (sale) => sale.category === "planes",
-    ).length;
-    const planesIngresos = data.sales
-      .filter((s) => s.category === "planes")
-      .reduce((acc, s) => acc + s.total, 0);
-    const vuelosIngresos = data.sales
-      .filter((s) => s.category === "vuelos")
-      .reduce((acc, s) => acc + s.total, 0);
-    const otrosIngresos = data.sales
-      .filter((s) => s.category === "otros" || !s.category)
-      .reduce((acc, s) => acc + s.total, 0);
-
-    return {
-      totalFlights: flightsIda.length,
-      nationalFlights,
-      internationalFlights,
-      activeClients,
-      totalClients: data.clients.length,
-      totalIngresos: totalVentas,
-      monthIngresos,
-      totalPendiente: PendienteTotal,
-      PendienteCount: pendiente.length,
-      supplierCount: data.config.suppliers.length,
-      totalProveedores: Math.round(totalVentas * 0.75),
-      Pendiente: PendienteTotal,
-      abonado: abonadoTotal,
-      pagado: pagadoTotal,
-      hotelesVendidos,
-      hotelesIngresos,
-      segurosVendidos,
-      segurosIngresos,
-      planesVendidos,
-      planesIngresos,
-      vuelosIngresos,
-      otrosIngresos,
-    };
-  }, [data, dateRange]);
-
-  const currentYear = new Date().getFullYear();
-  const yearlyTrendData = useMemo(() => {
-    const MONTH_NAMES = [
-      "Ene",
-      "Feb",
-      "Mar",
-      "Abr",
-      "May",
-      "Jun",
-      "Jul",
-      "Ago",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dic",
-    ];
-    return MONTH_NAMES.map((monthName, index) => {
-      const monthNum = index + 1;
-      const current = data.salesHistory?.find(
-        (s) => s.year === currentYear && s.month === monthNum,
-      );
-      const prev = data.salesHistory?.find(
-        (s) => s.year === currentYear - 1 && s.month === monthNum,
-      );
-
-      return {
-        name: monthName,
-        [currentYear]: current ? current.total : 0,
-        [currentYear - 1]: prev ? prev.total : 0,
-      };
-    });
-  }, [data.salesHistory, currentYear]);
-
-  const carteraData = [
-    { name: "Pagado", value: stats.pagado },
-    { name: "Abonado", value: stats.abonado },
-    { name: "Pendiente", value: stats.Pendiente },
-  ];
-
-  const COLORS = ["#102846", "#f2892f", "#06b6d4", "#8b5cf6", "#22c55e"];
-  const CARTERA_COLORS = ["#10b981", "#3b82f6", "#f59e0b"];
+  const handleDateChange = (newValue: any) => {
+    if (newValue) {
+      setDateRange(newValue);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header de Sección */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
-        <div>
-          <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
-            Panel de Control
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Resumen general de operaciones, ingresos y estado de cartera.
-          </p>
-        </div>
-        <div className="flex items-center bg-white p-1 rounded-xl shadow-sm border border-gray-200 relative z-20">
-          <div className="w-72">
-            <Datepicker
-              value={dateRange as any}
-              onChange={(newValue: any) => setDateRange(newValue)}
-              showShortcuts={true}
-              primaryColor={"blue"}
-              displayFormat={"DD/MMM/YYYY"}
-              placeholder={"Selecciona un periodo"}
-              separator={" - "}
-              inputClassName="w-full text-xs font-bold text-gray-600 bg-gray-50 border-none rounded-lg py-2.5 px-4 focus:ring-2 focus:ring-blue-100 cursor-pointer transition-all"
-            />
-          </div>
+      <DashboardHeader
+        title="Panel de Control"
+        subtitle="Resumen general de operaciones, ingresos y estado de cartera."
+      />
+
+      <div className="flex items-center bg-white p-1 rounded-xl shadow-sm border border-gray-200 relative z-20">
+        <div className="w-72">
+          <Datepicker
+            value={dateRange}
+            onChange={handleDateChange}
+            showShortcuts={true}
+            primaryColor={"blue"}
+            displayFormat={"DD/MMM/YYYY"}
+            placeholder={"Selecciona un periodo"}
+            separator={" - "}
+            inputClassName="w-full text-xs font-bold text-gray-600 bg-gray-50 border-none rounded-lg py-2.5 px-4 focus:ring-2 focus:ring-blue-100 cursor-pointer transition-all"
+          />
         </div>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          {
-            label: "OPERACIONES",
-            value: stats.totalFlights,
-            subtitle: "Tiquetes Emitidos",
-            detail: `${stats.nationalFlights} Nacs | ${stats.internationalFlights} Ints`,
-            icon: <Plane size={22} />,
-            color: "text-blue-600",
-            bg: "bg-blue-100",
-          },
-          {
-            label: "CLIENTES",
-            value: stats.totalClients,
-            subtitle: "Total Registrados",
-            detail: `${stats.activeClients} Activos`,
-            icon: <Users size={22} />,
-            color: "text-indigo-600",
-            bg: "bg-indigo-100",
-          },
-          {
-            label: "INGRESOS BRUTOS",
-            value: formatCurrency(stats.totalIngresos),
-            subtitle: "Ventas Totales",
-            detail: `+${formatCurrency(stats.monthIngresos)} en el periodo`,
-            icon: <DollarSign size={22} />,
-            color: "text-emerald-600",
-            bg: "bg-emerald-100",
-          },
-          {
-            label: "PENDIENTES",
-            value: formatCurrency(stats.totalPendiente),
-            subtitle: "Cuentas por Cobrar",
-            detail: `${stats.PendienteCount} transacciones`,
-            icon: <CreditCard size={22} />,
-            color: "text-orange-600",
-            bg: "bg-orange-100",
-          },
-          {
-            label: "PROVEEDORES",
-            value: formatCurrency(stats.totalProveedores),
-            subtitle: "Costos Operativos",
-            detail: `${stats.supplierCount} activos`,
-            icon: <Briefcase size={22} />,
-            color: "text-rose-600",
-            bg: "bg-rose-100",
-          },
-          {
-            label: "HOTELES",
-            value: stats.hotelesVendidos,
-            subtitle: "Reservas Generadas",
-            detail: `Ingresos: ${formatCurrency(stats.hotelesIngresos)}`,
-            icon: <Building size={22} />,
-            color: "text-cyan-600",
-            bg: "bg-cyan-100",
-          },
-          {
-            label: "SEGUROS",
-            value: stats.segurosVendidos,
-            subtitle: "Pólizas Emitidas",
-            detail: `Ingresos: ${formatCurrency(stats.segurosIngresos)}`,
-            icon: <ShieldCheck size={22} />,
-            color: "text-violet-600",
-            bg: "bg-violet-100",
-          },
-          {
-            label: "PLANES",
-            value: stats.planesVendidos,
-            subtitle: "Paquetes Turísticos",
-            detail: `Ingresos: ${formatCurrency(stats.planesIngresos)}`,
-            icon: <Map size={22} />,
-            color: "text-fuchsia-600",
-            bg: "bg-fuchsia-100",
-          },
-        ].map((kpi, i) => (
-          <Card
-            key={i}
-            className="hover:shadow-lg transition-all duration-300 border border-gray-200 shadow-md bg-white rounded-xl"
-          >
-            <CardBody className="p-5 flex flex-col justify-between h-full">
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    {kpi.label}
-                  </p>
-                  <div className={`p-2.5 rounded-xl ${kpi.bg} ${kpi.color}`}>
-                    {kpi.icon}
-                  </div>
-                </div>
-                <h3 className="text-2xl font-black text-gray-800 mb-1">
-                  {kpi.value}
-                </h3>
-              </div>
-              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-                <span className="text-xs text-gray-500 font-medium truncate">
-                  {kpi.subtitle}
-                </span>
-                {kpi.detail && (
-                  <span className="text-[10px] font-bold text-gray-500 bg-gray-50/80 px-2 py-1 rounded-md whitespace-nowrap">
-                    {kpi.detail}
-                  </span>
-                )}
-              </div>
-            </CardBody>
-          </Card>
-        ))}
-      </div>
+      <DashboardKPIs stats={stats} />
 
-      {/* Charts */}
-      <div className="grid grid-cols-3 gap-6">
-        <Card className="col-span-2">
-          <CardHeader>
-            Comparativa de Ingresos ({currentYear - 1} vs {currentYear})
-          </CardHeader>
-          <CardBody>
-            <div className="h-64 w-full mt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={yearlyTrendData}
-                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="colorCurrent"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#102846" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#102846" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorPrev" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#94a3b8" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="#e2e8f0"
-                  />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: "#64748b" }}
-                    dy={10}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: "#64748b" }}
-                    tickFormatter={(value) =>
-                      `$${(value / 1000000).toFixed(1)}M`
-                    }
-                    width={80}
-                  />
-                  <Tooltip
-                    formatter={(value: number) => formatCurrency(value)}
-                    contentStyle={{
-                      borderRadius: "12px",
-                      border: "none",
-                      boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
-                    }}
-                  />
-                  <Legend
-                    iconType="circle"
-                    wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey={currentYear}
-                    name={`Ingresos ${currentYear}`}
-                    stroke="#102846"
-                    strokeWidth={3}
-                    fillOpacity={1}
-                    fill="url(#colorCurrent)"
-                    activeDot={{
-                      r: 6,
-                      fill: "#102846",
-                      stroke: "#fff",
-                      strokeWidth: 2,
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey={currentYear - 1}
-                    name={`Ingresos ${currentYear - 1}`}
-                    stroke="#94a3b8"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorPrev)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardBody>
-        </Card>
+      <DashboardCharts
+        yearlyTrendData={yearlyTrendData}
+        carteraData={carteraData}
+        stats={stats}
+        currentYear={currentYear}
+      />
 
-        <Card>
-          <CardHeader>Estado de Cartera</CardHeader>
-          <CardBody>
-            <div className="relative h-48 flex items-center justify-center mt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={carteraData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={65}
-                    outerRadius={85}
-                    paddingAngle={4}
-                    dataKey="value"
-                    stroke="none"
-                    cornerRadius={6}
-                  >
-                    {carteraData.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={CARTERA_COLORS[index % CARTERA_COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number) => formatCurrency(value)}
-                    contentStyle={{
-                      borderRadius: "12px",
-                      border: "none",
-                      boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
-                      padding: "8px 12px",
-                    }}
-                    itemStyle={{
-                      color: "#102846",
-                      fontWeight: "900",
-                      fontSize: "14px",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              {/* Valor Total en el Centro */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">
-                  Total
-                </span>
-                <span className="text-lg font-black text-primary">
-                  {formatCurrency(stats.totalIngresos)}
-                </span>
-              </div>
-            </div>
-            <div className="mt-6 grid grid-cols-3 gap-2">
-              {carteraData.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col items-center justify-center p-2 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden"
-                >
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shadow-sm shrink-0"
-                      style={{ backgroundColor: CARTERA_COLORS[i] }}
-                    />
-                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider truncate">
-                      {item.name}
-                    </span>
-                  </div>
-                  <span
-                    className="text-[11px] font-black text-gray-800 truncate w-full text-center"
-                    title={formatCurrency(item.value)}
-                  >
-                    {formatCurrency(item.value)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-
-      {/* Recent Sales */}
-      <Card>
-        <CardHeader>Ultimas Ventas</CardHeader>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase">
-                <th className="px-4 py-3">Cliente</th>
-                <th className="px-4 py-3">Vendedor</th>
-                <th className="px-4 py-3">Fecha</th>
-                <th className="px-4 py-3">Valor</th>
-                <th className="px-4 py-3">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {data.sales.slice(0, 5).map((sale) => (
-                <tr key={sale.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">{sale.clientName}</td>
-                  <td className="px-4 py-3">{sale.vendorName}</td>
-                  <td className="px-4 py-3">{sale.date}</td>
-                  <td className="px-4 py-3 font-semibold">
-                    {formatCurrency(sale.total)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        sale.status === "pagado"
-                          ? "bg-green-100 text-green-800"
-                          : sale.status === "abonado"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {sale.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      <RecentSalesTable sales={data.sales} />
     </div>
   );
 }

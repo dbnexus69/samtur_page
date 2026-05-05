@@ -1,4 +1,14 @@
-import { AppData, DEFAULT_VENDOR_PERMISSIONS, MonthlySale } from "../types";
+import { AppData, MonthlySale } from "../types";
+import {
+  CARDS,
+  PAYMENT_METHODS,
+  DOCUMENT_TYPES,
+  AIRLINES,
+  SUPPLIERS,
+  ROUTES,
+  BAGGAGE,
+  DEFAULT_VENDOR_PERMISSIONS,
+} from "../config";
 
 const SEASONALITY: Record<number, number> = {
   1: 2.2, // Enero - inicio año, peak
@@ -575,71 +585,13 @@ export const mockData: AppData = {
     },
   ],
   config: {
-    cards: [
-      { id: 1, bank: "Banco de Colombia", type: "Credito" },
-      { id: 2, bank: "Banco de Bogota", type: "Debito" },
-      { id: 3, bank: "Bancolombia", type: "Credito" },
-      { id: 4, bank: "Davivienda", type: "Debito" },
-    ],
-    paymentMethods: [
-      { id: 1, name: "Efectivo" },
-      { id: 2, name: "Transferencia" },
-      { id: 3, name: "Tarjeta Debito" },
-      { id: 4, name: "Tarjeta Credito" },
-      { id: 5, name: "PSE" },
-    ],
-    documentTypes: [
-      { id: 1, name: "CC" },
-      { id: 2, name: "Pasaporte" },
-      { id: 3, name: "CE" },
-      { id: 4, name: "NIT" },
-    ],
-    airlines: [
-      { id: 1, name: "Avianca", code: "AV" },
-      { id: 2, name: "LATAM", code: "LA" },
-      { id: 3, name: "Copa Airlines", code: "CM" },
-      { id: 4, name: "American Airlines", code: "AA" },
-      { id: 5, name: "Iberia", code: "IB" },
-      { id: 6, name: "United Airlines", code: "UA" },
-    ],
-    suppliers: [
-      {
-        id: 1,
-        name: "Hotel Dann Carlton",
-        type: "Hotel",
-        contact: "reservas@danncarlton.com",
-      },
-      {
-        id: 2,
-        name: "Decameron",
-        type: "Hotel",
-        contact: "info@decameron.com",
-      },
-      {
-        id: 3,
-        name: "Viajes Exito",
-        type: "Operador",
-        contact: "operaciones@viajesexito.com",
-      },
-      {
-        id: 4,
-        name: "Alsa Viajes",
-        type: "Operador",
-        contact: "ventas@alsaviajes.com",
-      },
-    ],
-    routes: [
-      { id: 1, origin: "Bogota", destination: "Medellin", duration: "1h 15m" },
-      { id: 2, origin: "Bogota", destination: "Cartagena", duration: "1h 30m" },
-      { id: 3, origin: "Bogota", destination: "Cali", duration: "1h 05m" },
-      { id: 4, origin: "Bogota", destination: "Miami", duration: "5h 30m" },
-      { id: 5, origin: "Bogota", destination: "Madrid", duration: "10h 00m" },
-    ],
-    baggage: [
-      { id: 1, name: "Equipaje de Mano", maxWeight: "8 kg" },
-      { id: 2, name: "Equipaje Documentado", maxWeight: "23 kg" },
-      { id: 3, name: "Equipaje Extra", maxWeight: "32 kg" },
-    ],
+    cards: CARDS,
+    paymentMethods: PAYMENT_METHODS,
+    documentTypes: DOCUMENT_TYPES,
+    airlines: AIRLINES,
+    suppliers: SUPPLIERS,
+    routes: ROUTES,
+    baggage: BAGGAGE,
     rolePermissions: {
       vendor: DEFAULT_VENDOR_PERMISSIONS,
     },

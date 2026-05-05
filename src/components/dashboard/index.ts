@@ -1,6 +1,4 @@
-export { KPICard } from './KPICard';
-export type { KPIColor } from './KPICard';
-export { TrendChart } from './TrendChart';
-export { DistributionChart } from './DistributionChart';
-export { CarteraChart } from './CarteraChart';
-export { RecentBookings } from './RecentBookings';
+export { DashboardCharts } from "./Charts";
+export { DashboardKPIs } from "./KPIs";
+export { RecentSalesTable } from "./RecentSales";
+export { DashboardHeader } from "./Header";
