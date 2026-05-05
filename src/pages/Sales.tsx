@@ -9,8 +9,6 @@ import {
   Pencil,
   FileDown,
   CheckCircle2,
-  UserCheck,
-  DollarSign,
   Trash2,
 } from "lucide-react";
 import { Card, CardHeader, CardBody } from "../components/ui/Card";
@@ -24,12 +22,14 @@ import { useAuth } from "../context/AuthContext";
 import { usePermissions } from "../context/PermissionsContext";
 import { formatCurrency, formatDate } from "../utils/formatters";
 import { Sale } from "../types";
+import NewSaleWizard from "../components/sales/NewSaleWizard";
 
 export default function Sales() {
   const { data, addSale, updateSale } = useData();
   const { user, isAdmin } = useAuth();
   const { canCreate, canEdit } = usePermissions();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [editingSale, setEditingSale] = useState<Sale | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
@@ -81,6 +81,10 @@ export default function Sales() {
     if (!canEdit("sales")) return false;
     if (isAdmin) return true;
     return sale.vendorId === user?.id;
+  };
+
+  const handleOpenNewSale = () => {
+    setIsWizardOpen(true);
   };
 
   const handleOpenModal = (sale?: Sale) => {
@@ -263,7 +267,7 @@ export default function Sales() {
         <CardHeader
           actions={
             canCreate("sales") ? (
-              <Button onClick={() => handleOpenModal()}>
+              <Button onClick={handleOpenNewSale}>
                 <Plus size={18} />
                 Nueva Venta
               </Button>
@@ -346,6 +350,24 @@ export default function Sales() {
         </Table>
       </Card>
 
+      {/* ===== WIZARD MODAL (Nueva Venta) ===== */}
+      <Modal
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+        title="Nueva Venta"
+        size="xl"
+      >
+        <NewSaleWizard
+          onClose={() => setIsWizardOpen(false)}
+          onSuccess={(msg) => {
+            setSuccessMessage(msg);
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
+          }}
+        />
+      </Modal>
+
+      {/* ===== EDIT MODAL (Editar Venta) ===== */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -360,177 +382,7 @@ export default function Sales() {
           </>
         }
       >
-        {!editingSale ? (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="Cliente">
-                <Select
-                  value={formData.clientId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, clientId: e.target.value })
-                  }
-                  options={[
-                    { value: "", label: "Seleccionar..." },
-                    ...data.clients.map((c) => ({
-                      value: String(c.id),
-                      label: c.name,
-                    })),
-                  ]}
-                />
-              </FormField>
-              <FormField label="Valor Total">
-                <Input
-                  type="number"
-                  value={formData.total}
-                  onChange={(e) =>
-                    setFormData({ ...formData, total: e.target.value })
-                  }
-                  placeholder="0"
-                />
-              </FormField>
-              <FormField label="Comisionista">
-                <Input
-                  type="text"
-                  value={formData.commissionAgent}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      commissionAgent: e.target.value,
-                    })
-                  }
-                  placeholder="Ej: Nombre de agencia o asesor"
-                />
-              </FormField>
-              <FormField label="Valor Comisión">
-                <Input
-                  type="number"
-                  value={formData.commissionAmount}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      commissionAmount: e.target.value,
-                    })
-                  }
-                  placeholder="0"
-                />
-              </FormField>
-              <FormField label="Forma de Pago Comisión">
-                <Select
-                  value={formData.commissionPaymentMethod}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      commissionPaymentMethod: e.target.value,
-                    })
-                  }
-                  options={[
-                    { value: "", label: "No aplica / Pendiente" },
-                    ...data.config.paymentMethods.map((p) => ({
-                      value: p.name,
-                      label: p.name,
-                    })),
-                  ]}
-                />
-              </FormField>
-              <FormField label="T.A (Tarifa Administrativa)">
-                <Input
-                  type="number"
-                  value={formData.ta}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ta: e.target.value })
-                  }
-                  placeholder="0"
-                />
-              </FormField>
-              <FormField label="Proveedores">
-                <Input
-                  type="number"
-                  value={formData.supplierCost}
-                  onChange={(e) =>
-                    setFormData({ ...formData, supplierCost: e.target.value })
-                  }
-                  placeholder="0"
-                />
-              </FormField>
-              <FormField label="Forma de Pago">
-                <Select
-                  value={formData.paymentMethod}
-                  onChange={(e) =>
-                    setFormData({ ...formData, paymentMethod: e.target.value })
-                  }
-                  options={[
-                    { value: "", label: "Seleccionar..." },
-                    ...data.config.paymentMethods.map((p) => ({
-                      value: p.name,
-                      label: p.name,
-                    })),
-                  ]}
-                />
-              </FormField>
-              <FormField label="Estado">
-                <Select
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.target.value })
-                  }
-                  options={[
-                    { value: "pendiente", label: "Pendiente Crédito" },
-                    { value: "abonado", label: "Completado" },
-                    { value: "pagado", label: "Finalizado" },
-                  ]}
-                />
-              </FormField>
-            </div>
-
-            <div className="flex items-center gap-3 py-2 border-t border-gray-border mt-4">
-              <input
-                type="checkbox"
-                id="isCredit"
-                checked={formData.isCredit}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    isCredit: e.target.checked,
-                    creditDueDate: e.target.checked
-                      ? formData.creditDueDate
-                      : "",
-                  })
-                }
-                className="w-4 h-4 rounded border-gray-border text-primary focus:ring-primary"
-              />
-              <label
-                htmlFor="isCredit"
-                className="text-sm font-medium text-gray-700"
-              >
-                Venta a crédito
-              </label>
-            </div>
-
-            {formData.isCredit && (
-              <FormField label="Fecha de Vencimiento">
-                <Input
-                  type="date"
-                  value={formData.creditDueDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, creditDueDate: e.target.value })
-                  }
-                  min={new Date().toISOString().split("T")[0]}
-                />
-              </FormField>
-            )}
-
-            <FormField label="Productos / Observaciones">
-              <Textarea
-                value={formData.observations}
-                onChange={(e) =>
-                  setFormData({ ...formData, observations: e.target.value })
-                }
-                placeholder="Detalles de la venta..."
-                rows={3}
-              />
-            </FormField>
-          </>
-        ) : (
+        {editingSale ? (
           <div className="space-y-6">
             {/* Seccion Resumen Solo Lectura */}
             <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
@@ -847,7 +699,7 @@ export default function Sales() {
               })()}
             </div>
           </div>
-        )}
+        ) : null}
       </Modal>
 
       <Modal

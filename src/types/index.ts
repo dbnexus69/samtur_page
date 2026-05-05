@@ -59,6 +59,83 @@ export interface Client {
   registrationDate: string;
 }
 
+export type SaleProductId =
+  | "tiqueteria"
+  | "hoteleria"
+  | "seguros_viaje"
+  | "planes"
+  | "checkin"
+  | "documentacion_migratoria"
+  | "simcard"
+  | "renta_vehiculos"
+  | "renta_fincas"
+  | "tours"
+  | "centros_convencion"
+  | "restaurantes"
+  | "visa"
+  | "pasaporte"
+  | "servicio_mascotas";
+
+export interface SaleProductDef {
+  id: SaleProductId;
+  label: string;
+  icon: string;      // emoji for display
+  group: "main" | "other";
+}
+
+export const SALE_PRODUCTS: SaleProductDef[] = [
+  // --- Principales ---
+  { id: "tiqueteria",              label: "Tiquetería",               icon: "🎫", group: "main" },
+  { id: "hoteleria",               label: "Hotelería",                icon: "🏨", group: "main" },
+  { id: "seguros_viaje",           label: "Seguros de Viaje",         icon: "🛡️", group: "main" },
+  { id: "planes",                  label: "Planes",                   icon: "📦", group: "main" },
+  // --- Otros ---
+  { id: "checkin",                 label: "Check-in",                 icon: "✅", group: "other" },
+  { id: "documentacion_migratoria",label: "Documentación Migratoria", icon: "📄", group: "other" },
+  { id: "simcard",                 label: "SIM Card",                 icon: "📱", group: "other" },
+  { id: "renta_vehiculos",        label: "Renta de Vehículos",       icon: "🚗", group: "other" },
+  { id: "renta_fincas",           label: "Renta de Fincas",          icon: "🏡", group: "other" },
+  { id: "tours",                   label: "Tours",                    icon: "🗺️", group: "other" },
+  { id: "centros_convencion",     label: "Centros de Convención",    icon: "🏛️", group: "other" },
+  { id: "restaurantes",           label: "Restaurantes",             icon: "🍽️", group: "other" },
+  { id: "visa",                    label: "Visa",                     icon: "🛂", group: "other" },
+  { id: "pasaporte",              label: "Pasaporte",                icon: "🛃", group: "other" },
+  { id: "servicio_mascotas",      label: "Servicio de Mascotas",     icon: "🐾", group: "other" },
+];
+
+export interface FlightLeg {
+  origin: string;
+  destination: string;
+  flightNumber: string;
+  seat: string;
+  date: string;
+  time?: string;
+}
+
+export interface TicketData {
+  airline: string;
+  supplier: string;
+  reservationNumber: string;
+  flightNumber: string;
+  departureDate: string;
+  arrivalDate: string;
+  supplierCost: number;
+  ta: number;
+  supplierPaymentMethod: string;
+  baggagePlan: string;
+  ticketNumber: string;
+  seatNumber: string;
+  legs: FlightLeg[];
+  isRoundTrip: boolean;
+  returnLeg?: FlightLeg;
+  passengerInfo: {
+    name: string;
+    docType: string;
+    docNumber: string;
+    birthDate: string;
+  };
+}
+
 export interface Sale {
   id: number;
   clientId: number;
@@ -67,10 +144,12 @@ export interface Sale {
   vendorName: string;
   date: string;
   total: number;
-  status: "pagado" | "abonado" | "pendiente";
-  category?: "hoteles" | "vuelos" | "seguros" | "planes" | "otros";
+  status: "pendiente" | "abonado" | "pagado";
+  category?: string;
   paymentMethod: string;
   observations?: string;
+  products?: SaleProductId[];
+  ticketData?: TicketData[]; // Multiple tickets possible per sale
   isCredit?: boolean;
   creditDueDate?: string;
   creditPaidAmount?: number;
