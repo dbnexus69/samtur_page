@@ -1,5 +1,5 @@
-import { ChangeEvent, ReactNode } from 'react';
-import { X, AlertCircle, Search } from 'lucide-react';
+import { ReactNode } from 'react';
+import { X, AlertCircle } from 'lucide-react';
 
 interface FormFieldProps {
   label: string;
@@ -65,23 +65,5 @@ export function Textarea({ className = '', ...props }: TextareaProps) {
       className={`w-full px-3 py-2 border border-gray-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 ${className}`}
       {...props}
     />
-  );
-}
-
-interface SearchInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
-  onChange: (value: string) => void;
-}
-
-export function SearchInput({ className = '', onChange, ...props }: SearchInputProps) {
-  return (
-    <div className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-      <input
-        type="text"
-        className={`w-full pl-9 pr-4 py-2 border border-gray-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 ${className}`}
-        onChange={(e) => onChange(e.target.value)}
-        {...props}
-      />
-    </div>
   );
 }

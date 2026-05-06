@@ -17,6 +17,7 @@ import {
 import { Card, CardHeader, CardBody } from "../components/ui/Card";
 import { useData } from "../context/DataContext";
 import { formatCurrency } from "../utils/formatters";
+import { Users, Award, PieChart as PieChartIcon } from "lucide-react";
 
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
@@ -101,8 +102,8 @@ function TopClients() {
         >
           <defs>
             <linearGradient id="gradientClient" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#8b5cf6" />
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8} />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.8} />
             </linearGradient>
           </defs>
           <XAxis type="number" hide />
@@ -120,7 +121,7 @@ function TopClients() {
             name="Total Invertido"
             radius={[0, 6, 6, 0] as any}
             barSize={22}
-            background={{ fill: "#f1f5f9", radius: [0, 6, 6, 0] as any } as any}
+            background={{ fill: "#f1f5f9", radius: [0, 6, 6, 0] as any }}
           >
             {topClients.map((_, index) => (
               <Cell key={`cell-${index}`} fill="url(#gradientClient)" />
@@ -177,8 +178,8 @@ function TopVendors() {
         >
           <defs>
             <linearGradient id="gradientVendor" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#f59e0b" />
-              <stop offset="100%" stopColor="#f59e0b" />
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.8} />
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.2} />
             </linearGradient>
           </defs>
           <CartesianGrid
@@ -199,7 +200,7 @@ function TopVendors() {
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 11, fill: "#94a3b8" }}
-            tickFormatter={(val: number) => `$${(val / 1000000).toFixed(0)}M`}
+            tickFormatter={(val) => `$${(val / 1000000).toFixed(0)}M`}
           />
           <YAxis
             yAxisId="right"
@@ -350,5 +351,3 @@ export default function StatsView() {
     </div>
   );
 }
-
-import { Award, Users, PieChart as PieChartIcon } from "lucide-react";

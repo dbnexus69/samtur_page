@@ -112,36 +112,6 @@ export interface FlightLeg {
   time?: string;
 }
 
-export interface Guest {
-  name: string;
-  docType: string;
-  docNumber: string;
-}
-
-export interface HotelData {
-  hotelName: string;
-  destination: string;
-  supplier: string;
-  reservationNumber: string;
-  startDate: string;
-  endDate: string;
-  supplierCost: number;
-  ta: number;
-  supplierPaymentMethod: string;
-  guests: Guest[];
-}
-
-export interface InsuranceData {
-  contactName: string;
-  contactNumber: string;
-  address: string;
-  supplier: string;
-  supplierCost: number;
-  ta: number;
-  supplierPaymentMethod: string;
-  members: Guest[];
-}
-
 export interface TicketData {
   airline: string;
   supplier: string;
@@ -166,13 +136,6 @@ export interface TicketData {
   };
 }
 
-export interface PaymentRecord {
-  id: number;
-  date: string;
-  amount: number;
-  method: string;
-}
-
 export interface Sale {
   id: number;
   clientId: number;
@@ -186,7 +149,7 @@ export interface Sale {
   paymentMethod: string;
   observations?: string;
   products?: SaleProductId[];
-  ticketData?: TicketData[];
+  ticketData?: TicketData[]; // Multiple tickets possible per sale
   isCredit?: boolean;
   creditDueDate?: string;
   creditPaidAmount?: number;
@@ -195,7 +158,6 @@ export interface Sale {
   commissionPaymentMethod?: string;
   ta?: number;
   supplierCost?: number;
-  payments?: PaymentRecord[];
 }
 
 export interface Flight {

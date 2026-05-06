@@ -9,20 +9,9 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  closeOnOverlayClick?: boolean;
-  closeOnEscape?: boolean;
 }
 
-export function Modal({ 
-  isOpen, 
-  onClose, 
-  title, 
-  children, 
-  footer, 
-  size = 'md',
-  closeOnOverlayClick = true,
-  closeOnEscape = true,
-}: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -34,19 +23,6 @@ export function Modal({
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!closeOnEscape || !isOpen) return;
-    
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, closeOnEscape, onClose]);
-
   if (!isOpen) return null;
 
   const maxWidth = {
@@ -56,15 +32,9 @@ export function Modal({
     xl: 'max-w-4xl'
   }[size];
 
-  const handleOverlayClick = () => {
-    if (closeOnOverlayClick) {
-      onClose();
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-primary/40 backdrop-blur-sm transition-opacity duration-300" onClick={handleOverlayClick} />
+      <div className="fixed inset-0 bg-primary/40 backdrop-blur-sm transition-opacity duration-300" onClick={onClose} />
       <div className={`relative z-50 w-full ${maxWidth} bg-white rounded-xl shadow-2xl overflow-hidden animate-scale-in`}>
         {/* Header con color primary */}
         <div className="bg-primary px-6 py-4 flex items-center justify-between">
