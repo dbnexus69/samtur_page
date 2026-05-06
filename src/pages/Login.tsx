@@ -41,7 +41,7 @@ export default function Login() {
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-[20s] scale-110 animate-slow-zoom"
         style={{ 
-          backgroundImage: 'url("/airport_bg.png")',
+          backgroundImage: 'url("/business_travel_bg.png")',
         }}
       />
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-primary/90 via-primary/70 to-transparent" />
@@ -53,18 +53,13 @@ export default function Login() {
       {/* Contenedor del Login */}
       <div className="relative z-20 w-full max-w-md animate-fade-in-up">
         {/* Branding Superior */}
-        <div className="text-center mb-8 flex flex-col items-center">
-          <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 border border-white/20 shadow-xl">
-            <Plane className="text-white w-10 h-10 -rotate-45" />
-          </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">ITEA</h1>
-          <p className="text-white/60 mt-1 font-medium">SISTEMA DE GESTIÓN INTEGRAL</p>
+        <div className="text-center mb-6 flex flex-col items-center">
+          <img src="/logo_ictea.svg" className="w-64 h-auto max-h-32 object-contain drop-shadow-2xl" alt="iCTea Logo" />
         </div>
-
         {/* Tarjeta de Login Glassmorphism */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-8 border border-white/20">
+        <div className="bg-white/65 backdrop-blur-xl rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,130,138,0.15)] p-8 border border-white/40 text-[#002855]">
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-primary">Bienvenido de nuevo</h2>
+            <h2 className="text-xl font-bold text-[#002855]">Bienvenido de nuevo</h2>
             <p className="text-gray-500 text-sm">Ingresa tus credenciales para acceder al sistema.</p>
           </div>
 
@@ -77,7 +72,7 @@ export default function Login() {
                 placeholder="usuario@samtour.com"
                 disabled={isLoading}
                 autoComplete="email"
-                className="bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
+                className="transition-all focus:border-[#00828a] focus:ring-[#00828a]/20"
               />
             </FormField>
 
@@ -90,12 +85,12 @@ export default function Login() {
                   placeholder="••••••••"
                   disabled={isLoading}
                   autoComplete="current-password"
-                  className="bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
+                  className="transition-all focus:border-[#00828a] focus:ring-[#00828a]/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#00828a] transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -110,25 +105,25 @@ export default function Login() {
                   checked={rememberMe}
                   onChange={e => setRememberMe(e.target.checked)}
                   disabled={isLoading}
-                  className="w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent/30 transition-all"
+                  className="w-4 h-4 text-[#00828a] border-gray-300 rounded focus:ring-[#00828a]/30 transition-all bg-slate-50"
                 />
-                <span className="text-sm text-gray-600 group-hover:text-primary transition-colors font-medium">Recordarme</span>
+                <span className="text-sm text-gray-600 group-hover:text-[#00828a] transition-colors font-medium">Recordarme</span>
               </label>
-              <button type="button" className="text-sm text-accent font-bold hover:underline">
+              <button type="button" className="text-sm text-[#00828a] font-bold hover:underline">
                 ¿Olvidaste tu contraseña?
               </button>
             </div>
 
             {error && (
               <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm flex items-center gap-2 animate-shake">
-                <Info size={16} />
+                <Info size={16} className="text-red-500" />
                 {error}
               </div>
             )}
 
-            <Button 
+            <button 
               type="submit" 
-              className="w-full h-12 text-lg font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]" 
+              className="w-full h-12 text-lg font-bold text-white bg-gradient-to-r from-[#002855] to-[#00828a] rounded-xl shadow-lg shadow-[#00828a]/15 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2" 
               disabled={isLoading}
             >
               {isLoading ? (
@@ -142,14 +137,14 @@ export default function Login() {
                   <ChevronRight size={20} />
                 </div>
               )}
-            </Button>
+            </button>
           </form>
 
           {/* Sección de Cuentas Demo Mejorada */}
-          <div className="mt-8 pt-6 border-t border-gray-100">
+          <div className="mt-8 pt-6 border-t border-slate-100">
             <button 
               onClick={() => setShowDemo(!showDemo)}
-              className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-primary transition-colors"
+              className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-[#00828a] transition-colors"
             >
               <span>Cuentas de demostración</span>
               <div className={`transition-transform duration-300 ${showDemo ? 'rotate-180' : ''}`}>
@@ -159,19 +154,19 @@ export default function Login() {
             
             {showDemo && (
               <div className="mt-4 grid grid-cols-1 gap-2 animate-fade-in">
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between group hover:border-primary/30 transition-all cursor-pointer" onClick={() => {setEmail('admin@samtour.com'); setPassword('Admin123');}}>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group hover:border-[#00828a]/30 transition-all cursor-pointer" onClick={() => {setEmail('admin@samtour.com'); setPassword('Admin123');}}>
                   <div>
-                    <p className="text-[10px] font-bold text-primary/60 uppercase">Administrador</p>
-                    <p className="text-xs text-gray-600">admin@samtour.com</p>
+                    <p className="text-[10px] font-bold text-[#00828a] uppercase">Administrador</p>
+                    <p className="text-xs text-slate-600">admin@samtour.com</p>
                   </div>
-                  <ShieldCheck size={16} className="text-primary/20 group-hover:text-primary transition-colors" />
+                  <ShieldCheck size={16} className="text-slate-300 group-hover:text-[#00828a] transition-colors" />
                 </div>
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between group hover:border-accent/30 transition-all cursor-pointer" onClick={() => {setEmail('juan@samtour.com'); setPassword('Vendor123');}}>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group hover:border-[#00828a]/30 transition-all cursor-pointer" onClick={() => {setEmail('juan@samtour.com'); setPassword('Vendor123');}}>
                   <div>
-                    <p className="text-[10px] font-bold text-accent/60 uppercase">Vendedor</p>
-                    <p className="text-xs text-gray-600">juan@samtour.com</p>
+                    <p className="text-[10px] font-bold text-[#00828a] uppercase">Vendedor</p>
+                    <p className="text-xs text-slate-600">juan@samtour.com</p>
                   </div>
-                  <Plane size={16} className="text-accent/20 group-hover:text-accent transition-colors" />
+                  <Plane size={16} className="text-slate-300 group-hover:text-[#00828a] transition-colors" />
                 </div>
               </div>
             )}
