@@ -1,3 +1,5 @@
+import { LuBookCheck } from "react-icons/lu";
+
 export interface User {
   id: number;
   firstName?: string;
@@ -14,7 +16,7 @@ export interface User {
   createdAt?: string;
   lastLogin?: string;
   avatar?: string;
-  customPermissions?: RolePermissions; // Permisos personalizados por usuario
+  customPermissions?: RolePermissions;
 }
 
 export interface RolePermissions {
@@ -79,28 +81,53 @@ export type SaleProductId =
 export interface SaleProductDef {
   id: SaleProductId;
   label: string;
-  icon: string;      // emoji for display
+  icon: string;
   group: "main" | "other";
 }
 
 export const SALE_PRODUCTS: SaleProductDef[] = [
   // --- Principales ---
-  { id: "tiqueteria",              label: "Tiquetería",               icon: "🎫", group: "main" },
-  { id: "hoteleria",               label: "Hotelería",                icon: "🏨", group: "main" },
-  { id: "seguros_viaje",           label: "Seguros de Viaje",         icon: "🛡️", group: "main" },
-  { id: "planes",                  label: "Planes",                   icon: "📦", group: "main" },
+  { id: "tiqueteria", label: "Tiquetería", icon: "LuTicket", group: "main" },
+  { id: "hoteleria", label: "Hotelería", icon: "LuBed", group: "main" },
+  { id: "seguros_viaje", label: "Seguros de Viaje", icon: "LuShieldCheck", group: "main" },
+  { id: "planes", label: "Planes", icon: "LuPackage", group: "main" },
   // --- Otros ---
-  { id: "checkin",                 label: "Check-in",                 icon: "✅", group: "other" },
-  { id: "documentacion_migratoria",label: "Documentación Migratoria", icon: "📄", group: "other" },
-  { id: "simcard",                 label: "SIM Card",                 icon: "📱", group: "other" },
-  { id: "renta_vehiculos",        label: "Renta de Vehículos",       icon: "🚗", group: "other" },
-  { id: "renta_fincas",           label: "Renta de Fincas",          icon: "🏡", group: "other" },
-  { id: "tours",                   label: "Tours",                    icon: "🗺️", group: "other" },
-  { id: "centros_convencion",     label: "Centros de Convención",    icon: "🏛️", group: "other" },
-  { id: "restaurantes",           label: "Restaurantes",             icon: "🍽️", group: "other" },
-  { id: "visa",                    label: "Visa",                     icon: "🛂", group: "other" },
-  { id: "pasaporte",              label: "Pasaporte",                icon: "🛃", group: "other" },
-  { id: "servicio_mascotas",      label: "Servicio de Mascotas",     icon: "🐾", group: "other" },
+  {
+    id: "checkin",
+    label: "Check-in",
+    icon: "LuBookCheck",
+    group: "other",
+  },
+  {
+    id: "documentacion_migratoria",
+    label: "Documentación Migratoria",
+    icon: "LuFileText",
+    group: "other",
+  },
+  { id: "simcard", label: "SIM Card", icon: "LuSmartphone", group: "other" },
+  {
+    id: "renta_vehiculos",
+    label: "Renta de Vehículos",
+    icon: "LuCar",
+    group: "other",
+  },
+  { id: "renta_fincas", label: "Renta de Fincas", icon: "LuWarehouse", group: "other" },
+  { id: "tours", label: "Tours", icon: "LuCompass", group: "other" },
+  {
+    id: "centros_convencion",
+    label: "Centros de Convención",
+    icon: "LuUsers",
+    group: "other",
+  },
+  { id: "restaurantes", label: "Restaurantes", icon: "LuUtensils", group: "other" },
+  { id: "visa", label: "Visa", icon: "LuStamp", group: "other" },
+  { id: "pasaporte", label: "Pasaporte", icon: "LuBookOpen", group: "other" },
+  {
+    id: "servicio_mascotas",
+    label: "Servicio de Mascotas",
+    icon: "LuDog",
+    group: "other",
+  },
 ];
 
 export interface FlightLeg {
@@ -110,6 +137,52 @@ export interface FlightLeg {
   seat: string;
   date: string;
   time?: string;
+}
+
+export interface GuestInfo {
+  name: string;
+  docType: string;
+  docNumber: string;
+}
+
+export interface HotelData {
+  hotelName: string;
+  destination: string;
+  supplier: string;
+  reservationNumber: string;
+  startDate: string;
+  endDate: string;
+  supplierCost: number;
+  ta: number;
+  supplierPaymentMethod: string;
+  guests: GuestInfo[];
+}
+
+export interface PlanData {
+  planName: string;
+  hotelName: string;
+  supplierCost: number;
+  ta: number;
+  reservationNumber: string;
+  flightNumber: string;
+  ticketNumber: string;
+  startDate: string;
+  endDate: string;
+  supplierPaymentMethod: string;
+  supplier: string;
+  airline: string;
+  guests: GuestInfo[];
+}
+
+export interface InsuranceData {
+  contactName: string;
+  contactNumber: string;
+  address: string;
+  supplier: string;
+  supplierCost: number;
+  ta: number;
+  supplierPaymentMethod: string;
+  members: GuestInfo[];
 }
 
 export interface TicketData {
@@ -136,6 +209,13 @@ export interface TicketData {
   };
 }
 
+export interface PaymentRecord {
+  id: number;
+  date: string;
+  amount: number;
+  method: string;
+}
+
 export interface Sale {
   id: number;
   clientId: number;
@@ -149,7 +229,10 @@ export interface Sale {
   paymentMethod: string;
   observations?: string;
   products?: SaleProductId[];
-  ticketData?: TicketData[]; // Multiple tickets possible per sale
+  ticketData?: TicketData[];
+  hotelData?: HotelData[];
+  insuranceData?: InsuranceData[];
+  planData?: PlanData[];
   isCredit?: boolean;
   creditDueDate?: string;
   creditPaidAmount?: number;
@@ -158,6 +241,7 @@ export interface Sale {
   commissionPaymentMethod?: string;
   ta?: number;
   supplierCost?: number;
+  payments?: PaymentRecord[];
 }
 
 export interface Flight {

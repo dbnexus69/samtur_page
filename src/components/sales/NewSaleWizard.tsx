@@ -18,7 +18,9 @@ import {
   PlusCircle,
   Briefcase,
   AlertCircle,
+  Building2,
 } from "lucide-react";
+import * as LuIcons from "react-icons/lu";
 import { FormField, Input, Select, Textarea, Combobox } from "../ui/Form";
 import { Button } from "../ui/Button";
 import { Modal } from "../ui/Modal";
@@ -30,6 +32,10 @@ import {
   SALE_PRODUCTS,
   TicketData,
   FlightLeg,
+  HotelData,
+  InsuranceData,
+  PlanData,
+  GuestInfo,
 } from "../../types";
 
 // Import illustrations
@@ -67,6 +73,9 @@ interface WizardFormData {
   creditDueDate: string;
   // Sub-forms
   tickets: TicketData[];
+  hotels: HotelData[];
+  insurances: InsuranceData[];
+  plans: PlanData[];
 }
 
 const INITIAL_TICKET = (client?: any): TicketData => ({
@@ -93,6 +102,64 @@ const INITIAL_TICKET = (client?: any): TicketData => ({
   },
 });
 
+const INITIAL_HOTEL = (client?: any): HotelData => ({
+  hotelName: "",
+  destination: "",
+  supplier: "",
+  reservationNumber: "",
+  startDate: "",
+  endDate: "",
+  supplierCost: 0,
+  ta: 0,
+  supplierPaymentMethod: "Efectivo",
+  guests: [
+    {
+      name: client?.name || "",
+      docType: client?.docType || "",
+      docNumber: client?.docNumber || "",
+    },
+  ],
+});
+
+const INITIAL_INSURANCE = (client?: any): InsuranceData => ({
+  contactName: "",
+  contactNumber: "",
+  address: "",
+  supplier: "",
+  supplierCost: 0,
+  ta: 0,
+  supplierPaymentMethod: "Efectivo",
+  members: [
+    {
+      name: client?.name || "",
+      docType: client?.docType || "",
+      docNumber: client?.docNumber || "",
+    },
+  ],
+});
+
+const INITIAL_PLAN = (client?: any): PlanData => ({
+  planName: "",
+  hotelName: "",
+  supplier: "",
+  supplierCost: 0,
+  ta: 0,
+  supplierPaymentMethod: "Efectivo",
+  reservationNumber: "",
+  flightNumber: "",
+  ticketNumber: "",
+  startDate: "",
+  endDate: "",
+  airline: "",
+  guests: [
+    {
+      name: client?.name || "",
+      docType: client?.docType || "",
+      docNumber: client?.docNumber || "",
+    },
+  ],
+});
+
 const INITIAL_FORM: WizardFormData = {
   clientId: "",
   commissionAgent: "",
@@ -108,6 +175,9 @@ const INITIAL_FORM: WizardFormData = {
   isCredit: false,
   creditDueDate: "",
   tickets: [],
+  hotels: [],
+  insurances: [],
+  plans: [],
 };
 
 interface Props {
@@ -127,6 +197,12 @@ const STEPS = [
 const mainProducts = SALE_PRODUCTS.filter((p) => p.group === "main");
 const otherProducts = SALE_PRODUCTS.filter((p) => p.group === "other");
 
+function ProductIcon({ name, size = 20, className = "" }: { name: string; size?: number; className?: string }) {
+  const IconComponent = (LuIcons as any)[name];
+  if (!IconComponent) return null;
+  return <IconComponent size={size} className={className} />;
+}
+
 /* ================================================================== */
 /*  Component                                                          */
 /* ================================================================== */
@@ -137,6 +213,14 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<WizardFormData>(INITIAL_FORM);
   const [showOtherProducts, setShowOtherProducts] = useState(false);
+  const [showTicketForm, setShowTicketForm] = useState(false);
+  const [currentTicketIdx, setCurrentTicketIdx] = useState<number | null>(null);
+  const [showHotelForm, setShowHotelForm] = useState(false);
+  const [currentHotelIdx, setCurrentHotelIdx] = useState<number | null>(null);
+  const [showInsuranceForm, setShowInsuranceForm] = useState(false);
+  const [currentInsuranceIdx, setCurrentInsuranceIdx] = useState<number | null>(null);
+  const [showPlanForm, setShowPlanForm] = useState(false);
+  const [currentPlanIdx, setCurrentPlanIdx] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   /* ---- helpers --------------------------------------------------- */
@@ -152,13 +236,43 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
         ? [...prev.selectedProducts, id]
         : prev.selectedProducts.filter((p) => p !== id);
 
-      // If selecting tiqueteria for the first time, open modal
+      // If selecting tiqueteria for the first time
       if (id === "tiqueteria" && isSelecting && prev.tickets.length === 0) {
-        const client = data.clients.find((c) => c.id === Number(prev.clientId));
+        const client = data.clients.find((c: any) => c.name === prev.clientId);
         return {
           ...prev,
           selectedProducts: nextProducts,
           tickets: [INITIAL_TICKET(client)],
+        };
+      }
+
+      // If selecting hoteleria for the first time
+      if (id === "hoteleria" && isSelecting && prev.hotels.length === 0) {
+        const client = data.clients.find((c: any) => c.name === prev.clientId);
+        return {
+          ...prev,
+          selectedProducts: nextProducts,
+          hotels: [INITIAL_HOTEL(client)],
+        };
+      }
+
+      // If selecting seguros_viaje for the first time
+      if (id === "seguros_viaje" && isSelecting && prev.insurances.length === 0) {
+        const client = data.clients.find((c: any) => c.name === prev.clientId);
+        return {
+          ...prev,
+          selectedProducts: nextProducts,
+          insurances: [INITIAL_INSURANCE(client)],
+        };
+      }
+
+      // If selecting planes for the first time
+      if (id === "planes" && isSelecting && prev.plans.length === 0) {
+        const client = data.clients.find((c: any) => c.name === prev.clientId);
+        return {
+          ...prev,
+          selectedProducts: nextProducts,
+          plans: [INITIAL_PLAN(client)],
         };
       }
 
@@ -170,11 +284,21 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
 
     if (id === "tiqueteria" && !form.selectedProducts.includes(id)) {
       setShowTicketForm(true);
+      setCurrentTicketIdx(0);
+    }
+    if (id === "hoteleria" && !form.selectedProducts.includes(id)) {
+      setShowHotelForm(true);
+      setCurrentHotelIdx(0);
+    }
+    if (id === "seguros_viaje" && !form.selectedProducts.includes(id)) {
+      setShowInsuranceForm(true);
+      setCurrentInsuranceIdx(0);
+    }
+    if (id === "planes" && !form.selectedProducts.includes(id)) {
+      setShowPlanForm(true);
+      setCurrentPlanIdx(0);
     }
   };
-
-  const [showTicketForm, setShowTicketForm] = useState(false);
-  const [currentTicketIdx, setCurrentTicketIdx] = useState<number | null>(null);
 
   /* ---- validation ------------------------------------------------ */
   const validateStep = (s: number): boolean => {
@@ -198,21 +322,26 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
   const goNext = () => {
     if (!validateStep(step)) return;
     if (step === 2) {
-      // Auto-calculate totals from tickets for Step 3
-      if (form.tickets.length > 0) {
-        const totalSupplier = form.tickets.reduce(
-          (acc, t) => acc + Number(t.supplierCost || 0),
-          0,
-        );
-        const totalTa = form.tickets.reduce(
-          (acc, t) => acc + Number(t.ta || 0),
-          0,
-        );
+      if (form.tickets.length > 0 || form.hotels.length > 0 || form.insurances.length > 0 || form.plans.length > 0) {
+        const totalSupplier = 
+          form.tickets.reduce((acc, t) => acc + Number(t.supplierCost || 0), 0) +
+          form.hotels.reduce((acc, h) => acc + Number(h.supplierCost || 0), 0) +
+          form.insurances.reduce((acc, i) => acc + Number(i.supplierCost || 0), 0) +
+          form.plans.reduce((acc, p) => acc + Number(p.supplierCost || 0), 0);
+        
+        const totalTa = 
+          form.tickets.reduce((acc, t) => acc + Number(t.ta || 0), 0) +
+          form.hotels.reduce((acc, h) => acc + Number(h.ta || 0), 0) +
+          form.insurances.reduce((acc, i) => acc + Number(i.ta || 0), 0) +
+          form.plans.reduce((acc, p) => acc + Number(p.ta || 0), 0);
+
+        const finalTotal = totalSupplier + totalTa;
+
         setForm((prev) => ({
           ...prev,
-          supplierCost: String(totalSupplier),
-          ta: String(totalTa),
-          total: String(totalSupplier + totalTa),
+          supplierCost: totalSupplier.toString(),
+          ta: totalTa.toString(),
+          total: finalTotal.toString(),
         }));
       }
     }
@@ -223,8 +352,12 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
   /* ---- submit ---------------------------------------------------- */
   const handleSubmit = () => {
     if (!validateStep(3)) return;
-    const client = data.clients.find((c) => c.id === Number(form.clientId));
-    if (!client) return;
+    const client = data.clients.find((c: any) => c.name === form.clientId);
+    if (!client) {
+      setErrors({ ...errors, clientId: "El cliente no es válido" });
+      setStep(1);
+      return;
+    }
 
     const productLabels = form.selectedProducts
       .map((id) => {
@@ -249,6 +382,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
       observations: fullObservations,
       products: form.selectedProducts,
       ticketData: form.tickets.length > 0 ? form.tickets : undefined,
+      hotelData: form.hotels.length > 0 ? form.hotels : undefined,
+      insuranceData: form.insurances.length > 0 ? form.insurances : undefined,
+      planData: form.plans.length > 0 ? form.plans : undefined,
       isCredit: form.isCredit,
       creditDueDate: form.isCredit ? form.creditDueDate : undefined,
       commissionAgent: form.commissionAgent,
@@ -265,75 +401,115 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
 
   return (
     <div className="flex flex-col h-full relative overflow-hidden">
-      {/* 
-          Main Content Container with transition
-      */}
-      {!showTicketForm ? (
-        <div className="flex flex-col h-full animate-fade-in">
-          {/* ---- TIMELINE ------------------------------------------------ */}
-          <div className="flex items-center justify-center gap-0 px-4 pt-2 pb-6">
-            {STEPS.map((s, idx) => {
-              const Icon = s.icon;
-              const isActive = step === s.id;
-              const isCompleted = step > s.id;
-              return (
-                <div key={s.id} className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isCompleted) setStep(s.id);
-                    }}
-                    className={`
-                      relative flex items-center gap-2 px-4 py-2 rounded-full
-                      font-semibold text-sm transition-all duration-300 cursor-default
-                      ${isActive
-                        ? "bg-primary text-white shadow-lg shadow-primary/30 scale-105"
-                        : isCompleted
-                          ? "bg-green-100 text-green-700 cursor-pointer hover:bg-green-200"
-                          : "bg-gray-100 text-gray-400"
-                      }
-                    `}
-                  >
-                    <span
-                      className={`
-                        flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold
-                        transition-all duration-300
-                        ${isActive
-                          ? "bg-white/20"
-                          : isCompleted
-                            ? "bg-green-500 text-white"
-                            : "bg-gray-200 text-gray-400"
-                        }
-                      `}
-                    >
-                      {isCompleted ? <Check size={14} /> : <Icon size={14} />}
-                    </span>
-                    <span className="hidden sm:inline">{s.label}</span>
-                  </button>
+      {/* Main Content Container with transition */}
+      {showTicketForm ? (
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {renderTicketForm()}
+        </div>
+      ) : showHotelForm ? (
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {renderHotelForm()}
+        </div>
+      ) : showInsuranceForm ? (
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {renderInsuranceForm()}
+        </div>
+      ) : showPlanForm ? (
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {renderPlanForm()}
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {step === 1 && renderStep1()}
+          {step === 2 && renderStep2()}
+          {step === 3 && renderStep3()}
+        </div>
+      )}
 
-                  {idx < STEPS.length - 1 && (
-                    <div className="w-12 h-0.5 mx-1">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          step > s.id ? "bg-green-400" : "bg-gray-200"
-                        }`}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ---- STEP CONTENT -------------------------------------------- */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-1 custom-scrollbar">
-            {step === 1 && renderStep1()}
-            {step === 2 && renderStep2()}
-            {step === 3 && renderStep3()}
-          </div>
-
-          {/* ---- FOOTER -------------------------------------------------- */}
-          <div className="flex items-center justify-between border-t border-gray-border pt-4 mt-4 px-1">
+      {/* Footer */}
+      <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+        {showTicketForm ? (
+          <>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowTicketForm(false);
+                setCurrentTicketIdx(null);
+              }}
+            >
+              Regresar
+            </Button>
+            <Button
+              onClick={() => {
+                setShowTicketForm(false);
+                setCurrentTicketIdx(null);
+              }}
+            >
+              Confirmar y Continuar
+            </Button>
+          </>
+        ) : showHotelForm ? (
+          <>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowHotelForm(false);
+                setCurrentHotelIdx(null);
+              }}
+            >
+              Regresar
+            </Button>
+            <Button
+              onClick={() => {
+                setShowHotelForm(false);
+                setCurrentHotelIdx(null);
+              }}
+            >
+              Confirmar y Continuar
+            </Button>
+          </>
+        ) : showInsuranceForm ? (
+          <>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowInsuranceForm(false);
+                setCurrentInsuranceIdx(null);
+              }}
+            >
+              Regresar
+            </Button>
+            <Button
+              onClick={() => {
+                setShowInsuranceForm(false);
+                setCurrentInsuranceIdx(null);
+              }}
+            >
+              Confirmar y Continuar
+            </Button>
+          </>
+        ) : showPlanForm ? (
+          <>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowPlanForm(false);
+                setCurrentPlanIdx(null);
+              }}
+            >
+              Regresar
+            </Button>
+            <Button
+              onClick={() => {
+                setShowPlanForm(false);
+                setCurrentPlanIdx(null);
+              }}
+            >
+              Confirmar y Continuar
+            </Button>
+          </>
+        ) : (
+          <>
             <div>
               {step > 1 && (
                 <Button variant="outline" onClick={goBack}>
@@ -358,63 +534,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
                 </Button>
               )}
             </div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col h-full animate-fade-in">
-          {/* TICKET FORM HEADER */}
-          <div className="flex items-center gap-3 mb-6 bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
-            <div className="p-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-200">
-              <Plane size={24} />
-            </div>
-            <div>
-              <h3 className="font-black text-blue-900 text-xl tracking-tight">
-                Configuración de Tiquetería
-              </h3>
-              <p className="text-xs text-blue-600 font-medium">
-                Completa los detalles técnicos del vuelo y trayectos.
-              </p>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setShowTicketForm(false)}
-              className="ml-auto bg-white"
-            >
-              Regresar
-            </Button>
-          </div>
-
-          {/* TICKET FORM CONTENT */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-1 custom-scrollbar pb-6">
-            {renderTicketForm()}
-          </div>
-
-          {/* TICKET FORM FOOTER */}
-          <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-2">
-            <p className="text-xs text-gray-500 italic">
-              * Todos los datos se guardarán automáticamente al confirmar.
-            </p>
-            <Button 
-              onClick={() => {
-                // Trigger auto-calculation for Step 3 immediately
-                const totalSupplier = form.tickets.reduce((acc, t) => acc + Number(t.supplierCost || 0), 0);
-                const totalTa = form.tickets.reduce((acc, t) => acc + Number(t.ta || 0), 0);
-                setForm(prev => ({
-                  ...prev,
-                  supplierCost: String(totalSupplier),
-                  ta: String(totalTa),
-                  total: String(totalSupplier + totalTa)
-                }));
-                setShowTicketForm(false);
-              }}
-              className="shadow-lg shadow-primary/20"
-            >
-              Confirmar y Continuar
-            </Button>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 
@@ -443,29 +565,31 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             <Combobox
               value={form.clientId}
               onChange={(val) => set("clientId", val)}
-              error={errors.clientId}
-              placeholder="Escribe para buscar cliente..."
               options={data.clients
-                .filter((c) => c.status === "active")
-                .map((c) => ({
-                  value: String(c.id),
+                .filter((c: any) => c.status === "active")
+                .map((c: any) => ({
+                  value: c.name,
                   label: c.name,
                 }))}
+              placeholder="Seleccionar o escribir nombre..."
+              error={errors.clientId}
             />
           </FormField>
 
           <FormField label="Comisionista">
             <Combobox
-              value={form.commissionAgent}
+              value={form.commissionAgent || ""}
               onChange={(val) => set("commissionAgent", val)}
-              placeholder="Escribe o selecciona comisionista..."
               options={[
                 { value: "Agencia Viajes Plus", label: "Agencia Viajes Plus" },
                 { value: "Asesor Independiente", label: "Asesor Independiente" },
                 { value: "Ventas Directas Web", label: "Ventas Directas Web" },
+                { value: "Referido por Cliente", label: "Referido por Cliente" },
+                { value: "Alianza Corporativa", label: "Alianza Corporativa" },
                 { value: "Referido Familiar", label: "Referido Familiar" },
                 { value: "Aliado Comercial", label: "Aliado Comercial" },
               ]}
+              placeholder="Escribe o selecciona..."
             />
           </FormField>
 
@@ -498,7 +622,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
         {/* Client preview card */}
         {form.clientId && (() => {
           const client = data.clients.find(
-            (c) => c.id === Number(form.clientId),
+            (c: any) => c.name === form.clientId,
           );
           if (!client) return null;
           return (
@@ -576,8 +700,8 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
                         className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${selected ? "scale-105" : ""}`}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-4xl">
-                        {product.icon}
+                      <div className="w-full h-full flex items-center justify-center text-4xl text-primary/40">
+                        <ProductIcon name={product.icon} size={48} />
                       </div>
                     )}
                     {selected && (
@@ -604,19 +728,191 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
                     </p>
                   </div>
 
-                  {product.id === "tiqueteria" && selected && (
+                  {selected && (
                     <div className="px-4 pb-4 w-full">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        className="w-full text-[10px] py-1 h-auto"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowTicketForm(true);
-                        }}
-                      >
-                        Configurar Tiquete
-                      </Button>
+                      {product.id === "tiqueteria" && (
+                        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                            {form.tickets.map((_, tIdx) => (
+                              <Button
+                                key={tIdx}
+                                variant={
+                                  currentTicketIdx === tIdx
+                                    ? "primary"
+                                    : "outline"
+                                }
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCurrentTicketIdx(tIdx);
+                                  setShowTicketForm(true);
+                                }}
+                                className="h-7 text-[10px]"
+                              >
+                                Tiquete {tIdx + 1}
+                              </Button>
+                            ))}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const client = data.clients.find(
+                                  (c: any) => c.name === form.clientId,
+                                );
+                                const nextTickets = [
+                                  ...form.tickets,
+                                  INITIAL_TICKET(client),
+                                ];
+                                set("tickets", nextTickets);
+                                setCurrentTicketIdx(nextTickets.length - 1);
+                                setShowTicketForm(true);
+                              }}
+                              className="h-7 text-[10px] border-dashed"
+                            >
+                              + Añadir
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {product.id === "hoteleria" && (
+                        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                            {form.hotels.map((_, hIdx) => (
+                              <Button
+                                key={hIdx}
+                                variant={
+                                  currentHotelIdx === hIdx
+                                    ? "primary"
+                                    : "outline"
+                                }
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCurrentHotelIdx(hIdx);
+                                  setShowHotelForm(true);
+                                }}
+                                className="h-7 text-[10px]"
+                              >
+                                Estancia {hIdx + 1}
+                              </Button>
+                            ))}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const client = data.clients.find(
+                                  (c: any) => c.name === form.clientId,
+                                );
+                                const nextHotels = [
+                                  ...form.hotels,
+                                  INITIAL_HOTEL(client),
+                                ];
+                                set("hotels", nextHotels);
+                                setCurrentHotelIdx(nextHotels.length - 1);
+                                setShowHotelForm(true);
+                              }}
+                              className="h-7 text-[10px] border-dashed"
+                            >
+                              + Añadir
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {product.id === "seguros_viaje" && (
+                        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                            {form.insurances.map((_, sIdx) => (
+                              <Button
+                                key={sIdx}
+                                variant={
+                                  currentInsuranceIdx === sIdx
+                                    ? "primary"
+                                    : "outline"
+                                }
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCurrentInsuranceIdx(sIdx);
+                                  setShowInsuranceForm(true);
+                                }}
+                                className="h-7 text-[10px]"
+                              >
+                                Seguro {sIdx + 1}
+                              </Button>
+                            ))}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const client = data.clients.find(
+                                  (c: any) => c.name === form.clientId,
+                                );
+                                const nextInsurances = [
+                                  ...form.insurances,
+                                  INITIAL_INSURANCE(client),
+                                ];
+                                set("insurances", nextInsurances);
+                                setCurrentInsuranceIdx(nextInsurances.length - 1);
+                                setShowInsuranceForm(true);
+                              }}
+                              className="h-7 text-[10px] border-dashed"
+                            >
+                              + Añadir
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {product.id === "planes" && (
+                        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                            {form.plans.map((_, pIdx) => (
+                              <Button
+                                key={pIdx}
+                                variant={
+                                  currentPlanIdx === pIdx
+                                    ? "primary"
+                                    : "outline"
+                                }
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCurrentPlanIdx(pIdx);
+                                  setShowPlanForm(true);
+                                }}
+                                className="h-7 text-[10px]"
+                              >
+                                Plan {pIdx + 1}
+                              </Button>
+                            ))}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const client = data.clients.find(
+                                  (c: any) => c.name === form.clientId,
+                                );
+                                const nextPlans = [
+                                  ...form.plans,
+                                  INITIAL_PLAN(client),
+                                ];
+                                set("plans", nextPlans);
+                                setCurrentPlanIdx(nextPlans.length - 1);
+                                setShowPlanForm(true);
+                              }}
+                              className="h-7 text-[10px] border-dashed"
+                            >
+                              + Añadir
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </button>
@@ -661,7 +957,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
                     `}
                   >
                     <span className="text-lg flex-shrink-0">
-                      {product.icon}
+                      <ProductIcon name={product.icon} size={18} className={selected ? "text-primary" : "text-gray-400"} />
                     </span>
                     <span
                       className={`text-xs font-medium leading-tight ${
@@ -682,77 +978,6 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             </div>
           )}
         </div>
-
-        {/* Configured tickets list */}
-        {form.tickets.length > 0 && (
-          <div className="space-y-3">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              Tiquetes Configurados ({form.tickets.length})
-            </p>
-            {form.tickets.map((t, idx) => (
-              <div
-                key={idx}
-                className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex items-center justify-between group animate-fade-in"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                    <Plane size={20} />
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-800 text-sm">
-                      {t.airline || "Aerolínea no definida"} - {t.flightNumber}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {t.legs[0]?.origin} → {t.legs[t.legs.length - 1]?.destination} · {t.departureDate}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setCurrentTicketIdx(idx);
-                      setShowTicketForm(true);
-                    }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-red-500 border-red-100 hover:bg-red-50"
-                    onClick={() => {
-                      setForm((prev) => ({
-                        ...prev,
-                        tickets: prev.tickets.filter((_, i) => i !== idx),
-                      }));
-                    }}
-                  >
-                    <Trash2 size={14} />
-                  </Button>
-                </div>
-              </div>
-            ))}
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full border-dashed"
-              onClick={() => {
-                const client = data.clients.find((c) => c.id === Number(form.clientId));
-                setForm((prev) => ({
-                  ...prev,
-                  tickets: [...prev.tickets, INITIAL_TICKET(client)],
-                }));
-                setCurrentTicketIdx(form.tickets.length);
-                setShowTicketForm(true);
-              }}
-            >
-              <PlusCircle size={14} className="mr-2" />
-              Agregar otro tiquete
-            </Button>
-          </div>
-        )}
       </div>
     );
   }
@@ -798,17 +1023,15 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             label="Forma de Pago *"
             error={errors.paymentMethod}
           >
-            <Select
+            <Combobox
               value={form.paymentMethod}
-              onChange={(e) => set("paymentMethod", e.target.value)}
+              onChange={(val) => set("paymentMethod", val)}
+              options={data.config.paymentMethods.map((p: any) => ({
+                value: p.name,
+                label: p.name,
+              }))}
+              placeholder="Selecciona o escribe..."
               error={errors.paymentMethod}
-              options={[
-                { value: "", label: "Seleccionar..." },
-                ...data.config.paymentMethods.map((p) => ({
-                  value: p.name,
-                  label: p.name,
-                })),
-              ]}
             />
           </FormField>
 
@@ -831,9 +1054,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
           </FormField>
 
           <FormField label="Estado">
-            <Select
+            <Combobox
               value={form.status}
-              onChange={(e) => set("status", e.target.value)}
+              onChange={(val) => set("status", val)}
               options={[
                 { value: "pendiente", label: "Pendiente Crédito" },
                 { value: "abonado", label: "Completado" },
@@ -921,6 +1144,612 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
     );
   }
 
+  function renderHotelForm() {
+    const idx = currentHotelIdx ?? 0;
+    const hotel = form.hotels[idx] || INITIAL_HOTEL();
+
+    const updateHotel = (updates: Partial<HotelData>) => {
+      const nextHotels = [...form.hotels];
+      nextHotels[idx] = { ...hotel, ...updates };
+      set("hotels", nextHotels);
+    };
+
+    const addGuest = () => {
+      updateHotel({
+        guests: [...hotel.guests, { name: "", docType: "CC", docNumber: "" }],
+      });
+    };
+
+    const removeGuest = (gIdx: number) => {
+      updateHotel({
+        guests: hotel.guests.filter((_, i) => i !== gIdx),
+      });
+    };
+
+    const updateGuest = (gIdx: number, gUpdates: Partial<GuestInfo>) => {
+      const nextGuests = [...hotel.guests];
+      nextGuests[gIdx] = { ...nextGuests[gIdx], ...gUpdates };
+      updateHotel({ guests: nextGuests });
+    };
+
+    const uniqueCities = Array.from(
+      new Set([
+        ...data.config.routes.map((r: any) => r.origin),
+        ...data.config.routes.map((r: any) => r.destination),
+      ]),
+    );
+
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <datalist id="cities-list">
+          {uniqueCities.map((city: any) => (
+            <option key={city} value={city} />
+          ))}
+        </datalist>
+
+        {/* 1. Información del Hotel */}
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Building2 size={14} /> Detalles de la Estancia
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField label="Nombre del Hotel">
+              <Input
+                value={hotel.hotelName}
+                onChange={(e) => updateHotel({ hotelName: e.target.value })}
+                placeholder="Ej: Hotel Dann Carlton"
+              />
+            </FormField>
+            <FormField label="Destino">
+              <Combobox
+                value={hotel.destination}
+                onChange={(val) => updateHotel({ destination: val })}
+                options={uniqueCities.map((city: any) => ({ value: city, label: city }))}
+                placeholder="Ej: Cartagena"
+              />
+            </FormField>
+            <FormField label="Proveedor">
+              <Combobox
+                value={hotel.supplier}
+                onChange={(val) => updateHotel({ supplier: val })}
+                options={data.config.suppliers.map((s: any) => ({
+                  value: s.name,
+                  label: s.name,
+                }))}
+                placeholder="Ej: Decameron"
+              />
+            </FormField>
+            <FormField label="Número de Reserva">
+              <Input
+                value={hotel.reservationNumber}
+                onChange={(e) =>
+                  updateHotel({ reservationNumber: e.target.value })
+                }
+                placeholder="Código de confirmación"
+              />
+            </FormField>
+            <FormField label="Fecha Inicio (Check-in)">
+              <Input
+                type="date"
+                value={hotel.startDate}
+                onChange={(e) => updateHotel({ startDate: e.target.value })}
+              />
+            </FormField>
+            <FormField label="Fecha Fin (Check-out)">
+              <Input
+                type="date"
+                value={hotel.endDate}
+                onChange={(e) => updateHotel({ endDate: e.target.value })}
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* 2. Integrantes */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-widest flex items-center gap-2">
+              <Users size={14} /> Integrantes del Plan
+            </h4>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addGuest}
+              className="h-7 text-[10px]"
+            >
+              <PlusCircle size={12} className="mr-1" /> Añadir Integrante
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {hotel.guests.map((guest, gIdx) => (
+              <div
+                key={gIdx}
+                className="bg-white border border-gray-200 rounded-xl p-4 relative group shadow-sm"
+              >
+                {hotel.guests.length > 1 && (
+                  <button
+                    onClick={() => removeGuest(gIdx)}
+                    className="absolute -top-2 -right-2 bg-red-100 text-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <FormField label="Nombre Completo">
+                    <Input
+                      value={guest.name}
+                      onChange={(e) => updateGuest(gIdx, { name: e.target.value })}
+                      placeholder="Nombre del pasajero"
+                      className="text-xs"
+                    />
+                  </FormField>
+                  <FormField label="Tipo Doc.">
+                    <Select
+                      value={guest.docType}
+                      onChange={(e) => updateGuest(gIdx, { docType: e.target.value })}
+                      className="text-xs"
+                      options={[
+                        { value: "CC", label: "CC" },
+                        { value: "TI", label: "TI" },
+                        { value: "CE", label: "CE" },
+                        { value: "Pasaporte", label: "Pasaporte" },
+                      ]}
+                    />
+                  </FormField>
+                  <FormField label="Número Documento">
+                    <Input
+                      value={guest.docNumber}
+                      onChange={(e) => updateGuest(gIdx, { docNumber: e.target.value })}
+                      placeholder="12345678"
+                      className="text-xs"
+                    />
+                  </FormField>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 3. Finanzas */}
+        <div className="bg-emerald-50/20 p-4 rounded-xl border border-emerald-100">
+          <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Briefcase size={14} /> Detalles Financieros
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField label="Valor Pagado al Proveedor">
+              <Input
+                type="number"
+                value={hotel.supplierCost}
+                onChange={(e) =>
+                  updateHotel({ supplierCost: Number(e.target.value) })
+                }
+              />
+            </FormField>
+            <FormField label="Valor TA">
+              <Input
+                type="number"
+                value={hotel.ta}
+                onChange={(e) => updateHotel({ ta: Number(e.target.value) })}
+              />
+            </FormField>
+            <FormField label="Método de Pago Proveedor">
+              <Combobox
+                value={hotel.supplierPaymentMethod}
+                onChange={(val) => updateHotel({ supplierPaymentMethod: val })}
+                options={data.config.paymentMethods.map((m: any) => ({
+                  value: m.name,
+                  label: m.name,
+                }))}
+              />
+            </FormField>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  function renderInsuranceForm() {
+    const idx = currentInsuranceIdx ?? 0;
+    const insurance = form.insurances[idx] || INITIAL_INSURANCE();
+
+    const updateInsurance = (updates: Partial<InsuranceData>) => {
+      const nextInsurances = [...form.insurances];
+      nextInsurances[idx] = { ...insurance, ...updates };
+      set("insurances", nextInsurances);
+    };
+
+    const addMember = () => {
+      updateInsurance({
+        members: [...insurance.members, { name: "", docType: "CC", docNumber: "" }],
+      });
+    };
+
+    const removeMember = (mIdx: number) => {
+      updateInsurance({
+        members: insurance.members.filter((_, i) => i !== mIdx),
+      });
+    };
+
+    const updateMember = (mIdx: number, mUpdates: Partial<GuestInfo>) => {
+      const nextMembers = [...insurance.members];
+      nextMembers[mIdx] = { ...nextMembers[mIdx], ...mUpdates };
+      updateInsurance({ members: nextMembers });
+    };
+
+    return (
+      <div className="space-y-6 animate-fade-in">
+        {/* 1. Información del Contacto */}
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Users size={14} /> Información de Contacto
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField label="Nombre del Contacto">
+              <Input
+                value={insurance.contactName}
+                onChange={(e) => updateInsurance({ contactName: e.target.value })}
+                placeholder="Ej: Juan Pérez"
+              />
+            </FormField>
+            <FormField label="Número del Contacto">
+              <Input
+                value={insurance.contactNumber}
+                onChange={(e) => updateInsurance({ contactNumber: e.target.value })}
+                placeholder="Ej: 3001234567"
+              />
+            </FormField>
+            <FormField label="Dirección">
+              <Input
+                value={insurance.address}
+                onChange={(e) => updateInsurance({ address: e.target.value })}
+                placeholder="Ej: Calle 123 # 45-67"
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* 2. Proveedor y Finanzas */}
+        <div className="bg-emerald-50/20 p-4 rounded-xl border border-emerald-100">
+          <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Briefcase size={14} /> Proveedor y Finanzas
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField label="Proveedor">
+              <Combobox
+                value={insurance.supplier}
+                onChange={(val) => updateInsurance({ supplier: val })}
+                options={data.config.suppliers
+                  .filter((s: any) => s.type === "Seguros" || s.type === "General")
+                  .map((s: any) => ({
+                    value: s.name,
+                    label: s.name,
+                  }))}
+                placeholder="Selecciona el proveedor..."
+              />
+            </FormField>
+            <FormField label="Método de Pago Proveedor">
+              <Combobox
+                value={insurance.supplierPaymentMethod}
+                onChange={(val) => updateInsurance({ supplierPaymentMethod: val })}
+                options={data.config.paymentMethods.map((m: any) => ({
+                  value: m.name,
+                  label: m.name,
+                }))}
+              />
+            </FormField>
+            <FormField label="Valor Pagado al Proveedor">
+              <Input
+                type="number"
+                value={insurance.supplierCost}
+                onChange={(e) =>
+                  updateInsurance({ supplierCost: Number(e.target.value) })
+                }
+              />
+            </FormField>
+            <FormField label="Valor TA">
+              <Input
+                type="number"
+                value={insurance.ta}
+                onChange={(e) => updateInsurance({ ta: Number(e.target.value) })}
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* 3. Integrantes */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-widest flex items-center gap-2">
+              <ShoppingBag size={14} /> Integrantes del Seguro
+            </h4>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addMember}
+              className="h-7 text-[10px]"
+            >
+              <PlusCircle size={12} className="mr-1" /> Añadir Integrante
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {insurance.members.map((member, mIdx) => (
+              <div
+                key={mIdx}
+                className="bg-white border border-gray-200 rounded-xl p-4 relative group shadow-sm"
+              >
+                {insurance.members.length > 1 && (
+                  <button
+                    onClick={() => removeMember(mIdx)}
+                    className="absolute -top-2 -right-2 bg-red-100 text-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <FormField label="Nombre Completo">
+                    <Input
+                      value={member.name}
+                      onChange={(e) => updateMember(mIdx, { name: e.target.value })}
+                      placeholder="Nombre del integrante"
+                      className="text-xs"
+                    />
+                  </FormField>
+                  <FormField label="Tipo Doc.">
+                    <Select
+                      value={member.docType}
+                      onChange={(e) => updateMember(mIdx, { docType: e.target.value })}
+                      className="text-xs"
+                      options={[
+                        { value: "CC", label: "CC" },
+                        { value: "TI", label: "TI" },
+                        { value: "CE", label: "CE" },
+                        { value: "Pasaporte", label: "Pasaporte" },
+                      ]}
+                    />
+                  </FormField>
+                  <FormField label="Número Documento">
+                    <Input
+                      value={member.docNumber}
+                      onChange={(e) => updateMember(mIdx, { docNumber: e.target.value })}
+                      placeholder="12345678"
+                      className="text-xs"
+                    />
+                  </FormField>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderPlanForm() {
+    const idx = currentPlanIdx ?? 0;
+    const plan = form.plans[idx] || INITIAL_PLAN();
+
+    const updatePlan = (updates: Partial<PlanData>) => {
+      const nextPlans = [...form.plans];
+      nextPlans[idx] = { ...plan, ...updates };
+      set("plans", nextPlans);
+    };
+
+    const addGuest = () => {
+      updatePlan({
+        guests: [...plan.guests, { name: "", docType: "CC", docNumber: "" }],
+      });
+    };
+
+    const removeGuest = (gIdx: number) => {
+      updatePlan({
+        guests: plan.guests.filter((_, i) => i !== gIdx),
+      });
+    };
+
+    const updateGuest = (gIdx: number, gUpdates: Partial<GuestInfo>) => {
+      const nextGuests = [...plan.guests];
+      nextGuests[gIdx] = { ...nextGuests[gIdx], ...gUpdates };
+      updatePlan({ guests: nextGuests });
+    };
+
+    return (
+      <div className="space-y-6 animate-fade-in">
+        {/* 1. Información General del Plan */}
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Package size={14} /> Detalles del Plan Vacacional
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField label="Nombre del Plan">
+              <Input
+                value={plan.planName}
+                onChange={(e) => updatePlan({ planName: e.target.value })}
+                placeholder="Ej: Plan Cancún Todo Incluido"
+              />
+            </FormField>
+            <FormField label="Nombre del Hotel">
+              <Input
+                value={plan.hotelName}
+                onChange={(e) => updatePlan({ hotelName: e.target.value })}
+                placeholder="Ej: Riu Palace"
+              />
+            </FormField>
+            <FormField label="Proveedor">
+              <Combobox
+                value={plan.supplier}
+                onChange={(val) => updatePlan({ supplier: val })}
+                options={data.config.suppliers.map((s: any) => ({
+                  value: s.name,
+                  label: s.name,
+                }))}
+                placeholder="Selecciona el proveedor..."
+              />
+            </FormField>
+            <FormField label="Aerolínea">
+              <Combobox
+                value={plan.airline}
+                onChange={(val) => updatePlan({ airline: val })}
+                options={data.config.airlines.map((a: any) => ({
+                  value: a.name,
+                  label: a.name,
+                }))}
+                placeholder="Selecciona la aerolínea..."
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* 2. Detalles de Reserva y Vuelo */}
+        <div className="bg-blue-50/20 p-4 rounded-xl border border-blue-100">
+          <h4 className="text-xs font-bold text-blue-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Plane size={14} /> Reservación y Transporte
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField label="Número de Reservación">
+              <Input
+                value={plan.reservationNumber}
+                onChange={(e) => updatePlan({ reservationNumber: e.target.value })}
+                placeholder="Código de hotel"
+              />
+            </FormField>
+            <FormField label="Número de Vuelo">
+              <Input
+                value={plan.flightNumber}
+                onChange={(e) => updatePlan({ flightNumber: e.target.value })}
+                placeholder="Ej: AV9301"
+              />
+            </FormField>
+            <FormField label="Número de Tiquete">
+              <Input
+                value={plan.ticketNumber}
+                onChange={(e) => updatePlan({ ticketNumber: e.target.value })}
+                placeholder="Número de 13 dígitos"
+              />
+            </FormField>
+            <FormField label="Fecha Inicio">
+              <Input
+                type="date"
+                value={plan.startDate}
+                onChange={(e) => updatePlan({ startDate: e.target.value })}
+              />
+            </FormField>
+            <FormField label="Fecha Fin">
+              <Input
+                type="date"
+                value={plan.endDate}
+                onChange={(e) => updatePlan({ endDate: e.target.value })}
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* 3. Finanzas */}
+        <div className="bg-emerald-50/20 p-4 rounded-xl border border-emerald-100">
+          <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Briefcase size={14} /> Detalles Financieros
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField label="Valor Pagado al Proveedor">
+              <Input
+                type="number"
+                value={plan.supplierCost}
+                onChange={(e) =>
+                  updatePlan({ supplierCost: Number(e.target.value) })
+                }
+              />
+            </FormField>
+            <FormField label="Valor TA">
+              <Input
+                type="number"
+                value={plan.ta}
+                onChange={(e) => updatePlan({ ta: Number(e.target.value) })}
+              />
+            </FormField>
+            <FormField label="Método de Pago Proveedor">
+              <Combobox
+                value={plan.supplierPaymentMethod}
+                onChange={(val) => updatePlan({ supplierPaymentMethod: val })}
+                options={data.config.paymentMethods.map((m: any) => ({
+                  value: m.name,
+                  label: m.name,
+                }))}
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* 4. Integrantes */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-widest flex items-center gap-2">
+              <Users size={14} /> Integrantes del Plan
+            </h4>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addGuest}
+              className="h-7 text-[10px]"
+            >
+              <PlusCircle size={12} className="mr-1" /> Añadir Integrante
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {plan.guests.map((guest, gIdx) => (
+              <div
+                key={gIdx}
+                className="bg-white border border-gray-200 rounded-xl p-4 relative group shadow-sm"
+              >
+                {plan.guests.length > 1 && (
+                  <button
+                    onClick={() => removeGuest(gIdx)}
+                    className="absolute -top-2 -right-2 bg-red-100 text-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <FormField label="Nombre Completo">
+                    <Input
+                      value={guest.name}
+                      onChange={(e) => updateGuest(gIdx, { name: e.target.value })}
+                      placeholder="Nombre del pasajero"
+                      className="text-xs"
+                    />
+                  </FormField>
+                  <FormField label="Tipo Doc.">
+                    <Select
+                      value={guest.docType}
+                      onChange={(e) => updateGuest(gIdx, { docType: e.target.value })}
+                      className="text-xs"
+                      options={[
+                        { value: "CC", label: "CC" },
+                        { value: "TI", label: "TI" },
+                        { value: "CE", label: "CE" },
+                        { value: "Pasaporte", label: "Pasaporte" },
+                      ]}
+                    />
+                  </FormField>
+                  <FormField label="Número Documento">
+                    <Input
+                      value={guest.docNumber}
+                      onChange={(e) => updateGuest(gIdx, { docNumber: e.target.value })}
+                      placeholder="12345678"
+                      className="text-xs"
+                    />
+                  </FormField>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
+
   function renderTicketForm() {
     const idx = currentTicketIdx ?? 0;
     const ticket = form.tickets[idx] || INITIAL_TICKET();
@@ -969,30 +1798,26 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label="Aerolínea">
-              <Input
-                list="airlines-list"
+              <Combobox
                 value={ticket.airline}
-                onChange={(e) => updateTicket({ airline: e.target.value })}
+                onChange={(val) => updateTicket({ airline: val })}
+                options={data.config.airlines.map((a: any) => ({
+                  value: a.name,
+                  label: a.name,
+                }))}
                 placeholder="Ej: Avianca"
               />
-              <datalist id="airlines-list">
-                {data.config.airlines.map((a) => (
-                  <option key={a.id} value={a.name} />
-                ))}
-              </datalist>
             </FormField>
             <FormField label="Proveedor">
-              <Input
-                list="suppliers-list"
+              <Combobox
                 value={ticket.supplier}
-                onChange={(e) => updateTicket({ supplier: e.target.value })}
+                onChange={(val) => updateTicket({ supplier: val })}
+                options={data.config.suppliers.map((s: any) => ({
+                  value: s.name,
+                  label: s.name,
+                }))}
                 placeholder="Ej: Viajes Éxito"
               />
-              <datalist id="suppliers-list">
-                {data.config.suppliers.map((s) => (
-                  <option key={s.id} value={s.name} />
-                ))}
-              </datalist>
             </FormField>
             <FormField label="Número de Reserva">
               <Input
@@ -1049,19 +1874,19 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
                   <FormField label="Origen">
-                    <Input
-                      list="cities-list"
+                    <Combobox
                       value={leg.origin}
-                      onChange={(e) => updateLeg(lIdx, { origin: e.target.value })}
+                      onChange={(val) => updateLeg(lIdx, { origin: val })}
+                      options={uniqueCities.map((city: any) => ({ value: city, label: city }))}
                       placeholder="Ej: BOG"
                       className="text-xs"
                     />
                   </FormField>
                   <FormField label="Destino">
-                    <Input
-                      list="cities-list"
+                    <Combobox
                       value={leg.destination}
-                      onChange={(e) => updateLeg(lIdx, { destination: e.target.value })}
+                      onChange={(val) => updateLeg(lIdx, { destination: val })}
+                      options={uniqueCities.map((city: any) => ({ value: city, label: city }))}
                       placeholder="Ej: MDE"
                       className="text-xs"
                     />
@@ -1115,19 +1940,19 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
               </h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
                 <FormField label="Origen Vuelta">
-                  <Input
-                    list="cities-list"
+                  <Combobox
                     value={ticket.returnLeg?.origin || ""}
-                    onChange={(e) => updateTicket({ returnLeg: { ...ticket.returnLeg!, origin: e.target.value } })}
+                    onChange={(val) => updateTicket({ returnLeg: { ...ticket.returnLeg!, origin: val } })}
+                    options={uniqueCities.map((city: any) => ({ value: city, label: city }))}
                     placeholder="Ej: MDE"
                     className="text-xs"
                   />
                 </FormField>
                 <FormField label="Destino Vuelta">
-                  <Input
-                    list="cities-list"
+                  <Combobox
                     value={ticket.returnLeg?.destination || ""}
-                    onChange={(e) => updateTicket({ returnLeg: { ...ticket.returnLeg!, destination: e.target.value } })}
+                    onChange={(val) => updateTicket({ returnLeg: { ...ticket.returnLeg!, destination: val } })}
+                    options={uniqueCities.map((city: any) => ({ value: city, label: city }))}
                     placeholder="Ej: BOG"
                     className="text-xs"
                   />

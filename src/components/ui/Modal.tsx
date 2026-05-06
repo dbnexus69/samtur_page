@@ -48,7 +48,7 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }:
         </div>
         
         {/* Content */}
-        <div className="p-6 max-h-[60vh] overflow-y-auto bg-gray-light">
+        <div className="p-6 max-h-[80vh] overflow-y-auto bg-gray-light">
           {children}
         </div>
         
