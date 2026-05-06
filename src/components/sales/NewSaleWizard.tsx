@@ -19,7 +19,7 @@ import {
   Briefcase,
   AlertCircle,
 } from "lucide-react";
-import { FormField, Input, Select, Textarea } from "../ui/Form";
+import { FormField, Input, Select, Textarea, Combobox } from "../ui/Form";
 import { Button } from "../ui/Button";
 import { Modal } from "../ui/Modal";
 import { useData } from "../../context/DataContext";
@@ -440,37 +440,33 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Cliente *" error={errors.clientId}>
-            <Select
+            <Combobox
               value={form.clientId}
-              onChange={(e) => set("clientId", e.target.value)}
+              onChange={(val) => set("clientId", val)}
               error={errors.clientId}
-              options={[
-                { value: "", label: "Seleccionar cliente..." },
-                ...data.clients
-                  .filter((c) => c.status === "active")
-                  .map((c) => ({
-                    value: String(c.id),
-                    label: c.name,
-                  })),
-              ]}
+              placeholder="Escribe para buscar cliente..."
+              options={data.clients
+                .filter((c) => c.status === "active")
+                .map((c) => ({
+                  value: String(c.id),
+                  label: c.name,
+                }))}
             />
           </FormField>
 
           <FormField label="Comisionista">
-            <Input
-              type="text"
-              list="commission-agents"
+            <Combobox
               value={form.commissionAgent}
-              onChange={(e) => set("commissionAgent", e.target.value)}
-              placeholder="Escribe o selecciona..."
+              onChange={(val) => set("commissionAgent", val)}
+              placeholder="Escribe o selecciona comisionista..."
+              options={[
+                { value: "Agencia Viajes Plus", label: "Agencia Viajes Plus" },
+                { value: "Asesor Independiente", label: "Asesor Independiente" },
+                { value: "Ventas Directas Web", label: "Ventas Directas Web" },
+                { value: "Referido Familiar", label: "Referido Familiar" },
+                { value: "Aliado Comercial", label: "Aliado Comercial" },
+              ]}
             />
-            <datalist id="commission-agents">
-              <option value="Agencia Viajes Plus" />
-              <option value="Asesor Independiente" />
-              <option value="Ventas Directas Web" />
-              <option value="Referido Familiar" />
-              <option value="Aliado Comercial" />
-            </datalist>
           </FormField>
 
           <FormField label="Valor Comisión">
