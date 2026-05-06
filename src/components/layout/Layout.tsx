@@ -6,7 +6,7 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-gray-light">
       <Sidebar />
-      <div className="pl-64">
+      <div className="pl-20 transition-all duration-300">
         <Header />
         <main className="p-6">
           <Outlet />
