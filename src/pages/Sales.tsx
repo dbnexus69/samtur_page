@@ -432,7 +432,7 @@ export default function Sales() {
                   </span>
                 </div>
                 <div className="col-span-2 sm:col-span-3 pt-3 mt-1 border-t border-gray-100">
-                  <span className="text-gray-500 block text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <span className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                     <ShoppingBag size={14} className="text-accent" /> Productos
                     Vendidos / Observaciones
                   </span>
