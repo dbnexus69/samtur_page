@@ -209,6 +209,142 @@ export interface TicketData {
   };
 }
 
+export interface CheckInData {
+  passengerName: string;
+  docType: string;
+  docNumber: string;
+  flightOrReservation: string;
+  travelDate: string;
+  seat: string;
+  baggage: string;
+  phone: string;
+  specialNeeds: string;
+  needsWheelchair: boolean;
+}
+
+export interface MigrationData {
+  passengerName: string;
+  birthDate: string;
+  nationality: string;
+  passportNumber: string;
+  passportExpiry: string;
+  destinationCountry: string;
+  requestedDocType: string;
+  email: string;
+}
+
+export interface SimCardData {
+  passengerName: string;
+  docNumber: string;
+  destinationCountry: string;
+  arrivalDate: string;
+  tripDuration: string;
+  dataPlan: string;
+  simType: string;
+  deliveryMethod: string;
+  email: string;
+}
+
+export interface CarRentalData {
+  mainDriver: string;
+  licenseNumber: string;
+  pickupDate: string;
+  returnDate: string;
+  pickupLocation: string;
+  vehicleCategory: string;
+  additionalDrivers: number;
+  insuranceType: "basic" | "all_risk";
+  guaranteeCreditCard: string;
+}
+
+export interface FincaData {
+  responsibleName: string;
+  docNumber: string;
+  checkInDate: string;
+  checkOutDate: string;
+  adultsCount: number;
+  childrenCount: number;
+  hasPets: boolean;
+  petType: string;
+  additionalServices: string[];
+  phone: string;
+}
+
+export interface TourData {
+  passengerName: string;
+  selectedTour: string;
+  preferredDate: string;
+  adultsCount: number;
+  childrenCount: number;
+  childrenAges: string;
+  guideLanguage: string;
+  needsTransport: boolean;
+  pickupPoint: string;
+  medicalConditions: string;
+  phone: string;
+}
+
+export interface ConventionData {
+  organization: string;
+  contactName: string;
+  startDate: string;
+  endDate: string;
+  estimatedAttendance: number;
+  requiredSpace: string;
+  eventType: string;
+  avEquipment: string[];
+  hasCatering: boolean;
+  cateringNotes: string;
+  email: string;
+}
+
+export interface RestaurantData {
+  reservationName: string;
+  dateTime: string;
+  peopleCount: number;
+  tablePreference: string;
+  menuType: string;
+  dietaryRestrictions: string[];
+  specialOccasion: string;
+  phone: string;
+}
+
+export interface VisaData {
+  fullName: string;
+  birthDate: string;
+  nationality: string;
+  passportNumber: string;
+  passportExpiration: string;
+  countryApplying: string;
+  visaType: string;
+  estimatedTravelDate: string;
+  email: string;
+}
+
+export interface PassportData {
+  fullName: string;
+  idNumber: string;
+  birthDate: string;
+  residenceCity: string;
+  processType: string;
+  estimatedTravelDate: string;
+  phone: string;
+}
+
+export interface PetServiceData {
+  ownerName: string;
+  petName: string;
+  species: string;
+  breed: string;
+  weight: number;
+  size: string;
+  travelType: string;
+  travelDate: string;
+  destinationCountry: string;
+  medicalConditions: string;
+  phone: string;
+}
+
 export interface PaymentRecord {
   id: number;
   date: string;
@@ -233,6 +369,17 @@ export interface Sale {
   hotelData?: HotelData[];
   insuranceData?: InsuranceData[];
   planData?: PlanData[];
+  checkInData?: CheckInData[];
+  migrationData?: MigrationData[];
+  simCardData?: SimCardData[];
+  carRentalData?: CarRentalData[];
+  fincaData?: FincaData[];
+  tourData?: TourData[];
+  conventionData?: ConventionData[];
+  restaurantData?: RestaurantData[];
+  visaData?: VisaData[];
+  passportData?: PassportData[];
+  petServiceData?: PetServiceData[];
   isCredit?: boolean;
   creditDueDate?: string;
   creditPaidAmount?: number;

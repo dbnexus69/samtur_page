@@ -5,11 +5,12 @@ interface FormFieldProps {
   label: string;
   children: ReactNode;
   error?: string;
+  className?: string;
 }
 
-export function FormField({ label, children, error }: FormFieldProps) {
+export function FormField({ label, children, error, className = "" }: FormFieldProps) {
   return (
-    <div className="mb-4">
+    <div className={`mb-4 ${className}`}>
       <label className={`block text-sm font-medium mb-1 ${error ? 'text-red-500' : 'text-gray-700'}`}>{label}</label>
       {children}
       {error && (
