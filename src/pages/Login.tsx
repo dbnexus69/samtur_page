@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Loader2, Plane, ShieldCheck, ChevronRight, Info, Star, MapPin, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Plane, ShieldCheck, ChevronRight, Info } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Button } from '../components/ui/Button';
 import { Input, FormField } from '../components/ui/Form';
 
 export default function Login() {
@@ -52,13 +51,14 @@ export default function Login() {
 
       {/* Contenedor del Login */}
       <div className="relative z-20 w-full max-w-md animate-fade-in-up">
-        {/* Branding Superior */}
-        <div className="text-center mb-6 flex flex-col items-center">
-          <img src="/logo_ictea.svg" className="w-64 h-auto max-h-32 object-contain drop-shadow-2xl" alt="iCTea Logo" />
-        </div>
         {/* Tarjeta de Login Glassmorphism */}
         <div className="bg-white/65 backdrop-blur-xl rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,130,138,0.15)] p-8 border border-white/40 text-[#002855]">
-          <div className="mb-6">
+          {/* Logo Corporativo */}
+          <div className="text-center mb-6 flex flex-col items-center">
+            <img src="/itea logo.png" className="w-52 h-auto object-contain drop-shadow-md" alt="iCTea Logo" />
+          </div>
+
+          <div className="mb-6 text-center">
             <h2 className="text-xl font-bold text-[#002855]">Bienvenido de nuevo</h2>
             <p className="text-gray-500 text-sm">Ingresa tus credenciales para acceder al sistema.</p>
           </div>
