@@ -50,6 +50,7 @@ export default function Config() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [formData, setFormData] = useState<any>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
 
   const currentData = (data.config[currentSection as keyof ConfigData] || []) as any[];
 
@@ -73,7 +74,7 @@ export default function Config() {
       case 'airports':
         return (item.name || '').toLowerCase().includes(term) || (item.abbreviation || '').toLowerCase().includes(term) || (item.location || '').toLowerCase().includes(term);
       case 'baggage':
-        return (item.name || '').toLowerCase().includes(term) || (item.maxWeight || '').toLowerCase().includes(term);
+        return (item.airlineName || '').toLowerCase().includes(term);
       default:
         return true;
     }
@@ -191,8 +192,13 @@ export default function Config() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm('¿Está seguro de eliminar este registro?')) {
-      deleteConfigItem(currentSection as ConfigSection, id);
+    setDeleteItemId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteItemId !== null) {
+      deleteConfigItem(currentSection as ConfigSection, deleteItemId);
+      setDeleteItemId(null);
     }
   };
 
@@ -613,27 +619,59 @@ export default function Config() {
   const renderPaymentMethodsGrid = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {filteredData.map((method) => (
-          <div key={method.id} className="bg-white border border-gray-border hover:border-accent/40 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between group">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/5 group-hover:bg-accent/10 flex items-center justify-center text-primary group-hover:text-accent transition-colors">
-                <Coins size={18} />
+        {filteredData.map((method) => {
+          const isCard = method.name.toLowerCase().includes('tarjeta') || method.name.toLowerCase().includes('crédito');
+          const isTransfer = method.name.toLowerCase().includes('transfe') || method.name.toLowerCase().includes('banco') || method.name.toLowerCase().includes('llaves');
+          const theme = isCard ? {
+            border: 'border-purple-200 hover:border-purple-400',
+            bg: 'from-purple-50/40 via-white to-purple-50/10 shadow-purple-500/5',
+            iconBg: 'bg-purple-100 text-purple-600',
+            tagBg: 'bg-purple-50 text-purple-700 border-purple-100',
+            label: 'Tarjeta / Crédito'
+          } : isTransfer ? {
+            border: 'border-emerald-200 hover:border-emerald-400',
+            bg: 'from-emerald-50/40 via-white to-emerald-50/10 shadow-emerald-500/5',
+            iconBg: 'bg-emerald-100 text-emerald-600',
+            tagBg: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+            label: 'Transferencia / Banco'
+          } : {
+            border: 'border-amber-200 hover:border-amber-400',
+            bg: 'from-amber-50/40 via-white to-amber-50/10 shadow-amber-500/5',
+            iconBg: 'bg-amber-100 text-amber-600',
+            tagBg: 'bg-amber-50 text-amber-700 border-amber-100',
+            label: 'Efectivo / Llave'
+          };
+
+          return (
+            <div key={method.id} className={`bg-gradient-to-br ${theme.bg} border ${theme.border} rounded-2xl p-5 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between group relative overflow-hidden min-h-[130px]`}>
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl ${theme.iconBg} flex items-center justify-center transition-transform group-hover:rotate-6 duration-300 shadow-sm`}>
+                    <Coins size={18} />
+                  </div>
+                  <div>
+                    <span className="font-heading font-bold text-gray-800 text-xs block group-hover:text-primary transition-colors">{method.name}</span>
+                    <span className="text-[9px] text-gray-400 font-mono tracking-wider">REF ID: #{method.id.toString().padStart(3, '0')}</span>
+                  </div>
+                </div>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute right-4 top-4">
+                  <button onClick={() => handleOpenModal(method)} className="p-1.5 text-gray-400 hover:text-primary rounded-lg hover:bg-white border border-transparent hover:border-gray-100 shadow-sm transition-all" title="Editar">
+                    <Pencil size={11} />
+                  </button>
+                  <button onClick={() => handleDelete(method.id)} className="p-1.5 text-red-400 hover:text-red-700 rounded-lg hover:bg-red-50 border border-transparent hover:border-red-100 shadow-sm transition-all" title="Eliminar">
+                    <Trash2 size={11} />
+                  </button>
+                </div>
               </div>
-              <div>
-                <span className="font-bold text-gray-800 text-xs block">{method.name}</span>
-                <span className="text-[10px] text-gray-400 font-mono">Catálogo ID: #{method.id}</span>
+              <div className="flex justify-between items-center border-t border-gray-100/60 pt-3 mt-auto">
+                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{theme.label}</span>
+                <span className={`text-[8px] font-extrabold px-2 py-0.5 rounded-full border uppercase tracking-widest flex items-center gap-1 ${theme.tagBg}`}>
+                  <span className="w-1 h-1 rounded-full bg-current animate-ping" /> Activo
+                </span>
               </div>
             </div>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => handleOpenModal(method)} className="p-1.5 text-gray-500 hover:text-primary rounded-md hover:bg-gray-100">
-                <Pencil size={13} />
-              </button>
-              <button onClick={() => handleDelete(method.id)} className="p-1.5 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50">
-                <Trash2 size={13} />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
@@ -641,27 +679,52 @@ export default function Config() {
   const renderDocumentTypesGrid = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {filteredData.map((doc) => (
-          <div key={doc.id} className="bg-white border border-gray-border hover:border-accent/40 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between group">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/5 group-hover:bg-accent/10 flex items-center justify-center text-primary group-hover:text-accent transition-colors">
-                <IdCard size={18} />
+        {filteredData.map((doc) => {
+          const isNational = doc.name.toLowerCase().includes('cédula') || doc.name.toLowerCase().includes('cc') || doc.name.toLowerCase().includes('nit');
+          const theme = isNational ? {
+            border: 'border-blue-200 hover:border-blue-400',
+            bg: 'from-blue-50/40 via-white to-blue-50/10 shadow-blue-500/5',
+            iconBg: 'bg-blue-100 text-blue-600',
+            tagBg: 'bg-blue-50 text-blue-700 border-blue-100',
+            label: 'Nacional / Colombia'
+          } : {
+            border: 'border-teal-200 hover:border-teal-400',
+            bg: 'from-teal-50/40 via-white to-teal-50/10 shadow-teal-500/5',
+            iconBg: 'bg-teal-100 text-teal-600',
+            tagBg: 'bg-teal-50 text-teal-700 border-teal-100',
+            label: 'Internacional / Global'
+          };
+
+          return (
+            <div key={doc.id} className={`bg-gradient-to-br ${theme.bg} border ${theme.border} rounded-2xl p-5 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between group relative overflow-hidden min-h-[130px]`}>
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl ${theme.iconBg} flex items-center justify-center transition-transform group-hover:rotate-6 duration-300 shadow-sm`}>
+                    <IdCard size={18} />
+                  </div>
+                  <div>
+                    <span className="font-heading font-bold text-gray-800 text-xs block group-hover:text-primary transition-colors">{doc.name}</span>
+                    <span className="text-[9px] text-gray-400 font-mono tracking-wider">REF ID: #{doc.id.toString().padStart(3, '0')}</span>
+                  </div>
+                </div>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute right-4 top-4">
+                  <button onClick={() => handleOpenModal(doc)} className="p-1.5 text-gray-400 hover:text-primary rounded-lg hover:bg-white border border-transparent hover:border-gray-100 shadow-sm transition-all" title="Editar">
+                    <Pencil size={11} />
+                  </button>
+                  <button onClick={() => handleDelete(doc.id)} className="p-1.5 text-red-400 hover:text-red-700 rounded-lg hover:bg-red-50 border border-transparent hover:border-red-100 shadow-sm transition-all" title="Eliminar">
+                    <Trash2 size={11} />
+                  </button>
+                </div>
               </div>
-              <div>
-                <span className="font-bold text-gray-800 text-xs block">{doc.name}</span>
-                <span className="text-[10px] text-gray-400 font-mono">Tipo Ref: #{doc.id}</span>
+              <div className="flex justify-between items-center border-t border-gray-100/60 pt-3 mt-auto">
+                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{theme.label}</span>
+                <span className={`text-[8px] font-extrabold px-2 py-0.5 rounded-full border uppercase tracking-widest flex items-center gap-1 ${theme.tagBg}`}>
+                  <span className="w-1 h-1 rounded-full bg-current animate-ping" /> Habilitado
+                </span>
               </div>
             </div>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => handleOpenModal(doc)} className="p-1.5 text-gray-500 hover:text-primary rounded-md hover:bg-gray-100">
-                <Pencil size={13} />
-              </button>
-              <button onClick={() => handleDelete(doc.id)} className="p-1.5 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50">
-                <Trash2 size={13} />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
@@ -1117,6 +1180,41 @@ export default function Config() {
       >
         <div className="space-y-4">
           {getFormFields(currentSection)}
+        </div>
+      </Modal>
+
+      {/* Premium Custom Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteItemId !== null}
+        onClose={() => setDeleteItemId(null)}
+        title="Confirmar Eliminación"
+        footer={
+          <div className="flex gap-2 w-full justify-end">
+            <Button variant="outline" onClick={() => setDeleteItemId(null)}>
+              No, cancelar
+            </Button>
+            <Button variant="danger" onClick={confirmDelete} className="bg-red-600 hover:bg-red-700 text-white font-semibold">
+              Sí, eliminar registro
+            </Button>
+          </div>
+        }
+      >
+        <div className="text-center p-4">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+            <Trash2 size={28} />
+          </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-2">
+            ¿Estás absolutamente seguro?
+          </h3>
+          <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
+            Esta acción es irreversible. Se eliminará de forma permanente el elemento con ID <strong className="text-gray-700 font-mono">#{deleteItemId}</strong> del catálogo de <strong className="text-primary">{SECTIONS.find(s => s.id === currentSection)?.label}</strong>.
+          </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-left flex items-start gap-3">
+            <span className="text-amber-600 text-lg">⚠️</span>
+            <p className="text-xs text-amber-700 leading-relaxed font-semibold">
+              Nota: Asegúrate de que este elemento no esté siendo referenciado por tiquetes o ventas activas del sistema.
+            </p>
+          </div>
         </div>
       </Modal>
     </div>
