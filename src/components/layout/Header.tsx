@@ -7,7 +7,7 @@ const pageTitles: Record<string, string> = {
   '/clients': 'Clientes',
   '/itineraries': 'Itinerarios',
   '/users': 'Usuarios',
-  '/config': 'Configuracion'
+  '/config': 'Catálogos'
 };
 
 const navItems = [

@@ -2189,10 +2189,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
     };
 
     const uniqueCities = Array.from(
-      new Set([
-        ...data.config.routes.map((r: any) => r.origin),
-        ...data.config.routes.map((r: any) => r.destination),
-      ]),
+      new Set(data.config.airports.map((a: any) => a.location)),
     );
 
     return (
@@ -4015,10 +4012,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
       });
     };
 
-    const uniqueCities = Array.from(new Set([
-      ...data.config.routes.map((r: any) => r.origin),
-      ...data.config.routes.map((r: any) => r.destination)
-    ]));
+    const uniqueCities = Array.from(new Set(
+      data.config.airports.map((a: any) => a.location)
+    ));
 
     return (
       <div className="space-y-6 animate-fade-in">
@@ -4291,7 +4287,10 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
                 onChange={(e) => updateTicket({ baggagePlan: e.target.value })}
                 options={[
                   { value: "", label: "Seleccionar plan..." },
-                  ...data.config.baggage.map((b) => ({ value: b.name, label: `${b.name} (${b.maxWeight})` })),
+                  ...data.config.baggage.map((b) => ({
+                    value: `${b.airlineName} - ${b.fareType}`,
+                    label: `${b.airlineName} — ${b.fareType} (Bodega: ${b.checkedBag})`
+                  })),
                 ]}
               />
             </FormField>

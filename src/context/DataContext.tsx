@@ -3,7 +3,7 @@ import { AppData, User, Client, Sale, Flight, RolePermissions } from '../types';
 import { mockData } from '../data/mockData';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
-type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'routes' | 'baggage';
+type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'airports' | 'baggage';
 
 interface DataContextType {
   data: AppData;
@@ -28,11 +28,35 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  localStorage.removeItem('samtour_data');
   const [data, setData] = useLocalStorage<AppData>('samtour_data', mockData);
 
   useEffect(() => {
-    setData(mockData);
+    if (!data) return;
+    
+    const currentAirlines = data.config?.airlines || [];
+    const hasOldAirlines = currentAirlines.length < 18 || currentAirlines.some((a: any) => !a.website || !a.type);
+    
+    const currentSuppliers = data.config?.suppliers || [];
+    const hasOldSuppliers = currentSuppliers.some((s: any) => !s.website);
+
+    const currentAirports = data.config?.airports || [];
+    const hasOldAirports = currentAirports.length === 0;
+
+    const currentBaggage = data.config?.baggage || [];
+    const hasOldBaggage = currentBaggage.length === 0 || currentBaggage.some((b: any) => !b.airlineName || !b.fareType);
+    
+    if ((hasOldAirlines || hasOldSuppliers || hasOldAirports || hasOldBaggage) && mockData?.config) {
+      setData({
+        ...data,
+        config: {
+          ...data.config,
+          airlines: hasOldAirlines ? mockData.config.airlines : data.config.airlines,
+          suppliers: hasOldSuppliers ? mockData.config.suppliers : data.config.suppliers,
+          airports: hasOldAirports ? mockData.config.airports : data.config.airports,
+          baggage: hasOldBaggage ? mockData.config.baggage : data.config.baggage
+        }
+      });
+    }
   }, []);
 
   const refreshData = () => {
