@@ -143,17 +143,24 @@ export function HotelForm({ hotel, onChange, data }: HotelFormProps) {
           <FormField label="Costo Proveedor">
             <Input
               type="number"
-              value={hotel.supplierCost}
+              value={hotel.supplierCost === 0 ? "" : hotel.supplierCost}
               onChange={(e) =>
-                onChange({ supplierCost: Number(e.target.value) })
+                onChange({
+                  supplierCost:
+                    e.target.value === "" ? 0 : Number(e.target.value),
+                })
               }
             />
           </FormField>
-          <FormField label="Valor TA">
+          <FormField label="Tarifa Administrativa (TA)">
             <Input
               type="number"
-              value={hotel.ta}
-              onChange={(e) => onChange({ ta: Number(e.target.value) })}
+              value={hotel.ta === 0 ? "" : hotel.ta}
+              onChange={(e) =>
+                onChange({
+                  ta: e.target.value === "" ? 0 : Number(e.target.value),
+                })
+              }
             />
           </FormField>
           <FormField label="Método de Pago">

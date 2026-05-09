@@ -242,10 +242,27 @@ export function TicketForm({
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Valor Pagado al Proveedor">
-            <Input type="number" value={ticket.supplierCost} onChange={(e) => onChange({ supplierCost: Number(e.target.value) })} />
+            <Input
+              type="number"
+              value={ticket.supplierCost === 0 ? "" : ticket.supplierCost}
+              onChange={(e) =>
+                onChange({
+                  supplierCost:
+                    e.target.value === "" ? 0 : Number(e.target.value),
+                })
+              }
+            />
           </FormField>
           <FormField label="Valor TA">
-            <Input type="number" value={ticket.ta} onChange={(e) => onChange({ ta: Number(e.target.value) })} />
+            <Input
+              type="number"
+              value={ticket.ta === 0 ? "" : ticket.ta}
+              onChange={(e) =>
+                onChange({
+                  ta: e.target.value === "" ? 0 : Number(e.target.value),
+                })
+              }
+            />
           </FormField>
           <FormField label="Método de Pago Proveedor">
             <Select

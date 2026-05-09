@@ -117,15 +117,24 @@ export function PlanForm({ plan, onChange, data }: PlanFormProps) {
           <FormField label="Costo Proveedor">
             <Input
               type="number"
-              value={plan.supplierCost}
-              onChange={(e) => onChange({ supplierCost: Number(e.target.value) })}
+              value={plan.supplierCost === 0 ? "" : plan.supplierCost}
+              onChange={(e) =>
+                onChange({
+                  supplierCost:
+                    e.target.value === "" ? 0 : Number(e.target.value),
+                })
+              }
             />
           </FormField>
           <FormField label="Valor TA">
             <Input
               type="number"
-              value={plan.ta}
-              onChange={(e) => onChange({ ta: Number(e.target.value) })}
+              value={plan.ta === 0 ? "" : plan.ta}
+              onChange={(e) =>
+                onChange({
+                  ta: e.target.value === "" ? 0 : Number(e.target.value),
+                })
+              }
             />
           </FormField>
           <FormField label="Método de Pago">

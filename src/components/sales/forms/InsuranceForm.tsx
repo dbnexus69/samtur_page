@@ -116,17 +116,24 @@ export function InsuranceForm({ insurance, onChange, data }: InsuranceFormProps)
           <FormField label="Costo Proveedor">
             <Input
               type="number"
-              value={insurance.supplierCost}
+              value={insurance.supplierCost === 0 ? "" : insurance.supplierCost}
               onChange={(e) =>
-                onChange({ supplierCost: Number(e.target.value) })
+                onChange({
+                  supplierCost:
+                    e.target.value === "" ? 0 : Number(e.target.value),
+                })
               }
             />
           </FormField>
           <FormField label="Valor TA">
             <Input
               type="number"
-              value={insurance.ta}
-              onChange={(e) => onChange({ ta: Number(e.target.value) })}
+              value={insurance.ta === 0 ? "" : insurance.ta}
+              onChange={(e) =>
+                onChange({
+                  ta: e.target.value === "" ? 0 : Number(e.target.value),
+                })
+              }
             />
           </FormField>
           <FormField label="Método de Pago">
