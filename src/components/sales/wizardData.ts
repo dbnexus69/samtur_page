@@ -35,6 +35,8 @@ export interface WizardFormData {
   commissionAgent: string;
   commissionAmount: string;
   commissionPaymentMethod: string;
+  vendorId: string;
+  vendorName: string;
   selectedProducts: SaleProductId[];
   observations: string;
   paymentMethod: string;
@@ -295,6 +297,8 @@ export const INITIAL_FORM: WizardFormData = {
   commissionAgent: "",
   commissionAmount: "",
   commissionPaymentMethod: "",
+  vendorId: "",
+  vendorName: "",
   selectedProducts: [],
   observations: "",
   paymentMethod: "",

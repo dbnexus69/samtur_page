@@ -80,7 +80,11 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
         return INITIAL_FORM;
       }
     }
-    return INITIAL_FORM;
+    return {
+      ...INITIAL_FORM,
+      vendorId: user?.id ? String(user.id) : "",
+      vendorName: user?.name || "",
+    };
   });
   const [showOtherProducts, setShowOtherProducts] = useState(false);
   const [activeForm, setActiveForm] = useState<SaleProductId | null>(null);
@@ -430,8 +434,8 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
     const saleData: Omit<Sale, "id"> = {
       clientId: Number(form.clientId),
       clientName: client.name,
-      vendorId: user!.id,
-      vendorName: user!.name,
+      vendorId: Number(form.vendorId) || user!.id,
+      vendorName: form.vendorName || user!.name,
       date: new Date().toISOString().split("T")[0],
       total: Number(form.total),
       paymentMethod: form.paymentMethod,

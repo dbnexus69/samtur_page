@@ -35,6 +35,28 @@ export function Step1Client({ form, set, data, errors }: any) {
             />
           </FormField>
 
+          <FormField label="Vendedor / Operador *">
+            <Combobox
+              value={form.vendorName}
+              onChange={(val) => {
+                const selected = data.users.find((u: any) => u.name === val);
+                if (selected) {
+                  set("vendorId", String(selected.id));
+                  set("vendorName", selected.name);
+                } else {
+                  set("vendorName", val);
+                }
+              }}
+              options={data.users
+                .filter((u: any) => u.status === "active")
+                .map((u: any) => ({
+                  value: u.name,
+                  label: u.name,
+                }))}
+              placeholder="¿Quién realiza la venta?"
+            />
+          </FormField>
+
           <FormField label="Comisionista">
             <Combobox
               value={form.commissionAgent || ""}
