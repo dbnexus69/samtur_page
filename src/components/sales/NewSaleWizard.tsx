@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   User,
   Package,
@@ -71,7 +71,17 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
   const { user } = useAuth();
 
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState<WizardFormData>(INITIAL_FORM);
+  const [form, setForm] = useState<WizardFormData>(() => {
+    const saved = localStorage.getItem("itea_new_sale_draft");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return INITIAL_FORM;
+      }
+    }
+    return INITIAL_FORM;
+  });
   const [showOtherProducts, setShowOtherProducts] = useState(false);
   const [activeForm, setActiveForm] = useState<SaleProductId | null>(null);
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
@@ -87,6 +97,48 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
       setActiveIdx(idx);
     },
   };
+
+  useEffect(() => {
+    localStorage.setItem("itea_new_sale_draft", JSON.stringify(form));
+  }, [form]);
+
+  // Compute Totals Automatically
+  useEffect(() => {
+    let calcSupplierCost = 0;
+    let calcTa = 0;
+
+    form.tickets.forEach(t => {
+      calcSupplierCost += Number(t.supplierCost) || 0;
+      calcTa += Number(t.ta) || 0;
+    });
+    form.hotels.forEach(h => {
+      calcSupplierCost += Number(h.supplierCost) || 0;
+      calcTa += Number(h.ta) || 0;
+    });
+    form.insurances.forEach(i => {
+      calcSupplierCost += Number(i.supplierCost) || 0;
+      calcTa += Number(i.ta) || 0;
+    });
+    form.plans.forEach(p => {
+      calcSupplierCost += Number(p.supplierCost) || 0;
+      calcTa += Number(p.ta) || 0;
+    });
+
+    const calcTotal = calcSupplierCost + calcTa;
+
+    if (
+      form.supplierCost !== calcSupplierCost.toString() ||
+      form.ta !== calcTa.toString() ||
+      form.total !== calcTotal.toString()
+    ) {
+      setForm(prev => ({
+        ...prev,
+        supplierCost: calcSupplierCost.toString(),
+        ta: calcTa.toString(),
+        total: calcTotal.toString()
+      }));
+    }
+  }, [form.tickets, form.hotels, form.insurances, form.plans]);
 
   /* ---- helpers --------------------------------------------------- */
   const set = <K extends keyof WizardFormData>(
@@ -184,7 +236,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
                   airlines={data.config.airlines}
                   suppliers={data.config.suppliers}
                   airports={data.config.airports}
-                  paymentMethods={data.config.paymentMethods}
+                  paymentMethods={data.config.cards}
                   baggage={data.config.baggage}
                 />
               );
@@ -411,7 +463,13 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
     };
 
     addSale(saleData as any);
+    localStorage.removeItem("itea_new_sale_draft");
     onSuccess("Venta registrada exitosamente");
+    onClose();
+  };
+
+  const handleCancel = () => {
+    localStorage.removeItem("itea_new_sale_draft");
     onClose();
   };
 
@@ -502,7 +560,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
               <Button
                 variant="outline"
                 className="px-8 border-gray-200 text-gray-500 hover:bg-gray-50"
-                onClick={onClose}
+                onClick={handleCancel}
               >
                 Cancelar
               </Button>

@@ -116,7 +116,47 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const addSale = (sale: Omit<Sale, 'id'>): Sale => {
     const newSale = { ...sale, id: generateId(data.sales) };
-    setData({ ...data, sales: [...data.sales, newSale] });
+    
+    const newFlights: Flight[] = [];
+    if (sale.ticketData && sale.ticketData.length > 0) {
+      let maxFlightId = generateId(data.flights);
+      
+      sale.ticketData.forEach(ticket => {
+        ticket.legs?.forEach(leg => {
+          if (leg.origin && leg.destination && leg.date) {
+            newFlights.push({
+              id: maxFlightId++,
+              passenger: ticket.passengerInfo?.name || sale.clientName || 'Pasajero',
+              route: `${leg.origin} - ${leg.destination}`,
+              airline: ticket.airline,
+              date: leg.date,
+              time: 'TBD',
+              type: 'ida',
+              checkin: 'pendiente'
+            });
+          }
+        });
+
+        if (ticket.isRoundTrip && ticket.returnLeg && ticket.returnLeg.origin && ticket.returnLeg.destination && ticket.returnLeg.date) {
+          newFlights.push({
+            id: maxFlightId++,
+            passenger: ticket.passengerInfo?.name || sale.clientName || 'Pasajero',
+            route: `${ticket.returnLeg.origin} - ${ticket.returnLeg.destination}`,
+            airline: ticket.airline,
+            date: ticket.returnLeg.date,
+            time: 'TBD',
+            type: 'regreso',
+            checkin: 'pendiente'
+          });
+        }
+      });
+    }
+
+    setData({ 
+      ...data, 
+      sales: [...data.sales, newSale],
+      flights: [...data.flights, ...newFlights] 
+    });
     return newSale;
   };
 

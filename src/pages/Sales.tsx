@@ -10,6 +10,10 @@ import {
   FileDown,
   CheckCircle2,
   Trash2,
+  Plane,
+  Building2,
+  ShieldCheck,
+  Package,
 } from "lucide-react";
 import { Card, CardHeader, CardBody } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -23,6 +27,7 @@ import { usePermissions } from "../context/PermissionsContext";
 import { formatCurrency, formatDate } from "../utils/formatters";
 import { Sale } from "../types";
 import NewSaleWizard from "../components/sales/NewSaleWizard";
+import ProductDetailsModal from "../components/sales/ProductDetailsModal";
 
 export default function Sales() {
   const { data, addSale, updateSale } = useData();
@@ -35,6 +40,7 @@ export default function Sales() {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [detailedProduct, setDetailedProduct] = useState<{ type: string; data: any[] } | null>(null);
 
   const [payments, setPayments] = useState<any[]>([]);
   const [newPayment, setNewPayment] = useState({
@@ -894,39 +900,71 @@ export default function Sales() {
                 <div>
                   <h4 className="text-sm font-bold text-primary border-b border-gray-200 pb-2 mb-3 flex items-center gap-2">
                     <ShoppingBag size={16} className="text-accent" />{" "}
-                    Descripción de los Servicios Vendidos
+                    Desglose de Servicios
                   </h4>
-                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-inner min-h-[80px]">
-                    {selectedSale.observations ? (
-                      <ul className="space-y-2">
-                        {selectedSale.observations
-                          .split("\n")
-                          .filter((l) => l.trim())
-                          .map((line, i) => (
-                            <li
-                              key={i}
-                              className="flex items-start gap-2.5 text-sm text-gray-700"
-                            >
-                              <CheckCircle2
-                                size={18}
-                                className="text-green-500 shrink-0 mt-0.5"
-                              />
-                              <span className="font-medium">{line}</span>
-                            </li>
-                          ))}
-                      </ul>
-                    ) : (
-                      <div className="flex items-center gap-2 text-gray-400 italic text-sm">
-                        <ShoppingBag size={16} />
-                        <span>No se detallaron los servicios vendidos...</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {selectedSale.ticketData && selectedSale.ticketData.length > 0 && (
+                      <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                          <Plane size={16} className="text-primary"/> Tiquetería ({selectedSale.ticketData.length})
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => setDetailedProduct({ type: 'Tiquetería', data: selectedSale.ticketData! })}>
+                          Ver Detalles
+                        </Button>
+                      </div>
+                    )}
+                    {selectedSale.hotelData && selectedSale.hotelData.length > 0 && (
+                      <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                          <Building2 size={16} className="text-primary"/> Hotelería ({selectedSale.hotelData.length})
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => setDetailedProduct({ type: 'Hotelería', data: selectedSale.hotelData! })}>
+                          Ver Detalles
+                        </Button>
+                      </div>
+                    )}
+                    {selectedSale.insuranceData && selectedSale.insuranceData.length > 0 && (
+                      <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                          <ShieldCheck size={16} className="text-primary"/> Seguros ({selectedSale.insuranceData.length})
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => setDetailedProduct({ type: 'Seguros', data: selectedSale.insuranceData! })}>
+                          Ver Detalles
+                        </Button>
+                      </div>
+                    )}
+                    {selectedSale.planData && selectedSale.planData.length > 0 && (
+                      <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                          <Package size={16} className="text-primary"/> Planes ({selectedSale.planData.length})
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => setDetailedProduct({ type: 'Planes', data: selectedSale.planData! })}>
+                          Ver Detalles
+                        </Button>
                       </div>
                     )}
                   </div>
+                  
+                  {/* Keep observations if any */}
+                  {selectedSale.observations && selectedSale.observations.trim() !== "" && (
+                    <div className="mt-4">
+                      <h5 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Observaciones Adicionales</h5>
+                      <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 whitespace-pre-wrap">{selectedSale.observations.split('\n---\n').pop()}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             );
           })()}
       </Modal>
+      
+      {/* Detalle Específico de Producto */}
+      {detailedProduct && (
+        <ProductDetailsModal
+          product={detailedProduct}
+          onClose={() => setDetailedProduct(null)}
+        />
+      )}
     </div>
   );
 

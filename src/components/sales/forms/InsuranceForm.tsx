@@ -133,9 +133,9 @@ export function InsuranceForm({ insurance, onChange, data }: InsuranceFormProps)
             <Select
               value={insurance.supplierPaymentMethod}
               onChange={(e) => onChange({ supplierPaymentMethod: e.target.value })}
-              options={data.config.paymentMethods.map((m: any) => ({
+              options={data.config.cards.map((m: any) => ({
                 value: m.name,
-                label: m.name,
+                label: m.lastFourDigits ? `${m.name} (**${m.lastFourDigits})` : m.name,
               }))}
             />
           </FormField>

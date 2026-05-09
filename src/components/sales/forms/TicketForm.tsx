@@ -9,7 +9,7 @@ interface TicketFormProps {
   airlines: { name: string }[];
   suppliers: { name: string }[];
   airports: any[];
-  paymentMethods: { name: string }[];
+  paymentMethods: { name: string; lastFourDigits?: string }[];
   baggage: {
     id: number;
     airlineName: string;
@@ -30,9 +30,10 @@ export function TicketForm({
   paymentMethods,
   baggage,
 }: TicketFormProps) {
-  const uniqueCities = Array.from(
-    new Set(airports?.map((a) => a.location.split(",")[0].trim()) || [])
-  );
+  const airportOptions = airports.map((a) => ({
+    value: a.abbreviation,
+    label: `${a.abbreviation} - ${a.name} (${a.location})`,
+  }));
 
   const updateLeg = (legIdx: number, legUpdates: Partial<FlightLeg>) => {
     const nextLegs = [...ticket.legs];
@@ -51,8 +52,8 @@ export function TicketForm({
   return (
     <div className="space-y-6 animate-fade-in">
       <datalist id="cities-list-ticket">
-        {uniqueCities.map((city) => (
-          <option key={city} value={city} />
+        {airports?.map((a) => (
+          <option key={a.abbreviation} value={a.abbreviation} />
         ))}
       </datalist>
 
@@ -84,19 +85,6 @@ export function TicketForm({
               placeholder="6 caracteres"
             />
           </FormField>
-          <FormField label="Número de Vuelo">
-            <Input
-              value={ticket.flightNumber}
-              onChange={(e) => onChange({ flightNumber: e.target.value })}
-              placeholder="Ej: AV9301"
-            />
-          </FormField>
-          <FormField label="Fecha de Vuelo">
-            <Input type="date" value={ticket.departureDate} onChange={(e) => onChange({ departureDate: e.target.value })} />
-          </FormField>
-          <FormField label="Fecha de Aterrizaje">
-            <Input type="date" value={ticket.arrivalDate} onChange={(e) => onChange({ arrivalDate: e.target.value })} />
-          </FormField>
         </div>
       </div>
 
@@ -126,7 +114,7 @@ export function TicketForm({
                   <Combobox
                     value={leg.origin}
                     onChange={(val) => updateLeg(lIdx, { origin: val })}
-                    options={uniqueCities.map((city) => ({ value: city, label: city }))}
+                    options={airportOptions}
                     placeholder="Ej: BOG"
                     className="text-xs"
                   />
@@ -135,7 +123,7 @@ export function TicketForm({
                   <Combobox
                     value={leg.destination}
                     onChange={(val) => updateLeg(lIdx, { destination: val })}
-                    options={uniqueCities.map((city) => ({ value: city, label: city }))}
+                    options={airportOptions}
                     placeholder="Ej: MDE"
                     className="text-xs"
                   />
@@ -177,7 +165,7 @@ export function TicketForm({
                 <Combobox
                   value={ticket.returnLeg?.origin || ""}
                   onChange={(val) => onChange({ returnLeg: { ...ticket.returnLeg!, origin: val } })}
-                  options={uniqueCities.map((city) => ({ value: city, label: city }))}
+                  options={airportOptions}
                   placeholder="Ej: MDE"
                   className="text-xs"
                 />
@@ -186,7 +174,7 @@ export function TicketForm({
                 <Combobox
                   value={ticket.returnLeg?.destination || ""}
                   onChange={(val) => onChange({ returnLeg: { ...ticket.returnLeg!, destination: val } })}
-                  options={uniqueCities.map((city) => ({ value: city, label: city }))}
+                  options={airportOptions}
                   placeholder="Ej: BOG"
                   className="text-xs"
                 />
@@ -263,7 +251,10 @@ export function TicketForm({
             <Select
               value={ticket.supplierPaymentMethod}
               onChange={(e) => onChange({ supplierPaymentMethod: e.target.value })}
-              options={paymentMethods.map((m) => ({ value: m.name, label: m.name }))}
+              options={paymentMethods.map((m) => ({
+                value: m.name,
+                label: m.lastFourDigits ? `${m.name} (**${m.lastFourDigits})` : m.name,
+              }))}
             />
           </FormField>
           <FormField label="Plan de Equipaje">

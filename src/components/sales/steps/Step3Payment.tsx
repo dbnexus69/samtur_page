@@ -33,7 +33,8 @@ export function Step3Payment({ form, set, data, errors }: any) {
             <Input
               type="number"
               value={form.total}
-              onChange={(e) => set("total", e.target.value)}
+              readOnly
+              className="bg-gray-100"
               placeholder="0"
               error={errors.total}
             />
@@ -59,7 +60,8 @@ export function Step3Payment({ form, set, data, errors }: any) {
             <Input
               type="number"
               value={form.ta}
-              onChange={(e) => set("ta", e.target.value)}
+              readOnly
+              className="bg-gray-100"
               placeholder="0"
             />
           </FormField>
@@ -68,7 +70,8 @@ export function Step3Payment({ form, set, data, errors }: any) {
             <Input
               type="number"
               value={form.supplierCost}
-              onChange={(e) => set("supplierCost", e.target.value)}
+              readOnly
+              className="bg-gray-100"
               placeholder="0"
             />
           </FormField>

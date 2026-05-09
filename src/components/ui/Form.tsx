@@ -53,8 +53,11 @@ export function Combobox({ value, onChange, options, placeholder, error, classNa
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setSearchTerm(value);
-  }, [value]);
+    if (!isOpen) {
+      const selected = options.find(o => o.value === value);
+      setSearchTerm(selected ? selected.label : value);
+    }
+  }, [value, options, isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -66,10 +69,14 @@ export function Combobox({ value, onChange, options, placeholder, error, classNa
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredOptions = options.filter(opt => 
-    opt.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    opt.value.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const selectedLabel = options.find(o => o.value === value)?.label || value;
+  
+  const filteredOptions = (searchTerm === selectedLabel)
+    ? options
+    : options.filter(opt => 
+        opt.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        opt.value.toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
@@ -85,13 +92,6 @@ export function Combobox({ value, onChange, options, placeholder, error, classNa
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
-          onBlur={() => {
-            // Revert searchTerm to the actual selected value if they didn't click an option
-            setTimeout(() => {
-              const selected = options.find(o => o.value === value);
-              setSearchTerm(selected ? selected.label : '');
-            }, 200);
-          }}
           placeholder={placeholder}
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
