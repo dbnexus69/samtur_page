@@ -11,10 +11,9 @@ interface HotelFormProps {
 
 export function HotelForm({ hotel, onChange, data }: HotelFormProps) {
   const uniqueCities = Array.from(
-    new Set([
-      ...data.config.routes.map((r: any) => r.origin),
-      ...data.config.routes.map((r: any) => r.destination),
-    ]),
+    new Set(
+      data.config.airports?.map((a: any) => a.location.split(",")[0].trim()) || []
+    ),
   );
 
   const addGuest = () => {

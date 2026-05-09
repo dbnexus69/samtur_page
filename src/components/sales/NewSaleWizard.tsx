@@ -183,7 +183,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
                   }}
                   airlines={data.config.airlines}
                   suppliers={data.config.suppliers}
-                  routes={data.config.routes}
+                  airports={data.config.airports}
                   paymentMethods={data.config.paymentMethods}
                   baggage={data.config.baggage}
                 />

@@ -8,9 +8,17 @@ interface TicketFormProps {
   onChange: (updates: Partial<TicketData>) => void;
   airlines: { name: string }[];
   suppliers: { name: string }[];
-  routes: { origin: string; destination: string }[];
+  airports: any[];
   paymentMethods: { name: string }[];
-  baggage: { name: string; maxWeight: string }[];
+  baggage: {
+    id: number;
+    airlineName: string;
+    fareType: string;
+    personalItem: string;
+    carryOn: string;
+    checkedBag: string;
+    notes: string;
+  }[];
 }
 
 export function TicketForm({
@@ -18,11 +26,13 @@ export function TicketForm({
   onChange,
   airlines,
   suppliers,
-  routes,
+  airports,
   paymentMethods,
   baggage,
 }: TicketFormProps) {
-  const uniqueCities = Array.from(new Set([...routes.map((r) => r.origin), ...routes.map((r) => r.destination)]));
+  const uniqueCities = Array.from(
+    new Set(airports?.map((a) => a.location.split(",")[0].trim()) || [])
+  );
 
   const updateLeg = (legIdx: number, legUpdates: Partial<FlightLeg>) => {
     const nextLegs = [...ticket.legs];
@@ -260,7 +270,13 @@ export function TicketForm({
             <Select
               value={ticket.baggagePlan}
               onChange={(e) => onChange({ baggagePlan: e.target.value })}
-              options={[{ value: "", label: "Seleccionar plan..." }, ...baggage.map((b) => ({ value: b.name, label: `${b.name} (${b.maxWeight})` }))]}
+              options={[
+                { value: "", label: "Seleccionar plan..." },
+                ...baggage.map((b) => ({
+                  value: `${b.airlineName} - ${b.fareType}`,
+                  label: `${b.airlineName} - ${b.fareType}`,
+                })),
+              ]}
             />
           </FormField>
         </div>
