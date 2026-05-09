@@ -8,6 +8,7 @@ import {
   UserCog,
   Settings,
   LogOut,
+  Database,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { usePermissions } from "../../context/PermissionsContext";
@@ -27,7 +28,7 @@ export function Sidebar() {
 
   const adminLinks = [
     { to: "/users", icon: UserCog, label: "Usuarios", permission: 'users' as const },
-    { to: "/config", icon: Settings, label: "Configuracion", permission: 'config' as const },
+    { to: "/config", icon: Database, label: "Catálogos", permission: 'config' as const },
   ];
 
   const filteredMainLinks = mainLinks.filter(link => canView(link.permission));

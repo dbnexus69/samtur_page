@@ -403,18 +403,41 @@ export interface Flight {
 }
 
 export interface ConfigData {
-  cards: { id: number; bank: string; type: string }[];
+  cards: { 
+    id: number; 
+    name: string; 
+    paymentMethod: string; 
+    lastFourDigits: string; 
+    status: "Activo" | "Inactivo"; 
+    description: string; 
+  }[];
   paymentMethods: { id: number; name: string }[];
   documentTypes: { id: number; name: string }[];
-  airlines: { id: number; name: string; code: string }[];
-  suppliers: { id: number; name: string; type: string; contact: string }[];
-  routes: {
-    id: number;
-    origin: string;
-    destination: string;
-    duration: string;
+  airlines: { 
+    id: number; 
+    name: string; 
+    code: string; 
+    type: "Nacional" | "Internacional"; 
+    website: string; 
   }[];
-  baggage: { id: number; name: string; maxWeight: string }[];
+  suppliers: { id: number; name: string; type: string; contact: string; website: string }[];
+  airports: {
+    id: number;
+    name: string;
+    abbreviation: string;
+    location: string;
+    type: "Nacional" | "Internacional" | "Ambos";
+    status: "Activo" | "Inactivo";
+  }[];
+  baggage: {
+    id: number;
+    airlineName: string;
+    fareType: string;
+    personalItem: string;
+    carryOn: string;
+    checkedBag: string;
+    notes: string;
+  }[];
   rolePermissions: {
     vendor: RolePermissions; // Permisos por defecto del vendedor (editables)
   };
