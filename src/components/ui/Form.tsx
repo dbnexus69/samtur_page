@@ -82,10 +82,16 @@ export function Combobox({ value, onChange, options, placeholder, error, classNa
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            onChange(e.target.value);
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
+          onBlur={() => {
+            // Revert searchTerm to the actual selected value if they didn't click an option
+            setTimeout(() => {
+              const selected = options.find(o => o.value === value);
+              setSearchTerm(selected ? selected.label : '');
+            }, 200);
+          }}
           placeholder={placeholder}
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">

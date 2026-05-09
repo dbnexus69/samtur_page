@@ -1,5 +1,5 @@
 import { useLocation, Link } from 'react-router-dom';
-import { LayoutDashboard, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Menu } from 'lucide-react';
 
 const pageTitles: Record<string, string> = {
   '/': 'Dashboard',
@@ -15,9 +15,13 @@ const navItems = [
   { path: '/stats', label: 'Estadísticas', icon: BarChart3 },
 ];
 
-export function Header() {
+interface HeaderProps {
+  onMenuToggle?: () => void;
+}
+
+export function Header({ onMenuToggle }: HeaderProps) {
   const location = useLocation();
-  const title = pageTitles[location.pathname] || 'Samtour';
+  const title = pageTitles[location.pathname] || 'iTea';
   const isRootPath = location.pathname === '/' || location.pathname === '/stats';
   const activeNav = location.pathname === '/stats' ? 'stats' : 'dashboard';
 
@@ -47,12 +51,21 @@ export function Header() {
           </div>
         </nav>
       )}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-border px-6 py-4">
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-border px-4 md:px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-500">Samtour</span>
-            <span className="text-gray-400">/</span>
-            <span className="font-heading font-semibold text-primary">{title}</span>
+          <div className="flex items-center gap-3">
+            {/* Mobile Menu Toggle */}
+            <button 
+              onClick={onMenuToggle}
+              className="md:hidden p-1.5 -ml-1.5 text-gray-500 hover:text-primary rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <Menu size={20} />
+            </button>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-500 hidden sm:inline">iTea</span>
+              <span className="text-gray-400 hidden sm:inline">/</span>
+              <span className="font-heading font-semibold text-primary">{title}</span>
+            </div>
           </div>
           <div className="text-sm text-gray-500">
             {new Date().toLocaleDateString('es-CO', {

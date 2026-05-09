@@ -9,12 +9,12 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#102846",
-          dark: "#0a1c2e",
-          light: "#1a3a5c",
+          DEFAULT: "#032650",
+          dark: "#021a36",
+          light: "#0b396b",
         },
-        accent: "#f2892f",
-        "accent-dark": "#d97718",
+        accent: "#07818e",
+        "accent-dark": "#05646f",
         "gray-light": "#f5f5f5",
         "gray-border": "#e0e0e0",
         success: "#16a34a",
@@ -22,8 +22,8 @@ export default {
         danger: "#dc2626",
       },
       fontFamily: {
-        heading: ["Poppins", "sans-serif"],
-        body: ["Inter", "sans-serif"],
+        heading: ["Nunito", "sans-serif"],
+        body: ["Lato", "sans-serif"],
       },
     },
   },

@@ -590,7 +590,7 @@ export default function Config() {
                   {card.description || 'Sin descripción corporativa.'}
                 </p>
                 <div className="flex justify-between items-center border-t border-white/10 pt-3">
-                  <span className="text-[9px] font-mono opacity-60">SISTEMA DE FACTURACIÓN SAMTUR</span>
+                  <span className="text-[9px] font-mono opacity-60">SISTEMA DE FACTURACIÓN ITEA</span>
                   <div className="flex gap-1.5 relative z-10">
                     <button 
                       onClick={() => handleOpenModal(card)}

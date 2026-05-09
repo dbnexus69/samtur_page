@@ -69,7 +69,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="usuario@samtour.com"
+                placeholder="usuario@itea.com"
                 disabled={isLoading}
                 autoComplete="email"
                 className="transition-all focus:border-[#00828a] focus:ring-[#00828a]/20"
@@ -154,17 +154,17 @@ export default function Login() {
             
             {showDemo && (
               <div className="mt-4 grid grid-cols-1 gap-2 animate-fade-in">
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group hover:border-[#00828a]/30 transition-all cursor-pointer" onClick={() => {setEmail('admin@samtour.com'); setPassword('Admin123');}}>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group hover:border-[#00828a]/30 transition-all cursor-pointer" onClick={() => {setEmail('admin@itea.com'); setPassword('Admin123');}}>
                   <div>
                     <p className="text-[10px] font-bold text-[#00828a] uppercase">Administrador</p>
-                    <p className="text-xs text-slate-600">admin@samtour.com</p>
+                    <p className="text-xs text-slate-600">admin@itea.com</p>
                   </div>
                   <ShieldCheck size={16} className="text-slate-300 group-hover:text-[#00828a] transition-colors" />
                 </div>
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group hover:border-[#00828a]/30 transition-all cursor-pointer" onClick={() => {setEmail('juan@samtour.com'); setPassword('Vendor123');}}>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group hover:border-[#00828a]/30 transition-all cursor-pointer" onClick={() => {setEmail('juan@itea.com'); setPassword('Vendor123');}}>
                   <div>
                     <p className="text-[10px] font-bold text-[#00828a] uppercase">Vendedor</p>
-                    <p className="text-xs text-slate-600">juan@samtour.com</p>
+                    <p className="text-xs text-slate-600">juan@itea.com</p>
                   </div>
                   <Plane size={16} className="text-slate-300 group-hover:text-[#00828a] transition-colors" />
                 </div>
@@ -175,7 +175,7 @@ export default function Login() {
 
         {/* Footer del Login */}
         <p className="text-center mt-8 text-white/40 text-xs">
-          &copy; {new Date().getFullYear()} Samtour Agencia de Viajes. Todos los derechos reservados.
+          &copy; {new Date().getFullYear()} iTea Software de Viajes. Todos los derechos reservados.
         </p>
       </div>
     </div>

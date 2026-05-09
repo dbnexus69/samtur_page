@@ -24,12 +24,12 @@ const REMEMBER_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [data] = useLocalStorage('samtour_data', mockData);
+  const [data] = useLocalStorage('itea_data', mockData);
   const [sessionExpiry, setSessionExpiry] = useState<number | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('samtour_user');
-    const expiry = localStorage.getItem('samtour_session_expiry');
+    const stored = localStorage.getItem('itea_user');
+    const expiry = localStorage.getItem('itea_session_expiry');
     
     if (stored && expiry) {
       const expiryTime = parseInt(expiry);
@@ -38,12 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(JSON.parse(stored));
           setSessionExpiry(expiryTime);
         } catch {
-          localStorage.removeItem('samtour_user');
-          localStorage.removeItem('samtour_session_expiry');
+          localStorage.removeItem('itea_user');
+          localStorage.removeItem('itea_session_expiry');
         }
       } else {
-        localStorage.removeItem('samtour_user');
-        localStorage.removeItem('samtour_session_expiry');
+        localStorage.removeItem('itea_user');
+        localStorage.removeItem('itea_session_expiry');
       }
     }
     setIsLoading(false);
@@ -111,8 +111,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const duration = remember ? REMEMBER_DURATION : SESSION_DURATION;
     const expiryTime = Date.now() + duration;
     
-    localStorage.setItem('samtour_user', JSON.stringify(updatedUser));
-    localStorage.setItem('samtour_session_expiry', String(expiryTime));
+    localStorage.setItem('itea_user', JSON.stringify(updatedUser));
+    localStorage.setItem('itea_session_expiry', String(expiryTime));
     setSessionExpiry(expiryTime);
 
     return { success: true };
@@ -121,8 +121,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setSessionExpiry(null);
-    localStorage.removeItem('samtour_user');
-    localStorage.removeItem('samtour_session_expiry');
+    localStorage.removeItem('itea_user');
+    localStorage.removeItem('itea_session_expiry');
   };
 
   return (

@@ -155,7 +155,7 @@ export default function Dashboard() {
     { name: "Pendiente", value: stats.Pendiente },
   ];
 
-  const COLORS = ["#102846", "#f2892f", "#06b6d4", "#8b5cf6", "#22c55e"];
+  const COLORS = ["#032650", "#07818e", "#06b6d4", "#8b5cf6", "#22c55e"];
   const CARTERA_COLORS = ["#10b981", "#3b82f6", "#f59e0b"];
 
   return (
@@ -296,8 +296,8 @@ export default function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-3 gap-6">
-        <Card className="col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
           <CardHeader>
             Comparativa de Ingresos ({currentYear - 1} vs {currentYear})
           </CardHeader>
@@ -316,8 +316,8 @@ export default function Dashboard() {
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor="#102846" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#102846" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#032650" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#032650" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorPrev" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.3} />
@@ -361,13 +361,13 @@ export default function Dashboard() {
                     type="monotone"
                     dataKey={currentYear}
                     name={`Ingresos ${currentYear}`}
-                    stroke="#102846"
+                    stroke="#032650"
                     strokeWidth={3}
                     fillOpacity={1}
                     fill="url(#colorCurrent)"
                     activeDot={{
                       r: 6,
-                      fill: "#102846",
+                      fill: "#032650",
                       stroke: "#fff",
                       strokeWidth: 2,
                     }}
@@ -420,7 +420,7 @@ export default function Dashboard() {
                       padding: "8px 12px",
                     }}
                     itemStyle={{
-                      color: "#102846",
+                      color: "#032650",
                       fontWeight: "900",
                       fontSize: "14px",
                     }}

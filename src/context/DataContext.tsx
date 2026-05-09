@@ -28,7 +28,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useLocalStorage<AppData>('samtour_data', mockData);
+  const [data, setData] = useLocalStorage<AppData>('itea_data', mockData);
 
   useEffect(() => {
     if (!data) return;
@@ -60,7 +60,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshData = () => {
-    const stored = localStorage.getItem('samtour_data');
+    const stored = localStorage.getItem('itea_data');
     if (stored) {
       setData(JSON.parse(stored));
     }
