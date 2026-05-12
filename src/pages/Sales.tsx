@@ -6,6 +6,8 @@ import {
   TrendingUp,
   Wallet,
   CheckCircle2,
+  CreditCard,
+  FileText,
 } from "lucide-react";
 import { Card, CardHeader } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -21,6 +23,7 @@ import SaleDetailModal from "../components/sales/SaleDetailModal";
 import SaleEditModal from "../components/sales/SaleEditModal";
 import SalesTable from "../components/sales/SalesTable";
 import StatCard from "../components/sales/StatCard";
+import CreditDashboard from "../components/sales/CreditDashboard";
 
 export default function Sales() {
   const { data, addSale, updateSale } = useData();
@@ -33,6 +36,7 @@ export default function Sales() {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [activeTab, setActiveTab] = useState<'list' | 'credit'>('list');
   const [detailedProduct, setDetailedProduct] = useState<{
     type: string;
     data: any[];
@@ -107,49 +111,82 @@ export default function Sales() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
-        <StatCard
-          icon={<Receipt size={24} />}
-          label="Total Ventas"
-          value={formatCurrency(totals.total)}
-          color="bg-primary"
-        />
-        <StatCard
-          icon={<TrendingUp size={24} />}
-          label="Recaudado (Pagado)"
-          value={formatCurrency(totals.pagado)}
-          color="bg-green-500"
-        />
-        <StatCard
-          icon={<Wallet size={24} />}
-          label="Por Cobrar (Pendiente)"
-          value={formatCurrency(totals.pendiente)}
-          color="bg-amber-500"
-        />
+      {/* TABS SELECTOR */}
+      <div className="flex gap-2 bg-white p-1 rounded-xl border border-gray-100 shadow-sm inline-flex animate-fade-in">
+        <button
+          onClick={() => setActiveTab('list')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            activeTab === 'list' 
+              ? 'bg-primary text-white shadow-md' 
+              : 'text-gray-500 hover:bg-gray-50 hover:text-primary'
+          }`}
+        >
+          <FileText size={18} /> Listado de Ventas
+        </button>
+        <button
+          onClick={() => setActiveTab('credit')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            activeTab === 'credit' 
+              ? 'bg-primary text-white shadow-md' 
+              : 'text-gray-500 hover:bg-gray-50 hover:text-primary'
+          }`}
+        >
+          <CreditCard size={18} /> Crédito y Cobros
+        </button>
       </div>
 
-      <Card className="animate-fade-in">
-        <CardHeader
-          actions={
-            canCreate("sales") ? (
-              <Button onClick={handleOpenNewSale}>
-                <Plus size={18} />
-                Nueva Venta
-              </Button>
-            ) : undefined
-          }
-        >
-          Lista de Ventas {isAdmin ? "(Todas)" : "(Mis Ventas)"}
-        </CardHeader>
-        <SalesTable
-          sales={filteredSales}
-          onViewDetail={handleViewDetail}
-          onDownloadVoucher={handleDownloadVoucher}
-          onEdit={handleOpenModal}
-          canEditThis={canEditThis}
-          isAdmin={isAdmin}
+      {activeTab === 'list' ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
+            <StatCard
+              icon={<Receipt size={24} />}
+              label="Total Ventas"
+              value={formatCurrency(totals.total)}
+              color="bg-primary"
+            />
+            <StatCard
+              icon={<TrendingUp size={24} />}
+              label="Recaudado (Pagado)"
+              value={formatCurrency(totals.pagado)}
+              color="bg-green-500"
+            />
+            <StatCard
+              icon={<Wallet size={24} />}
+              label="Por Cobrar (Pendiente)"
+              value={formatCurrency(totals.pendiente)}
+              color="bg-amber-500"
+            />
+          </div>
+
+          <Card className="animate-fade-in">
+            <CardHeader
+              actions={
+                canCreate("sales") ? (
+                  <Button onClick={handleOpenNewSale}>
+                    <Plus size={18} />
+                    Nueva Venta
+                  </Button>
+                ) : undefined
+              }
+            >
+              Lista de Ventas {isAdmin ? "(Todas)" : "(Mis Ventas)"}
+            </CardHeader>
+            <SalesTable
+              sales={filteredSales}
+              onViewDetail={handleViewDetail}
+              onDownloadVoucher={handleDownloadVoucher}
+              onEdit={handleOpenModal}
+              canEditThis={canEditThis}
+              isAdmin={isAdmin}
+            />
+          </Card>
+        </>
+      ) : (
+        <CreditDashboard 
+          clients={data.clients}
+          sales={filteredSales} 
         />
-      </Card>
+      )}
 
       {/* ===== WIZARD MODAL (Nueva Venta) ===== */}
       <Modal

@@ -79,7 +79,11 @@ export function Step3Payment({ form, set, data, errors }: any) {
           <FormField label="Estado">
             <Combobox
               value={form.status}
-              onChange={(val) => set("status", val)}
+              onChange={(val) => {
+                set("status", val);
+                // Auto-set isCredit internally based on selection
+                set("isCredit", val === "pendiente");
+              }}
               options={[
                 { value: "pendiente", label: "Pendiente Crédito" },
                 { value: "abonado", label: "Completado" },
@@ -89,21 +93,7 @@ export function Step3Payment({ form, set, data, errors }: any) {
           </FormField>
         </div>
 
-        <div className="flex items-center gap-3 py-2 border-t border-gray-border mt-4">
-          <input
-            type="checkbox"
-            id="wizard-isCredit"
-            checked={form.isCredit}
-            onChange={(e) => set("isCredit", e.target.checked)}
-            className="w-4 h-4 rounded border-gray-border text-primary focus:ring-primary"
-          />
-          <label
-            htmlFor="wizard-isCredit"
-            className="text-sm font-medium text-gray-700"
-          >
-            Venta a crédito
-          </label>
-        </div>
+
 
         {form.isCredit && (
           <FormField label="Fecha de Vencimiento">

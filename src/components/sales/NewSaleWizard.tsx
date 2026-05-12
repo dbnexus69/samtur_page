@@ -432,7 +432,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
       .join("\n---\n");
 
     const saleData: Omit<Sale, "id"> = {
-      clientId: Number(form.clientId),
+      clientId: client.id,
       clientName: client.name,
       vendorId: Number(form.vendorId) || user!.id,
       vendorName: form.vendorName || user!.name,

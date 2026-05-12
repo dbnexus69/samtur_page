@@ -408,6 +408,9 @@ export const mockData: AppData = {
       status: "pendiente",
       category: "vuelos",
       paymentMethod: "Transferencia",
+      isCredit: true,
+      creditDueDate: "2026-06-15",
+      creditPaidAmount: 0,
       // --- DATOS NUEVOS DE COMISIÓN Y FINANCIEROS ---
       commissionAgent: "Asesor Independiente",
       commissionAmount: 20000,

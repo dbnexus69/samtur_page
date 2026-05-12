@@ -29,7 +29,7 @@ export function getDaysUntilDue(dueDate: string): number {
 }
 
 export function getCreditSaleStatus(sale: Sale): 'pending' | 'partial' | 'paid' | 'overdue' {
-  if (!sale.isCredit) return 'pending';
+  if (!sale.isCredit && sale.status !== 'pendiente' && sale.status !== 'abonado') return 'paid';
   
   const paidAmount = sale.creditPaidAmount || 0;
   
@@ -43,7 +43,7 @@ export function getCreditSaleStatus(sale: Sale): 'pending' | 'partial' | 'paid' 
 }
 
 export function getClientsWithCredit(clients: Client[], sales: Sale[]): ClientCreditSummary[] {
-  const creditSales = sales.filter(s => s.isCredit === true);
+  const creditSales = sales.filter(s => s.isCredit === true || s.status === 'pendiente' || s.status === 'abonado');
   
   const clientMap = new Map<number, ClientCreditSummary>();
   
@@ -108,7 +108,7 @@ export function getClientsWithCredit(clients: Client[], sales: Sale[]): ClientCr
 
 export function getClientCreditSales(clientId: number, sales: Sale[]): CreditSaleInfo[] {
   const creditSales = sales
-    .filter(s => s.clientId === clientId && s.isCredit === true)
+    .filter(s => s.clientId === clientId && (s.isCredit === true || s.status === 'pendiente' || s.status === 'abonado'))
     .map(sale => {
       const daysUntilDue = sale.creditDueDate ? getDaysUntilDue(sale.creditDueDate) : 0;
       const paidAmount = sale.creditPaidAmount || 0;
