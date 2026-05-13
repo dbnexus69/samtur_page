@@ -16,16 +16,32 @@ export function CarRentalForm({ car, onChange }: CarRentalFormProps) {
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Conductor Principal">
-            <Input value={car.mainDriver} onChange={(e) => onChange({ mainDriver: e.target.value })} placeholder="Nombre completo" />
+            <Input
+              value={car.mainDriver}
+              onChange={(e) => onChange({ mainDriver: e.target.value })}
+              placeholder="Nombre completo"
+            />
           </FormField>
           <FormField label="Número de Licencia">
-            <Input value={car.licenseNumber} onChange={(e) => onChange({ licenseNumber: e.target.value })} placeholder="Número de licencia" />
+            <Input
+              value={car.licenseNumber}
+              onChange={(e) => onChange({ licenseNumber: e.target.value })}
+              placeholder="Número de licencia"
+            />
           </FormField>
           <FormField label="Fecha de Recogida">
-            <Input type="date" value={car.pickupDate} onChange={(e) => onChange({ pickupDate: e.target.value })} />
+            <Input
+              type="date"
+              value={car.pickupDate}
+              onChange={(e) => onChange({ pickupDate: e.target.value })}
+            />
           </FormField>
           <FormField label="Fecha de Devolución">
-            <Input type="date" value={car.returnDate} onChange={(e) => onChange({ returnDate: e.target.value })} />
+            <Input
+              type="date"
+              value={car.returnDate}
+              onChange={(e) => onChange({ returnDate: e.target.value })}
+            />
           </FormField>
           <FormField label="Lugar de Recogida">
             <Combobox
@@ -53,12 +69,20 @@ export function CarRentalForm({ car, onChange }: CarRentalFormProps) {
             />
           </FormField>
           <FormField label="Conductores Adicionales">
-            <Input type="number" value={car.additionalDrivers} onChange={(e) => onChange({ additionalDrivers: parseInt(e.target.value) || 0 })} />
+            <Input
+              type="number"
+              value={car.additionalDrivers}
+              onChange={(e) =>
+                onChange({ additionalDrivers: parseInt(e.target.value) || 0 })
+              }
+            />
           </FormField>
           <FormField label="Tipo de Seguro">
             <Combobox
               value={car.insuranceType}
-              onChange={(val) => onChange({ insuranceType: val as "basic" | "all_risk" })}
+              onChange={(val) =>
+                onChange({ insuranceType: val as "basic" | "all_risk" })
+              }
               options={[
                 { value: "basic", label: "Básico" },
                 { value: "all_risk", label: "Todo Riesgo" },
@@ -66,7 +90,13 @@ export function CarRentalForm({ car, onChange }: CarRentalFormProps) {
             />
           </FormField>
           <FormField label="Tarjeta de Garantía">
-            <Input value={car.guaranteeCreditCard} onChange={(e) => onChange({ guaranteeCreditCard: e.target.value })} placeholder="Últimos 4 dígitos" />
+            <Input
+              value={car.guaranteeCreditCard}
+              onChange={(e) =>
+                onChange({ guaranteeCreditCard: e.target.value })
+              }
+              placeholder="Últimos 4 dígitos"
+            />
           </FormField>
         </div>
       </div>
