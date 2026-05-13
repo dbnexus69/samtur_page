@@ -22,7 +22,7 @@ import ProductDetailsModal from "../components/sales/ProductDetailsModal";
 import SaleDetailModal from "../components/sales/SaleDetailModal";
 import SaleEditModal from "../components/sales/SaleEditModal";
 import SalesTable from "../components/sales/SalesTable";
-import StatCard from "../components/sales/StatCard";
+import StatCard from "../components/ui/StatCard";
 import CreditDashboard from "../components/sales/CreditDashboard";
 
 export default function Sales() {

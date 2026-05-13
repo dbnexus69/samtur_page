@@ -1,11 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { 
-  Plus, Pencil, Search, Users as UsersIcon, UserCheck, UserX, 
-  AlertCircle, CheckCircle, PartyPopper, Shield, Settings, Eye, EyeOff,
-  Mail, Phone, Calendar, Hash, ShieldCheck, Briefcase, Lock,
-  Globe, LayoutDashboard, ShoppingBag, Users as UsersGroup, Map, Key,
-  ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight,
-  Trash2, AlertTriangle, Edit, X
+  Plus, Search, Users as UsersIcon, UserCheck, UserX, 
+  AlertCircle, CheckCircle, Shield, Eye, EyeOff,
+  ShieldCheck, Briefcase, Key, Trash2, AlertTriangle, Edit
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
@@ -16,29 +13,10 @@ import { Modal } from '../components/ui/Modal';
 import { Badge } from '../components/ui/Badge';
 import { Input, Select, FormField } from '../components/ui/Form';
 import { User, RolePermissions, DEFAULT_VENDOR_PERMISSIONS, ADMIN_PERMISSIONS } from '../types';
+import StatCard from '../components/ui/StatCard';
+import PermissionsGrid from '../components/users/PermissionsGrid';
 
-const AVATARS = [
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Mimi',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Casper',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Luna',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Willow',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Leo',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Toby',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Finn',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Ruby',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Arlo',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Nala',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Bear',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Bella',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Milo',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Daisy'
-];
+import AvatarPicker, { AVATARS } from '../components/ui/AvatarPicker';
 
 export default function Users() {
   const { data, addUser, updateUser, deleteUser, updateRolePermissions, updateUserPermissions } = useData();
@@ -156,9 +134,16 @@ export default function Users() {
   const handleSaveUser = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.firstName.trim()) newErrors.firstName = 'El nombre es obligatorio';
+    else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(formData.firstName)) newErrors.firstName = 'El nombre solo debe contener letras';
+    else if (formData.firstName.length > 40) newErrors.firstName = 'El nombre no puede exceder 40 caracteres';
+    
     if (!formData.lastName.trim()) newErrors.lastName = 'El apellido es obligatorio';
+    else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(formData.lastName)) newErrors.lastName = 'El apellido solo debe contener letras';
+    else if (formData.lastName.length > 40) newErrors.lastName = 'El apellido no puede exceder 40 caracteres';
+    
     if (!formData.email.trim()) newErrors.email = 'El correo es obligatorio';
-    else if (!/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = 'El correo no es valido';
+    else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) newErrors.email = 'El correo no es valido';
+    else if (formData.email.length > 40) newErrors.email = 'El correo no puede exceder 40 caracteres';
     
     if (!editingUser && !formData.password.trim()) newErrors.password = 'La contraseña es obligatoria';
     
@@ -170,10 +155,6 @@ export default function Users() {
     else if (formData.phone.length > 15) newErrors.phone = 'El telefono no puede exceder 15 caracteres';
     
     if (!formData.birthDate) newErrors.birthDate = 'La fecha de nacimiento es obligatoria';
-
-    if (formData.firstName.length > 40) newErrors.firstName = 'El nombre no puede exceder 40 caracteres';
-    if (formData.lastName.length > 40) newErrors.lastName = 'El apellido no puede exceder 40 caracteres';
-    if (formData.email.length > 40) newErrors.email = 'El correo no puede exceder 40 caracteres';
 
     // Verificar duplicados (Email y Documento)
     const isDuplicateEmail = data.users.some(u => 
@@ -441,19 +422,10 @@ export default function Users() {
           </>
         }
       >
-        <div className="bg-gray-50 p-4 rounded-xl border border-gray-border mb-6">
-          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Selecciona Avatar</h3>
-          <div className="flex flex-wrap gap-2">
-            {AVATARS.map((avatar, i) => (
-              <img 
-                key={i} 
-                src={avatar} 
-                onClick={() => setFormData({...formData, avatar})}
-                className={`w-10 h-10 rounded-full cursor-pointer border-2 transition-all hover:scale-110 ${formData.avatar === avatar ? 'border-primary ring-2 ring-primary/20 scale-110' : 'border-transparent opacity-50 hover:opacity-100'}`}
-              />
-            ))}
-          </div>
-        </div>
+        <AvatarPicker 
+          value={formData.avatar} 
+          onChange={(avatar) => setFormData({...formData, avatar})} 
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Nombres" error={errors.firstName}>
@@ -556,93 +528,4 @@ export default function Users() {
   );
 }
 
-function StatCard({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: number, color: string }) {
-  return (
-    <Card className={`text-white ${color} border-none shadow-lg`}>
-      <CardBody className="flex items-center gap-4 py-3 px-4">
-        <div className="p-2 bg-white/20 rounded-lg">{icon}</div>
-        <div>
-          <p className="text-[10px] font-medium text-white/70 uppercase tracking-wider">{label}</p>
-          <p className="text-xl font-bold">{value}</p>
-        </div>
-      </CardBody>
-    </Card>
-  );
-}
 
-function PermissionsGrid({ permissions, onChange }: { permissions: RolePermissions, onChange: (p: RolePermissions) => void }) {
-  const toggle = (module: keyof RolePermissions, type: string) => {
-    const next = { ...permissions };
-    const modulePerms = { ...next[module] } as any;
-    if (type in modulePerms) {
-      if (typeof modulePerms[type] === 'boolean') {
-        modulePerms[type] = !modulePerms[type];
-      } else {
-        if (modulePerms[type] === 'all') modulePerms[type] = 'own';
-        else if (modulePerms[type] === 'own') modulePerms[type] = 'none';
-        else modulePerms[type] = 'all';
-      }
-      (next as any)[module] = modulePerms;
-      onChange(next);
-    }
-  };
-
-  const modules: { id: keyof RolePermissions, label: string, icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-    { id: 'sales', label: 'Ventas', icon: <ShoppingBag size={18} /> },
-    { id: 'clients', label: 'Clientes', icon: <UsersGroup size={18} /> },
-    { id: 'itineraries', label: 'Itinerarios', icon: <Map size={18} /> },
-    { id: 'users', label: 'Usuarios', icon: <Lock size={18} /> },
-    { id: 'config', label: 'Configuración', icon: <Settings size={18} /> }
-  ];
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {modules.map(mod => (
-        <div key={mod.id} className="p-5 border border-gray-border rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
-            <div className="p-2.5 bg-primary/10 text-primary rounded-xl">{mod.icon}</div>
-            <span className="font-bold text-base text-gray-800">{mod.label}</span>
-          </div>
-          <div className="flex flex-col gap-3">
-            {Object.keys(permissions[mod.id]).map(permKey => {
-              const val = (permissions[mod.id] as any)[permKey];
-              const permLabels: Record<string, string> = {
-                view: 'Ver', create: 'Crear', edit: 'Editar', delete: 'Eliminar'
-              };
-              const displayLabel = permLabels[permKey] || permKey;
-              
-              return (
-                <div key={permKey} className="flex items-center justify-between p-2.5 bg-gray-50/50 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
-                  <span className="text-xs font-bold text-gray-600 capitalize">{displayLabel}</span>
-                  {typeof val === 'boolean' ? (
-                    <div 
-                      className={`w-10 h-5 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${val ? 'bg-green-500' : 'bg-gray-300'}`}
-                      onClick={() => toggle(mod.id, permKey)}
-                    >
-                      <div className={`bg-white w-3.5 h-3.5 rounded-full shadow-sm transform transition-transform duration-300 ${val ? 'translate-x-5' : 'translate-x-0'}`} />
-                    </div>
-                  ) : (
-                    <select 
-                      className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1 font-semibold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
-                      value={val}
-                      onChange={(e) => {
-                        const next = { ...permissions };
-                        (next[mod.id] as any)[permKey] = e.target.value;
-                        onChange(next);
-                      }}
-                    >
-                      <option value="all">Todos</option>
-                      <option value="own">Propios</option>
-                      <option value="none">Ninguno</option>
-                    </select>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}

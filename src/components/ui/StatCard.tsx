@@ -1,9 +1,10 @@
-import { Card, CardBody } from "../ui/Card";
+import React from 'react';
+import { Card, CardBody } from './Card';
 
 interface StatCardProps {
   icon: React.ReactNode;
   label: string;
-  value: string;
+  value: string | number;
   color: string;
 }
 
