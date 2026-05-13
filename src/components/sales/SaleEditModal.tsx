@@ -113,10 +113,29 @@ export default function SaleEditModal({
     setPayments(payments.filter((p) => p.id !== paymentId));
   };
 
-  const handleSubmit = () => {
-    const client = clients.find((c) => c.id === Number(formData.clientId));
-    if (!client && !editingSale) return; // For new sale, client is required. In edit it's usually already there.
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!editingSale && !formData.clientId) {
+      newErrors.clientId = "Debe seleccionar un cliente.";
+    }
+    if (!formData.total || Number(formData.total) <= 0) {
+      newErrors.total = "El total debe ser mayor a 0.";
+    }
+    if (!formData.paymentMethod) {
+      newErrors.paymentMethod = "Debe seleccionar una forma de pago.";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (!validate()) return;
+
+    const client = clients.find((c) => c.id === Number(formData.clientId));
+    
     const newStatus =
       totalPaidAmount >= totalSaleAmount
         ? "pagado"
