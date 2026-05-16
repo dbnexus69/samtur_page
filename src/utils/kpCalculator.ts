@@ -105,7 +105,7 @@ export function calculateKPIData(
   const flightsIda = filteredFlights.filter(f => f.type === 'ida');
   
   const paidSales = filteredSales.filter(s => s.status === 'pagado' || s.status === 'abonado');
-  const pendingSales = filteredSales.filter(s => s.status === 'pendiente');
+  const pendingSales = filteredSales.filter(s => s.status === 'credito');
   
   const taIngresadaDesglose = paidSales.reduce(
     (acc, sale) => sumDesglose(acc, distributeValue(sale.total)),
