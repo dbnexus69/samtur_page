@@ -3,7 +3,7 @@ import { AppData, User, Client, Sale, Flight, RolePermissions } from '../types';
 import { mockData } from '../data/mockData';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
-type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'airports' | 'baggage';
+type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'airports' | 'baggage' | 'packages';
 
 interface DataContextType {
   data: AppData;
@@ -73,7 +73,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const currentBaggage = data.config?.baggage || [];
     const hasOldBaggage = currentBaggage.length === 0 || currentBaggage.some((b: any) => !b.airlineName || !b.fareType);
 
-    if ((hasOldAirlines || hasOldSuppliers || hasOldAirports || hasOldBaggage) && mockData?.config) {
+    const currentPackages = data.config?.packages || [];
+    const hasOldPackages = !data.config?.packages || (currentPackages.length === 0 && mockData.config.packages.length > 0);
+
+    if ((hasOldAirlines || hasOldSuppliers || hasOldAirports || hasOldBaggage || hasOldPackages) && mockData?.config) {
       setData({
         ...data,
         config: {
@@ -81,22 +84,36 @@ export function DataProvider({ children }: { children: ReactNode }) {
           airlines: hasOldAirlines ? mockData.config.airlines : data.config.airlines,
           suppliers: hasOldSuppliers ? mockData.config.suppliers : data.config.suppliers,
           airports: hasOldAirports ? mockData.config.airports : data.config.airports,
-          baggage: hasOldBaggage ? mockData.config.baggage : data.config.baggage
+          baggage: hasOldBaggage ? mockData.config.baggage : data.config.baggage,
+          packages: hasOldPackages ? mockData.config.packages : data.config.packages
         }
       });
     }
 
     // Migración y/o Inicialización de comisionistas (fuera de config)
-    if (!data.commissionAgents || (data.config as any)?.commissionAgents) {
-      const agents = data.commissionAgents || (data.config as any)?.commissionAgents || [];
+    const hasAgents = data.commissionAgents && data.commissionAgents.length > 0;
+    const hasOldConfigAgents = (data.config as any)?.commissionAgents;
+
+    if (!hasAgents || hasOldConfigAgents) {
+      const agents = hasAgents ? data.commissionAgents : (hasOldConfigAgents || mockData.commissionAgents || []);
       const settlements = data.commissionSettlements || (data.config as any)?.commissionSettlements || [];
       
       const newConfig = { ...data.config };
       delete (newConfig as any).commissionAgents;
       delete (newConfig as any).commissionSettlements;
 
+      // También intentamos recuperar las ventas que deberían tener comisionista
+      const updatedSales = data.sales.map(s => {
+        const mockSale = mockData.sales.find(ms => ms.id === s.id);
+        if (mockSale?.commissionAgentId && !s.commissionAgentId) {
+          return { ...s, commissionAgentId: mockSale.commissionAgentId, commissionAgentName: mockSale.commissionAgentName };
+        }
+        return s;
+      });
+
       setData({
         ...data,
+        sales: updatedSales,
         commissionAgents: agents,
         commissionSettlements: settlements,
         config: newConfig
@@ -111,8 +128,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const generateId = (array: { id: number }[]) => {
-    return array.length > 0 ? Math.max(...array.map(i => i.id)) + 1 : 1;
+  const generateId = (list: any[]) => {
+    if (!list || list.length === 0) return 1;
+    return Math.max(...list.map((i: any) => i.id)) + 1;
   };
 
   const addUser = (user: Omit<User, 'id'>): User => {

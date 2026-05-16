@@ -137,26 +137,7 @@ export default function Sales() {
 
       {activeTab === 'list' ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
-            <StatCard
-              icon={<Receipt size={24} />}
-              label="Total Ventas"
-              value={formatCurrency(totals.total)}
-              color="bg-primary"
-            />
-            <StatCard
-              icon={<TrendingUp size={24} />}
-              label="Recaudado (Pagado)"
-              value={formatCurrency(totals.pagado)}
-              color="bg-green-500"
-            />
-            <StatCard
-              icon={<Wallet size={24} />}
-              label="Por Cobrar (Pendiente)"
-              value={formatCurrency(totals.pendiente)}
-              color="bg-amber-500"
-            />
-          </div>
+
 
           <Card className="animate-fade-in">
             <CardHeader
@@ -173,6 +154,8 @@ export default function Sales() {
             </CardHeader>
             <SalesTable
               sales={filteredSales}
+              clients={data.clients}
+              users={data.users}
               onViewDetail={handleViewDetail}
               onDownloadVoucher={handleDownloadVoucher}
               onEdit={handleOpenModal}

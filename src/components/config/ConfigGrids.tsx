@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   CreditCard, Pencil, Trash2, Coins, IdCard, 
-  PlaneTakeoff, Building2, Compass, Luggage 
+  PlaneTakeoff, Building2, Compass, Luggage, Boxes, MapPin, Moon, ShieldCheck, Eye
 } from 'lucide-react';
 
 interface ConfigGridsProps {
@@ -9,9 +9,10 @@ interface ConfigGridsProps {
   filteredData: any[];
   handleOpenModal: (item: any) => void;
   handleDelete: (id: number) => void;
+  setViewingPackage: (item: any) => void;
 }
 
-export default function ConfigGrids({ section, filteredData, handleOpenModal, handleDelete }: ConfigGridsProps) {
+export default function ConfigGrids({ section, filteredData, handleOpenModal, handleDelete, setViewingPackage }: ConfigGridsProps) {
   
   if (section === 'cards') {
     return (
@@ -452,6 +453,98 @@ export default function ConfigGrids({ section, filteredData, handleOpenModal, ha
               <button onClick={() => handleDelete(bag.id)} className="p-1.5 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50" title="Eliminar">
                 <Trash2 size={13} />
               </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (section === 'packages') {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {filteredData.map((pkg) => (
+          <div key={pkg.id} className="bg-white border border-gray-border hover:border-accent/40 rounded-2xl p-0 shadow-sm hover:shadow-xl transition-all duration-300 group relative overflow-hidden flex flex-col">
+            {/* Header / Image Placeholder */}
+            <div className="h-32 bg-gradient-to-r from-primary to-accent relative flex items-center justify-center overflow-hidden">
+              <Boxes size={64} className="text-white/20 absolute -right-4 -bottom-4 rotate-12" />
+              <div className="text-center z-10 p-4">
+                <h3 className="text-white font-bold text-lg leading-tight drop-shadow-md">{pkg.name}</h3>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <MapPin size={12} className="text-accent" />
+                  <span className="text-white/90 text-xs font-medium">{pkg.destination}</span>
+                </div>
+              </div>
+              <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md px-2 py-1 rounded-lg border border-white/30">
+                <span className="text-white text-[10px] font-bold uppercase tracking-tighter">{pkg.nights} Noches</span>
+              </div>
+            </div>
+
+            <div className="p-5 flex-1 flex flex-col">
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                    <Building2 size={10} /> Hotel
+                  </span>
+                  <p className="text-xs font-semibold text-gray-700 truncate">{pkg.accommodation?.hotel || '-'}</p>
+                  <p className="text-[10px] text-accent font-medium">{pkg.accommodation?.mealPlan || '-'}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                    <PlaneTakeoff size={10} /> Vuelo
+                  </span>
+                  <p className="text-xs font-semibold text-gray-700 truncate">{pkg.flight?.airline || '-'}</p>
+                  <p className="text-[10px] text-gray-500">{pkg.flight?.route || '-'}</p>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase">Tarifas Base</span>
+                  <ShieldCheck size={14} className="text-emerald-500" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-[9px] text-gray-500 uppercase">Adulto</p>
+                    <p className="text-sm font-bold text-primary">
+                      {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(pkg.rates?.adult || 0)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] text-gray-500 uppercase">Menor</p>
+                    <p className="text-sm font-bold text-gray-600">
+                      {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(pkg.rates?.child || 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
+                <span className="text-[10px] text-gray-400 font-mono tracking-tighter">PKG-ID: #{pkg.id.toString().padStart(4, '0')}</span>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setViewingPackage(pkg)}
+                    className="p-2 rounded-xl bg-gray-50 text-primary hover:bg-primary hover:text-white transition-all duration-300 shadow-sm"
+                    title="Ver Detalle"
+                  >
+                    <Eye size={14} />
+                  </button>
+                  <button 
+                    onClick={() => handleOpenModal(pkg)}
+                    className="p-2 rounded-xl bg-gray-50 text-gray-500 hover:bg-primary hover:text-white transition-all duration-300 shadow-sm"
+                    title="Editar"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(pkg.id)}
+                    className="p-2 rounded-xl bg-gray-50 text-red-400 hover:bg-red-500 hover:text-white transition-all duration-300 shadow-sm"
+                    title="Eliminar"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         ))}

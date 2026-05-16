@@ -55,18 +55,22 @@ export default function CommissionAgents() {
   const filteredAgents = useMemo(() => {
     const agents = data.commissionAgents || [];
     const sales = data.sales || [];
-    return agents
-      .map((agent: any) => {
-        const accumulated = sales
-          .filter((s) => s.commissionAgentId?.toString() === agent.id?.toString() && !s.isSettled)
-          .reduce((sum, s) => sum + (s.commissionAgentNetPayment || 0), 0);
-        return { ...agent, accumulated };
-      })
-      .filter(
-        (a: any) =>
-          a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          a.docNumber?.includes(searchTerm)
-      );
+    console.log("Debug - CommissionAgents:", { agentsCount: agents.length, salesCount: sales.length });
+    
+    const mapped = agents.map((agent: any) => {
+      const accumulated = sales
+        .filter((s) => s.commissionAgentId?.toString() === agent.id?.toString() && !s.isSettled)
+        .reduce((sum, s) => sum + (s.commissionAgentNetPayment || 0), 0);
+      return { ...agent, accumulated };
+    });
+
+    const result = mapped.filter(
+      (a: any) =>
+        a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.docNumber?.includes(searchTerm)
+    );
+    console.log("Debug - FilteredAgents:", result);
+    return result;
   }, [data.commissionAgents, data.sales, searchTerm]);
 
   const stats = useMemo(() => {
@@ -179,27 +183,7 @@ export default function CommissionAgents() {
         </div>
       </div>
 
-      {/* Modern Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in relative z-10">
-        <StatCard 
-          icon={<Users size={24} />} 
-          label="Aliados Registrados" 
-          value={stats.total} 
-          color="bg-primary"
-        />
-        <StatCard 
-          icon={<TrendingUp size={24} />} 
-          label="Total por Liquidar" 
-          value={formatCurrency(stats.totalAccumulated)} 
-          color="bg-accent"
-        />
-        <StatCard 
-          icon={<AlertCircle size={24} />} 
-          label="En Umbral de Pago" 
-          value={stats.pendingLiquidation} 
-          color="bg-amber-500"
-        />
-      </div>
+
 
       {/* Tab Navigation */}
       <div className="flex flex-col gap-6 relative z-10">

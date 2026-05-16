@@ -375,33 +375,7 @@ export default function Users() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard
-          icon={<UsersIcon />}
-          label="Total"
-          value={stats.total}
-          color="bg-primary"
-        />
 
-        <StatCard
-          icon={<Shield />}
-          label="Admins"
-          value={stats.admins}
-          color="bg-purple-600"
-        />
-        <StatCard
-          icon={<Briefcase />}
-          label="Asesores"
-          value={stats.asesores}
-          color="bg-orange-500"
-        />
-        <StatCard
-          icon={<Briefcase />}
-          label="Freelancers"
-          value={stats.freelancers}
-          color="bg-blue-400"
-        />
-      </div>
 
       <div className="flex gap-2 border-b border-gray-border">
         <button

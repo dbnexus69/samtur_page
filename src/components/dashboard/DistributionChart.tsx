@@ -36,7 +36,7 @@ export function DistributionChart({ data, colors }: DistributionChartProps) {
   return (
     <div className="grid grid-cols-2 gap-6">
       <div className="h-56">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <PieChart>
             <Pie
               data={data}

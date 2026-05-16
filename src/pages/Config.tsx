@@ -17,7 +17,10 @@ import {
   Search, 
   Grid, 
   List,
-  Compass
+  Compass,
+  Eye,
+  ShieldCheck,
+  Info
 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -28,8 +31,9 @@ import { useData } from '../context/DataContext';
 import { ConfigData } from '../types';
 import ConfigForms from '../components/config/ConfigForms';
 import ConfigGrids from '../components/config/ConfigGrids';
+import { formatCurrency } from '../utils/formatters';
 
-type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'airports' | 'baggage';
+type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'airports' | 'baggage' | 'packages';
 
 const SECTIONS = [
   { id: 'cards', label: 'Tarjetas', desc: 'Bancos y tarjetas de crédito/débito', icon: <CreditCard size={18} /> },
@@ -38,7 +42,8 @@ const SECTIONS = [
   { id: 'airlines', label: 'Aerolíneas', desc: 'Líneas aéreas autorizadas', icon: <PlaneTakeoff size={18} /> },
   { id: 'suppliers', label: 'Proveedores', desc: 'Hoteles, operadores y aerolíneas', icon: <Building2 size={18} /> },
   { id: 'airports', label: 'Aeropuertos', desc: 'Aeropuertos y ubicaciones base', icon: <Compass size={18} /> },
-  { id: 'baggage', label: 'Equipaje', desc: 'Políticas y pesos de equipaje', icon: <Luggage size={18} /> }
+  { id: 'baggage', label: 'Equipaje', desc: 'Políticas y pesos de equipaje', icon: <Luggage size={18} /> },
+  { id: 'packages', label: 'Paquetes', desc: 'Catálogo de paquetes turísticos', icon: <Boxes size={18} /> }
 ] as const;
 
 type SectionId = typeof SECTIONS[number]['id'];
@@ -53,6 +58,7 @@ export default function Config() {
   const [formData, setFormData] = useState<any>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
+  const [viewingPackage, setViewingPackage] = useState<any>(null);
 
   const currentData = (data.config[currentSection as keyof ConfigData] || []) as any[];
 
@@ -80,6 +86,8 @@ export default function Config() {
         return (item.name || '').toLowerCase().includes(term) || (item.abbreviation || '').toLowerCase().includes(term) || (item.location || '').toLowerCase().includes(term);
       case 'baggage':
         return (item.airlineName || '').toLowerCase().includes(term);
+      case 'packages':
+        return (item.name || '').toLowerCase().includes(term) || (item.destination || '').toLowerCase().includes(term);
       default:
         return true;
     }
@@ -94,6 +102,7 @@ export default function Config() {
       case 'suppliers': return ['#', 'Nombre', 'Tipo', 'Email', 'Teléfono', 'Sitio Web'];
       case 'airports': return ['#', 'Nombre', 'Abreviación', 'Ubicación', 'Cobertura', 'Estado'];
       case 'baggage': return ['#', 'Aerolínea', 'Tarifa', 'Art. Personal', 'Equip. Mano', 'Equip. Bodega'];
+      case 'packages': return ['#', 'Nombre', 'Destino', 'Noches', 'Hotel', 'Tarifa Adulto'];
       default: return ['#', 'Nombre'];
     }
   };
@@ -113,6 +122,7 @@ export default function Config() {
       case 'suppliers': return [item.name, item.type, item.email, item.phone, item.website || 'No especificado'];
       case 'airports': return [item.name, item.abbreviation, item.location, item.type || 'Ambos', item.status || 'Activo'];
       case 'baggage': return [item.airlineName, item.fareType, item.personalItem || 'No incluido', item.carryOn || 'No incluido', item.checkedBag || 'No incluido'];
+      case 'packages': return [item.name, item.destination, item.nights?.toString(), item.accommodation?.hotel || '-', formatCurrency(item.rates?.adult || 0)];
       default: return [item.name];
     }
   };
@@ -179,6 +189,11 @@ export default function Config() {
           if (!formData.personalItem || formData.personalItem.trim().length === 0) newErrors.personalItem = 'La especificación de artículo personal es obligatoria.';
           if (!formData.carryOn || formData.carryOn.trim().length === 0) newErrors.carryOn = 'La especificación de equipaje de mano es obligatoria.';
           if (!formData.checkedBag || formData.checkedBag.trim().length === 0) newErrors.checkedBag = 'La especificación de equipaje de bodega es obligatoria.';
+          break;
+        case 'packages':
+          if (!formData.name || formData.name.trim().length === 0) newErrors.name = 'El nombre del paquete es obligatorio.';
+          if (!formData.destination || formData.destination.trim().length === 0) newErrors.destination = 'El destino es obligatorio.';
+          if (!formData.nights || formData.nights <= 0) newErrors.nights = 'Debe ingresar un número válido de noches.';
           break;
       }
     }
@@ -357,6 +372,7 @@ export default function Config() {
                     filteredData={filteredData} 
                     handleOpenModal={handleOpenModal} 
                     handleDelete={handleDelete} 
+                    setViewingPackage={setViewingPackage}
                   />
                 ) : (
                   <Table headers={getHeaders(currentSection)}>
@@ -368,6 +384,11 @@ export default function Config() {
                         ))}
                         <TableCell>
                           <div className="flex gap-2">
+                            {currentSection === 'packages' && (
+                              <Button variant="outline" size="sm" onClick={() => setViewingPackage(item)} title="Ver Detalle">
+                                <Eye size={13} />
+                              </Button>
+                            )}
                             <Button variant="outline" size="sm" onClick={() => handleOpenModal(item)}>
                               <Pencil size={13} />
                             </Button>
@@ -390,6 +411,7 @@ export default function Config() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingItem ? 'Editar Registro' : 'Registrar Elemento'}
+        size={currentSection === 'packages' ? 'xl' : 'lg'}
         footer={
           <>
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
@@ -442,6 +464,132 @@ export default function Config() {
             </p>
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={viewingPackage !== null}
+        onClose={() => setViewingPackage(null)}
+        title={`Detalle del Paquete: ${viewingPackage?.name}`}
+        size="xl"
+      >
+        {viewingPackage && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Main Info */}
+              <div className="md:col-span-2 space-y-6">
+                <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                  <h4 className="text-sm font-bold text-primary mb-4 flex items-center gap-2">
+                    <Info size={16} className="text-accent" /> Información General
+                  </h4>
+                  <div className="grid grid-cols-2 gap-y-4">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold">Destino</p>
+                      <p className="text-sm font-semibold text-gray-700">{viewingPackage.destination}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold">Duración</p>
+                      <p className="text-sm font-semibold text-gray-700">{viewingPackage.nights} Noches</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100">
+                    <h4 className="text-sm font-bold text-blue-700 mb-4 flex items-center gap-2">
+                      <PlaneTakeoff size={16} /> Vuelo
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-[10px] text-blue-400 uppercase font-bold">Aerolínea / Ruta</p>
+                        <p className="text-xs font-semibold text-blue-800">{viewingPackage.flight?.airline || '-'} | {viewingPackage.flight?.route || '-'}</p>
+                      </div>
+                      <div className="flex justify-between">
+                        <div>
+                          <p className="text-[10px] text-blue-400 uppercase font-bold">Cabina</p>
+                          <p className="text-xs font-semibold text-blue-800">{viewingPackage.flight?.cabinBaggage || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-blue-400 uppercase font-bold">Bodega</p>
+                          <p className="text-xs font-semibold text-blue-800">{viewingPackage.flight?.checkedBaggage || '-'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100">
+                    <h4 className="text-sm font-bold text-emerald-700 mb-4 flex items-center gap-2">
+                      <Building2 size={16} /> Alojamiento
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-[10px] text-emerald-400 uppercase font-bold">Hotel / Tipo</p>
+                        <p className="text-xs font-semibold text-emerald-800">{viewingPackage.accommodation?.hotel || '-'} | {viewingPackage.accommodation?.hotelType || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-emerald-400 uppercase font-bold">Régimen</p>
+                        <p className="text-xs font-semibold text-emerald-800">{viewingPackage.accommodation?.mealPlan || '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 space-y-4">
+                  <div>
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Servicios Incluidos</h4>
+                    <p className="text-xs text-gray-600 whitespace-pre-wrap leading-relaxed">{viewingPackage.includedServices || 'No especificado'}</p>
+                  </div>
+                  <div className="pt-4 border-t border-gray-50">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">No Incluye</h4>
+                    <p className="text-xs text-gray-600 whitespace-pre-wrap leading-relaxed">{viewingPackage.notIncluded || 'No especificado'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar Info (Rates & Assistance) */}
+              <div className="space-y-4">
+                <div className="bg-purple-600 p-5 rounded-2xl text-white shadow-lg shadow-purple-200">
+                  <h4 className="text-xs font-bold uppercase tracking-widest mb-4 opacity-80">Tarifas del Paquete</h4>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-end border-b border-white/20 pb-2">
+                      <span className="text-xs font-medium">Tarifa Adulto</span>
+                      <span className="text-xl font-bold">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(viewingPackage.rates?.adult || 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-end">
+                      <span className="text-xs font-medium">Tarifa Menor</span>
+                      <span className="text-lg font-bold opacity-90">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(viewingPackage.rates?.child || 0)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100">
+                  <h4 className="text-xs font-bold text-amber-700 mb-3 uppercase flex items-center gap-2">
+                    <ShieldCheck size={14} /> Asistencia Médica
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-amber-600 font-bold uppercase">Monto</span>
+                      <span className="text-xs font-bold text-amber-900">{viewingPackage.medicalAssistance?.amountUsd ? `${viewingPackage.medicalAssistance.amountUsd} USD` : '-'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[10px] text-amber-600 font-bold uppercase">Cobertura</span>
+                      <span className="text-xs font-bold text-amber-900">{viewingPackage.medicalAssistance?.coverageDays ? `${viewingPackage.medicalAssistance.coverageDays} Días` : '-'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Button 
+                  className="w-full mt-4" 
+                  onClick={() => {
+                    setViewingPackage(null);
+                    handleOpenModal(viewingPackage);
+                  }}
+                >
+                  <Pencil size={14} /> Editar Paquete
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

@@ -4,10 +4,12 @@ import { Table, TableRow, TableCell } from "../ui/Table";
 import { Button } from "../ui/Button";
 import { Badge } from "../ui/Badge";
 import { formatCurrency, formatDate } from "../../utils/formatters";
-import { Sale } from "../../types";
+import { Sale, Client, User } from "../../types";
 
 interface SalesTableProps {
   sales: Sale[];
+  clients: Client[];
+  users: User[];
   onViewDetail: (sale: Sale) => void;
   onDownloadVoucher: (sale: Sale) => void;
   onEdit: (sale: Sale) => void;
@@ -17,6 +19,8 @@ interface SalesTableProps {
 
 export default function SalesTable({
   sales,
+  clients,
+  users,
   onViewDetail,
   onDownloadVoucher,
   onEdit,
@@ -30,78 +34,125 @@ export default function SalesTable({
         "Cliente",
         "Asesor",
         "Comisionista",
-        "T.A",
-        "Proveedores",
+        "T.A / Costos",
         "Total",
         "Fecha",
         "Estado",
         "Acciones",
       ]}
     >
-      {sales.map((sale) => (
-        <TableRow key={sale.id}>
-          <TableCell>{sale.id}</TableCell>
-          <TableCell>{sale.clientName}</TableCell>
-          <TableCell>{sale.asesorName}</TableCell>
-          <TableCell>{sale.commissionAgentName || "-"}</TableCell>
-          <TableCell>{formatCurrency(sale.ta || 0)}</TableCell>
-          <TableCell>{formatCurrency(sale.supplierCost || 0)}</TableCell>
-          <TableCell className="font-semibold">
-            {formatCurrency(sale.total)}
-          </TableCell>
-          <TableCell>{formatDate(sale.date)}</TableCell>
-          <TableCell>
-            <Badge variant={sale.status}>
-              {sale.status === "pagado"
-                ? "Finalizado"
-                : sale.status === "abonado"
-                  ? "Completado"
-                  : "Crédito"}
-            </Badge>
-          </TableCell>
-          <TableCell>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onViewDetail(sale)}
-                title="Ver detalle"
-              >
-                <Eye size={14} />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDownloadVoucher(sale)}
-                title="Descargar Voucher"
-              >
-                <FileDown size={14} />
-              </Button>
-              {canEditThis(sale) ? (
+      {sales.map((sale) => {
+        const client = clients.find(c => c.id === sale.clientId);
+        const asesor = users.find(u => u.id === sale.asesorId);
+
+        return (
+          <TableRow key={sale.id}>
+            <TableCell>{sale.id}</TableCell>
+            <TableCell>
+              <div className="flex items-center gap-3">
+                {client?.avatar ? (
+                  <img
+                    src={client.avatar}
+                    className="w-8 h-8 rounded-full border border-gray-200"
+                    alt={sale.clientName}
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs border border-primary/20">
+                    {sale.clientName.charAt(0)}
+                  </div>
+                )}
+                <div className="flex flex-col">
+                  <span className="font-medium text-primary leading-tight">
+                    {sale.clientName}
+                  </span>
+                  <span className="text-[10px] text-gray-500">
+                    {client?.email || "Sin correo"}
+                  </span>
+                </div>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-3">
+                
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-700 leading-tight">
+                    {sale.asesorName}
+                  </span>
+                 
+                </div>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex flex-col">
+                <span className="text-s font-medium text-gray-700">
+                  {sale.commissionAgentName || "Venta Directa"}
+                </span>
+              </div>  
+            </TableCell>
+            <TableCell>
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-emerald-600">
+                  T.A: {formatCurrency(sale.ta || 0)}
+                </span>
+                <span className="text-[10px] text-gray-400">
+                  Costo: {formatCurrency(sale.supplierCost || 0)}
+                </span>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex flex-col">
+                <span className="font-bold text-primary">
+                  {formatCurrency(sale.total)}
+                </span>
+              </div>
+            </TableCell>
+            <TableCell className="text-xs text-gray-500">
+              {formatDate(sale.date)}
+            </TableCell>
+            <TableCell>
+              <Badge variant={sale.status} className="uppercase text-[9px] font-black">
+                {sale.status === "pagado"
+                  ? "Finalizado"
+                  : sale.status === "abonado"
+                    ? "Abonado"
+                    : "En Crédito"}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center justify-end gap-2">
                 <Button
                   variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(sale)}
-                  title="Actualizar abonos"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onViewDetail(sale)}
+                  title="Ver detalle"
                 >
-                  <RxUpdate size={14} />
+                  <Eye size={14} />
                 </Button>
-              ) : (
-                <span className="self-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    title="Actualizar abonos"
-                    disabled
-                  >
-                    <RxUpdate size={14} />
-                  </Button>
-                </span>
-              )}
-            </div>
-          </TableCell>
-        </TableRow>
-      ))}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onDownloadVoucher(sale)}
+                  title="Descargar Voucher"
+                >
+                  <FileDown size={14} />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onEdit(sale)}
+                  disabled={!canEditThis(sale)}
+                  title={canEditThis(sale) ? "Actualizar abonos" : "No editable"}
+                >
+                  <RxUpdate size={14} className={canEditThis(sale) ? "text-primary" : "text-gray-300"} />
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        );
+      })}
     </Table>
   );
 }

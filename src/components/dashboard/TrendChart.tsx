@@ -78,7 +78,7 @@ export function TrendChart({
 
   return (
     <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <BarChart
           data={chartData}
           margin={{ top: 20, right: 20, left: 0, bottom: 5 }}

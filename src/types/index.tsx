@@ -501,6 +501,52 @@ export interface CommissionAgent {
   status: "Activo" | "Inactivo";
 }
 
+export interface TravelPackage {
+  id: number;
+  name: string;
+  destination: string;
+  nights: number;
+  flight: {
+    airline: string;
+    supplier?: string;
+    route: string;
+    cabinBaggage?: string;
+    checkedBaggage?: string;
+    baggagePlan?: string;
+    flightMode?: 'one_way' | 'round_trip';
+    legs?: {
+      origin: string;
+      destination: string;
+      flightNumber: string;
+      seat: string;
+      date?: string;
+    }[];
+    returnLeg?: {
+      origin: string;
+      destination: string;
+      flightNumber: string;
+      seat: string;
+      date?: string;
+    };
+  };
+  accommodation: {
+    hotel: string;
+    hotelType: string;
+    mealPlan: string;
+    supplier?: string;
+  };
+  includedServices: string;
+  notIncluded: string;
+  medicalAssistance: {
+    amountUsd: number;
+    coverageDays: number;
+  };
+  rates: {
+    adult: number;
+    child: number;
+  };
+}
+
 export interface CommissionSettlement {
   id: number;
   agentId: number;
@@ -556,6 +602,7 @@ export interface ConfigData {
     checkedBag: string;
     notes: string;
   }[];
+  packages: TravelPackage[];
   rolePermissions: {
     asesor: RolePermissions;
     freelancer: RolePermissions;

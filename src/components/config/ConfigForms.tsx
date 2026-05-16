@@ -1,5 +1,7 @@
-import React from 'react';
-import { FormField, Input, Select } from '../ui/Form';
+import { Boxes, PlaneTakeoff, Building2, Coins, Database, MapPin, Luggage, ShieldCheck, Info, Briefcase, ArrowRight, ArrowLeftRight, ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
+import * as LuIcons from "react-icons/lu";
+import { FormField, Input, Select, Combobox } from '../ui/Form';
+import { Button } from '../ui/Button';
 
 export default function ConfigForms({ section, formData, setFormData, errors, setErrors, data }: any) {
   switch (section) {
@@ -348,6 +350,355 @@ export default function ConfigForms({ section, formData, setFormData, errors, se
             />
           </FormField>
         </>
+      );
+    case 'packages':
+      return (
+        <div className="space-y-6 max-h-[70vh] overflow-y-auto px-1 custom-scrollbar">
+          {/* Información Básica */}
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Boxes size={14} className="text-accent" /> Información Básica del Paquete
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="Nombre del Paquete" error={errors.name}>
+                <Input 
+                  value={formData.name || ''} 
+                  onChange={e => setFormData({ ...formData, name: e.target.value })} 
+                  placeholder="Ej. Cancún Mágico"
+                />
+              </FormField>
+              <FormField label="Destino" error={errors.destination}>
+                <Input 
+                  value={formData.destination || ''} 
+                  onChange={e => setFormData({ ...formData, destination: e.target.value })} 
+                  placeholder="Ej. Cancún, México"
+                />
+              </FormField>
+              <FormField label="Noches" error={errors.nights}>
+                <Input 
+                  type="number"
+                  value={formData.nights || ''} 
+                  onChange={e => setFormData({ ...formData, nights: parseInt(e.target.value) })} 
+                  placeholder="Ej. 5"
+                />
+              </FormField>
+            </div>
+          </div>
+
+          {/* Vuelo - Estilo TicketForm Completo */}
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-6">
+            <h4 className="text-xs font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+              <PlaneTakeoff size={14} className="text-blue-600" /> Detalles del Vuelo (Plantilla)
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="Aerolínea">
+                <Combobox 
+                  value={formData.flight?.airline || ''} 
+                  onChange={val => setFormData({ ...formData, flight: { ...formData.flight, airline: val } })} 
+                  options={data.config.airlines.map((a: any) => ({ value: a.name, label: a.name }))}
+                  placeholder="Seleccionar aerolínea..."
+                />
+              </FormField>
+              <FormField label="Ruta Resumen">
+                <Input 
+                  value={formData.flight?.route || ''} 
+                  onChange={e => setFormData({ ...formData, flight: { ...formData.flight, route: e.target.value } })} 
+                  placeholder="Ej. BOG-CUN-BOG"
+                />
+              </FormField>
+            </div>
+
+            {/* Tramos de Ida */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h5 className="text-[10px] font-bold text-gray-700 uppercase tracking-widest flex items-center gap-2">
+                  <ArrowRight size={12} className="text-primary" /> Trayectos de Ida
+                </h5>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-7 text-[10px]"
+                  onClick={() => {
+                    const legs = formData.flight?.legs || [];
+                    setFormData({
+                      ...formData,
+                      flight: {
+                        ...formData.flight,
+                        flightMode: 'round_trip',
+                        legs: [...legs, { origin: '', destination: '', flightNumber: '', seat: '' }]
+                      }
+                    });
+                  }}
+                >
+                  <PlusCircle size={11} className="mr-1" /> Añadir Tramo
+                </Button>
+              </div>
+
+              {(formData.flight?.legs || [{ origin: '', destination: '', flightNumber: '', seat: '' }]).map((leg: any, idx: number) => (
+                <div key={idx} className="bg-gray-50 rounded-lg p-3 relative group border border-gray-100">
+                  {idx > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const legs = formData.flight.legs.filter((_: any, i: number) => i !== idx);
+                        setFormData({ ...formData, flight: { ...formData.flight, legs } });
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-100 text-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  )}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <FormField label="Origen">
+                      <Combobox 
+                        value={leg.origin} 
+                        onChange={val => {
+                          const nextLegs = [...(formData.flight?.legs || [{ origin: '', destination: '', flightNumber: '', seat: '' }])];
+                          nextLegs[idx] = { ...nextLegs[idx], origin: val };
+                          setFormData({ ...formData, flight: { ...formData.flight, legs: nextLegs, flightMode: 'round_trip' } });
+                        }}
+                        options={data.config.airports.map((a: any) => ({ value: a.abbreviation, label: `${a.abbreviation} - ${a.name}` }))}
+                        placeholder="Ej. BOG"
+                      />
+                    </FormField>
+                    <FormField label="Destino">
+                      <Combobox 
+                        value={leg.destination} 
+                        onChange={val => {
+                          const nextLegs = [...(formData.flight?.legs || [{ origin: '', destination: '', flightNumber: '', seat: '' }])];
+                          nextLegs[idx] = { ...nextLegs[idx], destination: val };
+                          setFormData({ ...formData, flight: { ...formData.flight, legs: nextLegs, flightMode: 'round_trip' } });
+                        }}
+                        options={data.config.airports.map((a: any) => ({ value: a.abbreviation, label: `${a.abbreviation} - ${a.name}` }))}
+                        placeholder="Ej. CUN"
+                      />
+                    </FormField>
+                    <FormField label="N° Vuelo">
+                      <Input 
+                        value={leg.flightNumber} 
+                        onChange={e => {
+                          const nextLegs = [...(formData.flight?.legs || [{ origin: '', destination: '', flightNumber: '', seat: '' }])];
+                          nextLegs[idx] = { ...nextLegs[idx], flightNumber: e.target.value };
+                          setFormData({ ...formData, flight: { ...formData.flight, legs: nextLegs, flightMode: 'round_trip' } });
+                        }}
+                        placeholder="Ej. AV93"
+                      />
+                    </FormField>
+                    <FormField label="Asiento">
+                      <Input 
+                        value={leg.seat} 
+                        onChange={e => {
+                          const nextLegs = [...(formData.flight?.legs || [{ origin: '', destination: '', flightNumber: '', seat: '' }])];
+                          nextLegs[idx] = { ...nextLegs[idx], seat: e.target.value };
+                          setFormData({ ...formData, flight: { ...formData.flight, legs: nextLegs, flightMode: 'round_trip' } });
+                        }}
+                        placeholder="Ej. 12A"
+                      />
+                    </FormField>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Trayecto de Regreso - Siempre visible para paquetes */}
+            <div className="bg-blue-50/30 rounded-xl border border-blue-100 p-4 space-y-3">
+              <h5 className="text-[10px] font-bold text-blue-700 uppercase tracking-widest flex items-center gap-2">
+                <ArrowLeft size={12} /> Trayecto de Regreso (Ida y Vuelta)
+              </h5>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <FormField label="Origen">
+                  <Combobox 
+                    value={formData.flight?.returnLeg?.origin || ''} 
+                    onChange={val => setFormData({ ...formData, flight: { ...formData.flight, returnLeg: { ...formData.flight?.returnLeg, origin: val }, flightMode: 'round_trip' } })}
+                    options={data.config.airports.map((a: any) => ({ value: a.abbreviation, label: `${a.abbreviation} - ${a.name}` }))}
+                    placeholder="Ej. CUN"
+                  />
+                </FormField>
+                <FormField label="Destino">
+                  <Combobox 
+                    value={formData.flight?.returnLeg?.destination || ''} 
+                    onChange={val => setFormData({ ...formData, flight: { ...formData.flight, returnLeg: { ...formData.flight?.returnLeg, destination: val }, flightMode: 'round_trip' } })}
+                    options={data.config.airports.map((a: any) => ({ value: a.abbreviation, label: `${a.abbreviation} - ${a.name}` }))}
+                    placeholder="Ej. BOG"
+                  />
+                </FormField>
+                <FormField label="N° Vuelo">
+                  <Input 
+                    value={formData.flight?.returnLeg?.flightNumber || ''} 
+                    onChange={e => setFormData({ ...formData, flight: { ...formData.flight, returnLeg: { ...formData.flight?.returnLeg, flightNumber: e.target.value }, flightMode: 'round_trip' } })}
+                    placeholder="Ej. AV94"
+                  />
+                </FormField>
+                <FormField label="Asiento">
+                  <Input 
+                    value={formData.flight?.returnLeg?.seat || ''} 
+                    onChange={e => setFormData({ ...formData, flight: { ...formData.flight, returnLeg: { ...formData.flight?.returnLeg, seat: e.target.value }, flightMode: 'round_trip' } })}
+                    placeholder="Ej. 14C"
+                  />
+                </FormField>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField label="Plan de Equipaje">
+                <Select
+                  value={formData.flight?.baggagePlan || ''}
+                  onChange={(e) => {
+                    const plan = data.config.baggage.find((b: any) => `${b.airlineName} - ${b.fareType}` === e.target.value);
+                    setFormData({ 
+                      ...formData, 
+                      flight: { 
+                        ...formData.flight, 
+                        baggagePlan: e.target.value,
+                        cabinBaggage: plan ? plan.carryOn : formData.flight?.cabinBaggage,
+                        checkedBaggage: plan ? plan.checkedBag : formData.flight?.checkedBaggage
+                      } 
+                    });
+                  }}
+                  options={[
+                    { value: '', label: 'Seleccionar plan...' },
+                    ...data.config.baggage.map((b: any) => ({
+                      value: `${b.airlineName} - ${b.fareType}`,
+                      label: `${b.airlineName} - ${b.fareType}`,
+                    })),
+                  ]}
+                />
+              </FormField>
+              
+            </div>
+          </div>
+
+          {/* Alojamiento - Estilo HotelForm */}
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Building2 size={14} className="text-emerald-600" /> Alojamiento (Plantilla)
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="Nombre del Hotel">
+                <Input 
+                  value={formData.accommodation?.hotel || ''} 
+                  onChange={e => setFormData({ ...formData, accommodation: { ...formData.accommodation, hotel: e.target.value } })} 
+                  placeholder="Ej. Grand Oasis"
+                />
+              </FormField>
+              <FormField label="Proveedor">
+                <Combobox
+                  value={formData.accommodation?.supplier || ''}
+                  onChange={(val) => setFormData({ ...formData, accommodation: { ...formData.accommodation, supplier: val } })}
+                  options={data.config.suppliers.map((s: any) => ({ value: s.name, label: s.name }))}
+                  placeholder="Seleccionar proveedor..."
+                />
+              </FormField>
+              <FormField label="Tipo de Hotel">
+                <Select
+                  value={formData.accommodation?.hotelType || ""}
+                  onChange={(e) => setFormData({ ...formData, accommodation: { ...formData.accommodation, hotelType: e.target.value } })}
+                  options={[
+                    { value: "", label: "Seleccionar tipo..." },
+                    { value: "hotel", label: "Hotel Normal" },
+                    { value: "resort", label: "Resort / Todo Incluido" },
+                    { value: "boutique", label: "Hotel Boutique" },
+                    { value: "apartamento", label: "Apartamento / AirBnB" },
+                    { value: "hostal", label: "Hostal / Albergue" },
+                    { value: "finca", label: "Finca / Casa Rural" },
+                  ]}
+                />
+              </FormField>
+              <FormField label="Régimen Alimenticio">
+                <Select
+                  value={formData.accommodation?.mealPlan || ''}
+                  onChange={e => setFormData({ ...formData, accommodation: { ...formData.accommodation, mealPlan: e.target.value } })}
+                  options={[
+                    { value: '', label: 'Seleccionar régimen...' },
+                    { value: 'Solo Desayuno', label: 'Solo Desayuno' },
+                    { value: 'Media Pensión', label: 'Media Pensión' },
+                    { value: 'Pensión Completa', label: 'Pensión Completa' },
+                    { value: 'Todo Incluido', label: 'Todo Incluido' },
+                    { value: 'Solo Alojamiento', label: 'Solo Alojamiento' }
+                  ]}
+                />
+              </FormField>
+            </div>
+          </div>
+
+          {/* Servicios - Estilo Observaciones */}
+          <div className="grid grid-cols-1 gap-6">
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+                <LuIcons.LuFileText size={14} /> Servicios Incluidos
+              </h4>
+              <textarea 
+                className="w-full h-24 p-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                value={formData.includedServices || ''} 
+                onChange={e => setFormData({ ...formData, includedServices: e.target.value })} 
+                placeholder="Listado de servicios incluidos..."
+              />
+            </div>
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
+                <LuIcons.LuFileText size={14} className="text-red-400" /> No Incluye
+              </h4>
+              <textarea 
+                className="w-full h-24 p-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                value={formData.notIncluded || ''} 
+                onChange={e => setFormData({ ...formData, notIncluded: e.target.value })} 
+                placeholder="Listado de exclusiones..."
+              />
+            </div>
+          </div>
+
+          {/* Otros Detalles */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-amber-50/20 p-4 rounded-xl border border-amber-100">
+              <h4 className="text-xs font-bold text-amber-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <ShieldCheck size={14} /> Asistencia Médica
+              </h4>
+              <div className="grid grid-cols-1 gap-4">
+                <FormField label="Monto Cobertura (USD)">
+                  <Input 
+                    type="number"
+                    value={formData.medicalAssistance?.amountUsd || ''} 
+                    onChange={e => setFormData({ ...formData, medicalAssistance: { ...formData.medicalAssistance, amountUsd: parseInt(e.target.value) } })} 
+                    placeholder="Ej. 50000"
+                  />
+                </FormField>
+                <FormField label="Días de Cobertura">
+                  <Input 
+                    type="number"
+                    value={formData.medicalAssistance?.coverageDays || ''} 
+                    onChange={e => setFormData({ ...formData, medicalAssistance: { ...formData.medicalAssistance, coverageDays: parseInt(e.target.value) } })} 
+                    placeholder="Ej. 6"
+                  />
+                </FormField>
+              </div>
+            </div>
+
+            <div className="bg-emerald-50/20 p-4 rounded-xl border border-emerald-100">
+              <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <Briefcase size={14} /> Tarifas Base del Catálogo
+              </h4>
+              <div className="grid grid-cols-1 gap-4">
+                <FormField label="Tarifa Adulto">
+                  <Input 
+                    type="number"
+                    value={formData.rates?.adult || ''} 
+                    onChange={e => setFormData({ ...formData, rates: { ...formData.rates, adult: parseInt(e.target.value) } })} 
+                    placeholder="Ej. 3500000"
+                  />
+                </FormField>
+                <FormField label="Tarifa Menor">
+                  <Input 
+                    type="number"
+                    value={formData.rates?.child || ''} 
+                    onChange={e => setFormData({ ...formData, rates: { ...formData.rates, child: parseInt(e.target.value) } })} 
+                    placeholder="Ej. 2800000"
+                  />
+                </FormField>
+              </div>
+            </div>
+          </div>
+        </div>
       );
     default:
       return null;

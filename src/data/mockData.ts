@@ -388,6 +388,7 @@ export const mockData: AppData = {
       category: "hoteles",
       paymentMethod: "Tarjeta de Crédito",
       // --- DATOS NUEVOS DE COMISIÓN Y FINANCIEROS ---
+      commissionAgentId: 1,
       commissionAgentName: "Agencia Viajes Plus",
       commissionAgentNetPayment: 150000,
       commissionAgentRetentionPercentage: 0,
@@ -411,6 +412,7 @@ export const mockData: AppData = {
       creditDueDate: "2026-06-15",
       creditPaidAmount: 0,
       // --- DATOS NUEVOS DE COMISIÓN Y FINANCIEROS ---
+      commissionAgentId: 2,
       commissionAgentName: "Asesor Independiente",
       commissionAgentNetPayment: 20000,
       commissionAgentRetentionPercentage: 0,
@@ -433,13 +435,31 @@ export const mockData: AppData = {
       isCredit: true,
       creditPaidAmount: 2000000,
       // --- DATOS NUEVOS DE COMISIÓN Y FINANCIEROS ---
-      commissionAgentName: "Ventas Directas Web",
+      commissionAgentId: 4,
+      commissionAgentName: "Beatriz Herrera",
       commissionAgentNetPayment: 300000,
       commissionAgentRetentionPercentage: 0,
       supplierCost: 3700000,
       // Ganancia neta: 4.500.000 - 3.700.000 - 300.000 = 500.000
       observations:
         "Paquete turístico a San Andrés (Vuelo + Hotel + Tours)\n- 5 Días / 4 Noches\n- Vuelo directo\n- Hotel All Inclusive\n- Tour Acuario y Jhonny Cay.",
+    },
+    {
+      id: 1008,
+      clientId: 4,
+      clientName: "Miguel Angel Rodriguez",
+      asesorId: 3,
+      asesorName: "Maria Garcia",
+      date: new Date().toISOString().split("T")[0],
+      total: 1200000,
+      status: "pagado",
+      category: "seguros",
+      paymentMethod: "PSE",
+      commissionAgentId: 3,
+      commissionAgentName: "Global Travel Solutions",
+      commissionAgentNetPayment: 85000,
+      supplierCost: 950000,
+      observations: "Seguro de viaje internacional cobertura 100k USD.",
     },
   ],
   flights: [
@@ -910,6 +930,76 @@ export const mockData: AppData = {
         notes: "Incluye maleta de bodega estándar de hasta 20 kg.",
       },
     ],
+    packages: [
+      {
+        id: 1,
+        name: "Cancún Todo Incluido",
+        destination: "Cancún, México",
+        nights: 5,
+        flight: {
+          airline: "Avianca",
+          route: "BOG-CUN-BOG",
+          flightMode: "round_trip",
+          legs: [
+            { origin: "BOG", destination: "CUN", flightNumber: "AV93", seat: "12A" }
+          ],
+          returnLeg: { origin: "CUN", destination: "BOG", flightNumber: "AV94", seat: "14C" },
+          baggagePlan: "Avianca - Classic",
+          cabinBaggage: "10kg",
+          checkedBaggage: "23kg"
+        },
+        accommodation: {
+          hotel: "Grand Oasis Cancún",
+          hotelType: "resort",
+          mealPlan: "Todo Incluido",
+          supplier: "Hotel Grand Oasis"
+        },
+        includedServices: "Traslados aeropuerto-hotel-aeropuerto, tour a Isla Mujeres, asistencia médica.",
+        notIncluded: "Propinas, gastos personales, tours no especificados.",
+        medicalAssistance: {
+          amountUsd: 50000,
+          coverageDays: 6
+        },
+        rates: {
+          adult: 3500000,
+          child: 2800000
+        }
+      },
+      {
+        id: 2,
+        name: "Europa Soñada",
+        destination: "Madrid, París, Roma",
+        nights: 15,
+        flight: {
+          airline: "Iberia",
+          route: "BOG-MAD-BOG",
+          flightMode: "round_trip",
+          legs: [
+            { origin: "BOG", destination: "MAD", flightNumber: "IB6585", seat: "22J" }
+          ],
+          returnLeg: { origin: "MAD", destination: "BOG", flightNumber: "IB6586", seat: "22J" },
+          baggagePlan: "LATAM - Top / Premium",
+          cabinBaggage: "10kg",
+          checkedBaggage: "23kg"
+        },
+        accommodation: {
+          hotel: "Hoteles Categoría Turista",
+          hotelType: "hotel",
+          mealPlan: "Solo Desayuno",
+          supplier: "Operador Europa"
+        },
+        includedServices: "Autobús de lujo, guía acompañante, visitas panorámicas en Madrid, París y Roma.",
+        notIncluded: "Cenas, entradas a monumentos no especificados, tasas hoteleras.",
+        medicalAssistance: {
+          amountUsd: 100000,
+          coverageDays: 16
+        },
+        rates: {
+          adult: 12500000,
+          child: 11000000
+        }
+      }
+    ],
     rolePermissions: {
       asesor: DEFAULT_ASESOR_PERMISSIONS,
       freelancer: DEFAULT_FREELANCER_PERMISSIONS,
@@ -918,6 +1008,9 @@ export const mockData: AppData = {
   commissionAgents: [
     { id: 1, name: "Agencia Viajes Plus", type: "Agencia Externa", docType: "NIT", docNumber: "900123456-1", status: "Activo" },
     { id: 2, name: "Asesor Independiente", type: "Comisionista", docType: "CC", docNumber: "1020304050", status: "Activo" },
+    { id: 3, name: "Global Travel Solutions", type: "Agencia Externa", docType: "NIT", docNumber: "800555666-2", status: "Activo" },
+    { id: 4, name: "Beatriz Herrera", type: "Comisionista", docType: "CC", docNumber: "52441332", status: "Activo" },
+    { id: 5, name: "Inversiones Turísticas", type: "Empresa", docType: "NIT", docNumber: "901999888-3", status: "Inactivo" },
   ],
   commissionSettlements: [],
   salesHistory,

@@ -24,8 +24,40 @@ export function PlanForm({ plan, onChange, data }: PlanFormProps) {
     onChange({ guests: nextGuests });
   };
 
+  const packages = data.config.packages || [];
+
+  const handleSelectPackage = (packageName: string) => {
+    const pkg = packages.find((p: any) => p.name === packageName);
+    if (pkg) {
+      onChange({
+        planName: pkg.name,
+        hotelName: pkg.accommodation?.hotel || "",
+        supplier: pkg.accommodation?.supplier || "",
+        airline: pkg.flight?.airline || "",
+        flightNumber: pkg.flight?.legs?.[0]?.flightNumber || "",
+        // observations: `Incluye: ${pkg.includedServices}\nNo Incluye: ${pkg.notIncluded}`
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Selector de Catálogo */}
+      <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 mb-4">
+        <h4 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-3 flex items-center gap-2">
+          <Package size={14} className="text-accent" /> Importar desde Catálogo de Paquetes
+        </h4>
+        <Combobox
+          value={plan.planName}
+          onChange={(val) => handleSelectPackage(val)}
+          options={packages.map((p: any) => ({ value: p.name, label: `${p.name} - ${p.destination} (${p.nights} noches)` }))}
+          placeholder="Busca un paquete registrado..."
+        />
+        <p className="text-[10px] text-gray-500 mt-2 italic">
+          * Al seleccionar un paquete se autocompletarán los datos base (Hotel, Aerolínea, Vuelo).
+        </p>
+      </div>
+
       <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
         <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
           <Package size={14} />
@@ -46,14 +78,7 @@ export function PlanForm({ plan, onChange, data }: PlanFormProps) {
               placeholder="Ej: Riu Palace"
             />
           </FormField>
-          <FormField label="Proveedor">
-            <Combobox
-              value={plan.supplier}
-              onChange={(val) => onChange({ supplier: val })}
-              options={data.config.suppliers.map((s: any) => ({ value: s.name, label: s.name }))}
-              placeholder="Seleccionar proveedor..."
-            />
-          </FormField>
+
           <FormField label="Aerolínea">
             <Combobox
               value={plan.airline}
@@ -114,6 +139,14 @@ export function PlanForm({ plan, onChange, data }: PlanFormProps) {
           <Briefcase size={14} /> Finanzas
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Nombre del Proveedor">
+            <Combobox
+              value={plan.supplier}
+              onChange={(val) => onChange({ supplier: val })}
+              options={data.config.suppliers.map((s: any) => ({ value: s.name, label: s.name }))}
+              placeholder="Seleccionar proveedor..."
+            />
+          </FormField>
           <FormField label="Costo Proveedor">
             <Input
               type="number"

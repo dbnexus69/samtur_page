@@ -278,33 +278,7 @@ export default function Clients() {
 
 
 
-      {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in mb-6">
-        <StatCard 
-          icon={<UsersIcon size={24} />} 
-          label="Total Clientes" 
-          value={stats.total} 
-          color="bg-primary" 
-        />
-        <StatCard 
-          icon={<UserCheck size={24} />} 
-          label="Activos" 
-          value={stats.active} 
-          color="bg-green-500" 
-        />
-        <StatCard 
-          icon={<TrendingUp size={24} />} 
-          label="Nuevos (Mes)" 
-          value={stats.recent} 
-          color="bg-accent" 
-        />
-        <StatCard 
-          icon={<UserX size={24} />} 
-          label="Inactivos" 
-          value={stats.inactive} 
-          color="bg-amber-500" 
-        />
-      </div>
+
 
       <Card className="animate-fade-in">
         <CardHeader actions={
