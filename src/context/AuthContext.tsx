@@ -35,7 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const expiryTime = parseInt(expiry);
       if (Date.now() < expiryTime) {
         try {
-          setUser(JSON.parse(stored));
+          const userData = JSON.parse(stored);
+          if (['vendedor', 'vendor'].includes((userData.role as string).toLowerCase())) {
+            userData.role = 'asesor';
+            localStorage.setItem('itea_user', JSON.stringify(userData));
+          }
+          setUser(userData);
           setSessionExpiry(expiryTime);
         } catch {
           localStorage.removeItem('itea_user');

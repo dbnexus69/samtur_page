@@ -103,7 +103,7 @@ export function RecentBookings({ sales }: RecentBookingsProps) {
               </div>
               <div className="col-span-2 text-sm text-gray-600 truncate flex items-center gap-1">
                 <User className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                {sale.vendorName.split(' ')[0]}
+                {sale.asesorName.split(' ')[0]}
               </div>
               <div className="col-span-2 text-sm font-semibold text-primary text-right">
                 {formatCurrency(sale.total)}

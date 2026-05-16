@@ -44,7 +44,7 @@ export default function Sales() {
 
   const filteredSales = useMemo(() => {
     if (isAdmin) return data.sales;
-    return data.sales.filter((s) => s.vendorId === user?.id);
+    return data.sales.filter((s) => s.asesorId === user?.id);
   }, [data.sales, isAdmin, user?.id]);
 
   const totals = useMemo(() => {
@@ -52,7 +52,7 @@ export default function Sales() {
       (acc, s) => ({
         total: acc.total + s.total,
         pagado: acc.pagado + (s.status === "pagado" ? s.total : 0),
-        pendiente: acc.pendiente + (s.status === "pendiente" ? s.total : 0),
+        pendiente: acc.pendiente + (s.status === "credito" ? s.total : 0),
       }),
       { total: 0, pagado: 0, pendiente: 0 },
     );
@@ -63,7 +63,7 @@ export default function Sales() {
     // Solo permitir edición si NO está pagada
     if (sale.status === "pagado") return false;
     if (isAdmin) return true;
-    return sale.vendorId === user?.id;
+    return sale.asesorId === user?.id;
   };
 
   const handleOpenNewSale = () => {
@@ -112,7 +112,7 @@ export default function Sales() {
       </div>
 
       {/* TABS SELECTOR */}
-      <div className="flex gap-2 bg-white p-1 rounded-xl border border-gray-100 shadow-sm inline-flex animate-fade-in">
+      <div className="gap-2 bg-white p-1 rounded-xl border border-gray-100 shadow-sm inline-flex animate-fade-in">
         <button
           onClick={() => setActiveTab('list')}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${

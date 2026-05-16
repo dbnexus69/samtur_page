@@ -28,7 +28,7 @@ export default function SalesTable({
       headers={[
         "#",
         "Cliente",
-        "Operador/Vendedor",
+        "Asesor",
         "Comisionista",
         "T.A",
         "Proveedores",
@@ -42,7 +42,7 @@ export default function SalesTable({
         <TableRow key={sale.id}>
           <TableCell>{sale.id}</TableCell>
           <TableCell>{sale.clientName}</TableCell>
-          <TableCell>{sale.vendorName}</TableCell>
+          <TableCell>{sale.asesorName}</TableCell>
           <TableCell>{sale.commissionAgent || "-"}</TableCell>
           <TableCell>{formatCurrency(sale.ta || 0)}</TableCell>
           <TableCell>{formatCurrency(sale.supplierCost || 0)}</TableCell>
@@ -56,7 +56,7 @@ export default function SalesTable({
                 ? "Finalizado"
                 : sale.status === "abonado"
                   ? "Completado"
-                  : "Pendiente Crédito"}
+                  : "Crédito"}
             </Badge>
           </TableCell>
           <TableCell>

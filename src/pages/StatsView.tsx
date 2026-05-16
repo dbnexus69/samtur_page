@@ -133,35 +133,35 @@ function TopClients() {
   );
 }
 
-function TopVendors() {
+function TopAsesores() {
   const { data } = useData();
 
-  const topVendors = useMemo(() => {
-    const vendorMap = new Map<
+  const topAsesores = useMemo(() => {
+    const asesorMap = new Map<
       number,
       { name: string; total: number; count: number }
     >();
 
     data.sales.forEach((sale) => {
-      const existing = vendorMap.get(sale.vendorId);
+      const existing = asesorMap.get(sale.asesorId);
       if (existing) {
         existing.total += sale.total;
         existing.count += 1;
       } else {
-        vendorMap.set(sale.vendorId, {
-          name: sale.vendorName,
+        asesorMap.set(sale.asesorId, {
+          name: sale.asesorName,
           total: sale.total,
           count: 1,
         });
       }
     });
 
-    return Array.from(vendorMap.values())
+    return Array.from(asesorMap.values())
       .sort((a, b) => b.total - a.total)
       .slice(0, 6);
   }, [data.sales]);
 
-  if (topVendors.length === 0) {
+  if (topAsesores.length === 0) {
     return (
       <div className="h-72 flex items-center justify-center text-gray-400 text-sm">
         No hay datos de asesores
@@ -173,11 +173,11 @@ function TopVendors() {
     <div className="h-80 w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
-          data={topVendors}
+          data={topAsesores}
           margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
         >
           <defs>
-            <linearGradient id="gradientVendor" x1="0" y1="0" x2="1" y2="0">
+            <linearGradient id="gradientAsesor" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.8} />
               <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.2} />
             </linearGradient>
@@ -218,7 +218,7 @@ function TopVendors() {
             yAxisId="left"
             dataKey="total"
             name="Ingresos Generados"
-            fill="url(#gradientVendor)"
+            fill="url(#gradientAsesor)"
             radius={[6, 6, 0, 0] as any}
             maxBarSize={45}
           />
@@ -319,7 +319,7 @@ export default function StatsView() {
           </div>
         </CardHeader>
         <CardBody>
-          <TopVendors />
+          <TopAsesores />
         </CardBody>
       </Card>
 

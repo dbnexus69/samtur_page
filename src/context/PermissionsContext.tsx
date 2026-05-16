@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode, useMemo } from 'react';
-import { User, RolePermissions, ADMIN_PERMISSIONS, DEFAULT_VENDOR_PERMISSIONS } from '../types';
+import { User, RolePermissions, ADMIN_PERMISSIONS, DEFAULT_ASESOR_PERMISSIONS, DEFAULT_FREELANCER_PERMISSIONS } from '../types';
 import { useData } from './DataContext';
 
 type ModulePermission = {
@@ -28,7 +28,7 @@ export function PermissionsProvider({
   
   // Obtener permisos: primero verificar si tiene personalizados, luego del rol, luego por defecto
   const permissions = useMemo(() => {
-    if (!user) return DEFAULT_VENDOR_PERMISSIONS;
+    if (!user) return DEFAULT_ASESOR_PERMISSIONS;
     
     // Admin siempre tiene permisos completos
     if (user.role === 'admin') return ADMIN_PERMISSIONS;
@@ -36,8 +36,13 @@ export function PermissionsProvider({
     // Si tiene permisos personalizados, usarlos
     if (user.customPermissions) return user.customPermissions;
     
-    // Si no, usar los permisos por defecto del rol vendedor desde config
-    return data.config.rolePermissions?.vendor || DEFAULT_VENDOR_PERMISSIONS;
+    // Mapeo según el rol
+    if (user.role === 'freelancer') {
+      return data.config.rolePermissions?.freelancer || DEFAULT_FREELANCER_PERMISSIONS;
+    }
+    
+    // Por defecto es asesor
+    return data.config.rolePermissions?.asesor || DEFAULT_ASESOR_PERMISSIONS;
   }, [user, data.config.rolePermissions]);
 
   const can = (module: keyof RolePermissions, action: string): boolean => {

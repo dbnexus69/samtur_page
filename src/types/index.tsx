@@ -11,7 +11,7 @@ export interface User {
   birthDate?: string;
   email: string;
   password: string;
-  role: "admin" | "vendor";
+  role: "admin" | "asesor" | "freelancer";
   status: "active" | "inactive";
   createdAt?: string;
   lastLogin?: string;
@@ -22,16 +22,24 @@ export interface User {
 export interface RolePermissions {
   dashboard: { view: "all" | "own" };
   sales: { create: boolean; edit: "all" | "own" | "none"; delete: boolean };
-  clients: { create: boolean; edit: "all" | "own" | "none" };
+  clients: { view: "all" | "own"; create: boolean; edit: "all" | "own" | "none" };
   itineraries: { view: boolean; edit: boolean; delete: boolean };
   users: { view: boolean; create: boolean; edit: boolean; delete: boolean };
   config: { view: boolean; edit: boolean };
 }
 
-export const DEFAULT_VENDOR_PERMISSIONS: RolePermissions = {
+export const DEFAULT_ASESOR_PERMISSIONS: RolePermissions = {
   dashboard: { view: "own" },
   sales: { create: true, edit: "own", delete: false },
-  clients: { create: true, edit: "none" },
+  clients: { view: "all", create: true, edit: "none" },
+  itineraries: { view: true, edit: false, delete: false },
+  users: { view: false, create: false, edit: false, delete: false },
+  config: { view: false, edit: false },
+};
+export const DEFAULT_FREELANCER_PERMISSIONS: RolePermissions = {
+  dashboard: { view: "own" },
+  sales: { create: true, edit: "own", delete: false },
+  clients: { view: "own", create: true, edit: "none" },
   itineraries: { view: true, edit: false, delete: false },
   users: { view: false, create: false, edit: false, delete: false },
   config: { view: false, edit: false },
@@ -40,7 +48,7 @@ export const DEFAULT_VENDOR_PERMISSIONS: RolePermissions = {
 export const ADMIN_PERMISSIONS: RolePermissions = {
   dashboard: { view: "all" },
   sales: { create: true, edit: "all", delete: true },
-  clients: { create: true, edit: "all" },
+  clients: { view: "all", create: true, edit: "all" },
   itineraries: { view: true, edit: true, delete: true },
   users: { view: true, create: true, edit: true, delete: true },
   config: { view: true, edit: true },
@@ -59,6 +67,7 @@ export interface Client {
   status: "active" | "inactive";
   avatar?: string;
   registrationDate: string;
+  createdBy?: number;
 }
 
 export type SaleProductId =
@@ -89,7 +98,12 @@ export const SALE_PRODUCTS: SaleProductDef[] = [
   // --- Principales ---
   { id: "tiqueteria", label: "Tiquetería", icon: "LuTicket", group: "main" },
   { id: "hoteleria", label: "Hotelería", icon: "LuBed", group: "main" },
-  { id: "seguros_viaje", label: "Seguros de Viaje", icon: "LuShieldCheck", group: "main" },
+  {
+    id: "seguros_viaje",
+    label: "Seguros de Viaje",
+    icon: "LuShieldCheck",
+    group: "main",
+  },
   { id: "planes", label: "Planes", icon: "LuPackage", group: "main" },
   // --- Otros ---
   {
@@ -111,7 +125,12 @@ export const SALE_PRODUCTS: SaleProductDef[] = [
     icon: "LuCar",
     group: "other",
   },
-  { id: "renta_fincas", label: "Renta de Fincas", icon: "LuWarehouse", group: "other" },
+  {
+    id: "renta_fincas",
+    label: "Renta de Fincas",
+    icon: "LuWarehouse",
+    group: "other",
+  },
   { id: "tours", label: "Tours", icon: "LuCompass", group: "other" },
   {
     id: "centros_convencion",
@@ -119,7 +138,12 @@ export const SALE_PRODUCTS: SaleProductDef[] = [
     icon: "LuUsers",
     group: "other",
   },
-  { id: "restaurantes", label: "Restaurantes", icon: "LuUtensils", group: "other" },
+  {
+    id: "restaurantes",
+    label: "Restaurantes",
+    icon: "LuUtensils",
+    group: "other",
+  },
   { id: "visa", label: "Visa", icon: "LuStamp", group: "other" },
   { id: "pasaporte", label: "Pasaporte", icon: "LuBookOpen", group: "other" },
   {
@@ -155,6 +179,8 @@ export interface HotelData {
   supplierCost: number;
   ta: number;
   supplierPaymentMethod: string;
+  hotelType?: string;
+  observations?: string;
   guests: GuestInfo[];
 }
 
@@ -198,8 +224,12 @@ export interface TicketData {
   baggagePlan: string;
   ticketNumber: string;
   seatNumber: string;
+  flightMode: 'one_way' | 'round_trip';
+  hasStops: boolean;
+  returnHasStops?: boolean;
+  outboundStops?: string[];
+  returnStops?: string[];
   legs: FlightLeg[];
-  isRoundTrip: boolean;
   returnLeg?: FlightLeg;
   passengerInfo: {
     name: string;
@@ -356,11 +386,11 @@ export interface Sale {
   id: number;
   clientId: number;
   clientName: string;
-  vendorId: number;
-  vendorName: string;
+  asesorId: number;
+  asesorName: string;
   date: string;
   total: number;
-  status: "pendiente" | "abonado" | "pagado";
+  status: "credito" | "abonado" | "pagado";
   category?: string;
   paymentMethod: string;
   observations?: string;
@@ -403,24 +433,31 @@ export interface Flight {
 }
 
 export interface ConfigData {
-  cards: { 
-    id: number; 
-    name: string; 
-    paymentMethod: string; 
-    lastFourDigits: string; 
-    status: "Activo" | "Inactivo"; 
-    description: string; 
+  cards: {
+    id: number;
+    name: string;
+    paymentMethod: string;
+    lastFourDigits: string;
+    status: "Activo" | "Inactivo";
+    description: string;
   }[];
   paymentMethods: { id: number; name: string }[];
   documentTypes: { id: number; name: string }[];
-  airlines: { 
-    id: number; 
-    name: string; 
-    code: string; 
-    type: "Nacional" | "Internacional"; 
-    website: string; 
+  airlines: {
+    id: number;
+    name: string;
+    code: string;
+    type: "Nacional" | "Internacional";
+    website: string;
   }[];
-  suppliers: { id: number; name: string; type: string; contact: string; website: string }[];
+  suppliers: {
+    id: number;
+    name: string;
+    type: string;
+    email: string;
+    phone: string;
+    website: string;
+  }[];
   airports: {
     id: number;
     name: string;
@@ -439,7 +476,8 @@ export interface ConfigData {
     notes: string;
   }[];
   rolePermissions: {
-    vendor: RolePermissions; // Permisos por defecto del vendedor (editables)
+    asesor: RolePermissions;
+    freelancer: RolePermissions;
   };
 }
 
@@ -503,7 +541,7 @@ export interface TrendData {
 export type SortField =
   | "date"
   | "clientName"
-  | "vendorName"
+  | "asesorName"
   | "total"
   | "status";
 export type SortDirection = "asc" | "desc";

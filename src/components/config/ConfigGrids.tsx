@@ -298,19 +298,22 @@ export default function ConfigGrids({ section, filteredData, handleOpenModal, ha
               </span>
             </div>
             <div className="border-t border-gray-100 pt-3 mt-1 flex justify-between items-center">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
-                <a href={`mailto:${supplier.contact}`} className="text-xs text-primary hover:text-accent hover:underline flex items-center gap-1 min-w-0" title="Enviar Correo">
-                  <span className="truncate max-w-[150px] text-[11px] font-mono">{supplier.contact}</span>
+              <div className="flex flex-col gap-1 min-w-0">
+                <a href={`mailto:${supplier.email}`} className="text-[10px] text-primary hover:text-accent hover:underline flex items-center gap-1 min-w-0" title="Enviar Correo">
+                  <span className="truncate max-w-[150px] font-mono">{supplier.email}</span>
                 </a>
+                <p className="text-[10px] text-gray-500 flex items-center gap-1">
+                  <span className="font-semibold">Tel:</span> {supplier.phone}
+                </p>
                 {supplier.website && (
                   <a 
                     href={supplier.website} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-[11px] text-accent hover:underline font-semibold"
+                    className="text-[10px] text-accent hover:underline font-semibold"
                     title={`Visitar sitio de ${supplier.name}`}
                   >
-                    • Sitio Web ↗
+                    Sitio Web ↗
                   </a>
                 )}
               </div>

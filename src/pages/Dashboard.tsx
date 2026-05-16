@@ -59,8 +59,8 @@ export default function Dashboard() {
       (c) => c.status === "active",
     ).length;
 
-    const pendiente = data.sales.filter((s) => s.status === "pendiente");
-    const PendienteTotal = pendiente.reduce((sum, s) => sum + s.total, 0);
+    const credito = data.sales.filter((s) => s.status === "credito");
+    const PendienteTotal = credito.reduce((sum, s) => sum + s.total, 0);
     const abonado = data.sales.filter((s) => s.status === "abonado");
     const abonadoTotal = abonado.reduce((sum, s) => sum + s.total, 0);
     const pagado = data.sales.filter((s) => s.status === "pagado");
@@ -99,7 +99,7 @@ export default function Dashboard() {
       totalIngresos: totalVentas,
       monthIngresos,
       totalPendiente: PendienteTotal,
-      PendienteCount: pendiente.length,
+      PendienteCount: credito.length,
       supplierCount: data.config.suppliers.length,
       totalProveedores: Math.round(totalVentas * 0.75),
       Pendiente: PendienteTotal,
@@ -473,7 +473,7 @@ export default function Dashboard() {
             <thead>
               <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase">
                 <th className="px-4 py-3">Cliente</th>
-                <th className="px-4 py-3">Vendedor</th>
+                <th className="px-4 py-3">Asesor</th>
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3">Valor</th>
                 <th className="px-4 py-3">Estado</th>
@@ -483,7 +483,7 @@ export default function Dashboard() {
               {data.sales.slice(0, 5).map((sale) => (
                 <tr key={sale.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">{sale.clientName}</td>
-                  <td className="px-4 py-3">{sale.vendorName}</td>
+                  <td className="px-4 py-3">{sale.asesorName}</td>
                   <td className="px-4 py-3">{sale.date}</td>
                   <td className="px-4 py-3 font-semibold">
                     {formatCurrency(sale.total)}

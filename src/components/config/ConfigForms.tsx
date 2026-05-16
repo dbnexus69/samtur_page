@@ -173,15 +173,26 @@ export default function ConfigForms({ section, formData, setFormData, errors, se
               error={errors.type}
             />
           </FormField>
-          <FormField label="Contacto (Email)" error={errors.contact}>
+          <FormField label="Email de Contacto" error={errors.email}>
             <Input 
-              value={formData.contact || ''} 
+              value={formData.email || ''} 
               onChange={e => {
-                setFormData({ ...formData, contact: e.target.value });
-                if (errors.contact) setErrors({ ...errors, contact: '' });
+                setFormData({ ...formData, email: e.target.value });
+                if (errors.email) setErrors({ ...errors, email: '' });
               }} 
               placeholder="Ej. reservas@danncarlton.com"
-              error={errors.contact} 
+              error={errors.email} 
+            />
+          </FormField>
+          <FormField label="Teléfono de Contacto" error={errors.phone}>
+            <Input 
+              value={formData.phone || ''} 
+              onChange={e => {
+                setFormData({ ...formData, phone: e.target.value });
+                if (errors.phone) setErrors({ ...errors, phone: '' });
+              }} 
+              placeholder="Ej. 601-744-4444"
+              error={errors.phone} 
             />
           </FormField>
           <FormField label="Enlace del Sitio Web (Link)" error={errors.website}>

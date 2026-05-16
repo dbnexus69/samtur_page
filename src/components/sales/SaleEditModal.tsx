@@ -34,7 +34,7 @@ export default function SaleEditModal({
     clientId: "",
     total: "",
     paymentMethod: "",
-    status: "pendiente" as Sale["status"],
+    status: "credito" as Sale["status"],
     observations: "",
     isCredit: false,
     creditDueDate: "",
@@ -75,7 +75,7 @@ export default function SaleEditModal({
         clientId: "",
         total: "",
         paymentMethod: "",
-        status: "pendiente",
+        status: "credito",
         observations: "",
         isCredit: false,
         creditDueDate: "",
@@ -141,7 +141,7 @@ export default function SaleEditModal({
         ? "pagado"
         : totalPaidAmount > 0
           ? "abonado"
-          : "pendiente";
+          : "credito";
 
     const saleData = {
       clientId: Number(formData.clientId),
@@ -166,8 +166,8 @@ export default function SaleEditModal({
     } else {
       onAddSale({
         ...saleData,
-        vendorId: user!.id,
-        vendorName: user!.name,
+        asesorId: user!.id,
+        asesorName: user!.name,
         date: new Date().toISOString().split("T")[0],
       });
     }
@@ -204,7 +204,7 @@ export default function SaleEditModal({
                   ? "Finalizado"
                   : editingSale.status === "abonado"
                     ? "Completado"
-                    : "Pendiente Crédito"}
+                    : "Crédito"}
               </Badge>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
@@ -226,10 +226,10 @@ export default function SaleEditModal({
               </div>
               <div>
                 <span className="text-gray-500 block text-xs font-medium mb-0.5">
-                  Vendedor
+                  Asesor
                 </span>
                 <span className="font-semibold text-gray-800">
-                  {editingSale.vendorName}
+                  {editingSale.asesorName}
                 </span>
               </div>
               <div>

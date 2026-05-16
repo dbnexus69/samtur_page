@@ -82,10 +82,10 @@ export function Step3Payment({ form, set, data, errors }: any) {
               onChange={(val) => {
                 set("status", val);
                 // Auto-set isCredit internally based on selection
-                set("isCredit", val === "pendiente");
+                set("isCredit", val === "credito");
               }}
               options={[
-                { value: "pendiente", label: "Pendiente Crédito" },
+                { value: "credito", label: "Crédito" },
                 { value: "abonado", label: "Completado" },
                 { value: "pagado", label: "Finalizado" },
               ]}

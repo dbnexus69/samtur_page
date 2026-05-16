@@ -116,11 +116,11 @@ export function SalesTable({ sales, pagination, onPageChange }: SalesTableProps)
               </th>
               <th 
                 className="px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => handleSort('vendorName')}
+                onClick={() => handleSort('asesorName')}
               >
                 <div className="flex items-center gap-1">
-                  Vendedor
-                  <SortIcon field="vendorName" />
+                  Asesor
+                  <SortIcon field="asesorName" />
                 </div>
               </th>
               <th 
@@ -153,7 +153,7 @@ export function SalesTable({ sales, pagination, onPageChange }: SalesTableProps)
                   {sale.clientName}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">
-                  {sale.vendorName}
+                  {sale.asesorName}
                 </td>
                 <td className="px-4 py-3 text-sm font-semibold text-primary text-right">
                   {formatCurrency(sale.total)}

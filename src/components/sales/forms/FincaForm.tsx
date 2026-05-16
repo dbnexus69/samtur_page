@@ -21,11 +21,11 @@ export function FincaForm({ finca, onChange }: FincaFormProps) {
           <FormField label="Número de Documento">
             <Input value={finca.docNumber} onChange={(e) => onChange({ docNumber: e.target.value })} placeholder="C.C." />
           </FormField>
-          <FormField label="Fecha de Check-in">
-            <Input type="date" value={finca.checkInDate} onChange={(e) => onChange({ checkInDate: e.target.value })} />
+          <FormField label="Check-in (Fecha y Hora)">
+            <Input type="datetime-local" value={finca.checkInDate} onChange={(e) => onChange({ checkInDate: e.target.value })} />
           </FormField>
-          <FormField label="Fecha de Check-out">
-            <Input type="date" value={finca.checkOutDate} onChange={(e) => onChange({ checkOutDate: e.target.value })} />
+          <FormField label="Check-out (Fecha y Hora)">
+            <Input type="datetime-local" value={finca.checkOutDate} onChange={(e) => onChange({ checkOutDate: e.target.value })} />
           </FormField>
           <FormField label="Número de Adultos">
             <Input type="number" value={finca.adultsCount} onChange={(e) => onChange({ adultsCount: parseInt(e.target.value) || 2 })} />

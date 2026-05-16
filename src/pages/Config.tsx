@@ -72,7 +72,10 @@ export default function Config() {
       case 'airlines':
         return (item.name || '').toLowerCase().includes(term) || (item.code || '').toLowerCase().includes(term);
       case 'suppliers':
-        return (item.name || '').toLowerCase().includes(term) || (item.type || '').toLowerCase().includes(term) || (item.contact || '').toLowerCase().includes(term);
+        return (item.name || '').toLowerCase().includes(term) || 
+               (item.type || '').toLowerCase().includes(term) || 
+               (item.email || '').toLowerCase().includes(term) ||
+               (item.phone || '').toLowerCase().includes(term);
       case 'airports':
         return (item.name || '').toLowerCase().includes(term) || (item.abbreviation || '').toLowerCase().includes(term) || (item.location || '').toLowerCase().includes(term);
       case 'baggage':
@@ -88,7 +91,7 @@ export default function Config() {
       case 'paymentMethods': return ['#', 'Nombre'];
       case 'documentTypes': return ['#', 'Nombre'];
       case 'airlines': return ['#', 'Nombre', 'Código IATA', 'Cobertura', 'Sitio Web'];
-      case 'suppliers': return ['#', 'Nombre', 'Tipo', 'Contacto', 'Sitio Web'];
+      case 'suppliers': return ['#', 'Nombre', 'Tipo', 'Email', 'Teléfono', 'Sitio Web'];
       case 'airports': return ['#', 'Nombre', 'Abreviación', 'Ubicación', 'Cobertura', 'Estado'];
       case 'baggage': return ['#', 'Aerolínea', 'Tarifa', 'Art. Personal', 'Equip. Mano', 'Equip. Bodega'];
       default: return ['#', 'Nombre'];
@@ -107,7 +110,7 @@ export default function Config() {
       case 'paymentMethods': return [item.name];
       case 'documentTypes': return [item.name];
       case 'airlines': return [item.name, item.code, item.type || 'Internacional', item.website || 'No especificado'];
-      case 'suppliers': return [item.name, item.type, item.contact, item.website || 'No especificado'];
+      case 'suppliers': return [item.name, item.type, item.email, item.phone, item.website || 'No especificado'];
       case 'airports': return [item.name, item.abbreviation, item.location, item.type || 'Ambos', item.status || 'Activo'];
       case 'baggage': return [item.airlineName, item.fareType, item.personalItem || 'No incluido', item.carryOn || 'No incluido', item.checkedBag || 'No incluido'];
       default: return [item.name];
@@ -159,7 +162,8 @@ export default function Config() {
         case 'suppliers':
           if (!formData.name || formData.name.trim().length === 0) newErrors.name = 'El nombre es obligatorio.';
           if (!formData.type) newErrors.type = 'Debe seleccionar un tipo de proveedor.';
-          if (!formData.contact || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.contact)) newErrors.contact = 'Debe ingresar un correo electrónico válido.';
+          if (!formData.email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) newErrors.email = 'Debe ingresar un correo electrónico válido.';
+          if (!formData.phone || formData.phone.trim().length < 7) newErrors.phone = 'Debe ingresar un teléfono válido.';
           if (!formData.website || !formData.website.startsWith('http')) newErrors.website = 'Debe ingresar un enlace de sitio web válido (que inicie con http:// o https://).';
           break;
         case 'airports':

@@ -92,16 +92,16 @@ export function PlanForm({ plan, onChange, data }: PlanFormProps) {
               placeholder="Número de 13 dígitos"
             />
           </FormField>
-          <FormField label="Fecha Inicio">
+          <FormField label="Fecha Inicio (Hora)">
             <Input
-              type="date"
+              type="datetime-local"
               value={plan.startDate}
               onChange={(e) => onChange({ startDate: e.target.value })}
             />
           </FormField>
-          <FormField label="Fecha Fin">
+          <FormField label="Fecha Fin (Hora)">
             <Input
-              type="date"
+              type="datetime-local"
               value={plan.endDate}
               onChange={(e) => onChange({ endDate: e.target.value })}
             />

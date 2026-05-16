@@ -29,16 +29,16 @@ export function CarRentalForm({ car, onChange }: CarRentalFormProps) {
               placeholder="Número de licencia"
             />
           </FormField>
-          <FormField label="Fecha de Recogida">
+          <FormField label="Recogida (Fecha y Hora)">
             <Input
-              type="date"
+              type="datetime-local"
               value={car.pickupDate}
               onChange={(e) => onChange({ pickupDate: e.target.value })}
             />
           </FormField>
-          <FormField label="Fecha de Devolución">
+          <FormField label="Devolución (Fecha y Hora)">
             <Input
-              type="date"
+              type="datetime-local"
               value={car.returnDate}
               onChange={(e) => onChange({ returnDate: e.target.value })}
             />

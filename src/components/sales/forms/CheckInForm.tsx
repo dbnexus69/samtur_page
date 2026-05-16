@@ -50,8 +50,8 @@ export function CheckInForm({ checkin, onChange }: CheckInFormProps) {
               placeholder="Ej: AV9301 o Código"
             />
           </FormField>
-          <FormField label="Fecha de Viaje">
-            <Input type="date" value={checkin.travelDate} onChange={(e) => onChange({ travelDate: e.target.value })} />
+          <FormField label="Fecha y Hora de Viaje">
+            <Input type="datetime-local" value={checkin.travelDate} onChange={(e) => onChange({ travelDate: e.target.value })} />
           </FormField>
           <FormField label="Asiento">
             <Input value={checkin.seat} onChange={(e) => onChange({ seat: e.target.value })} placeholder="Ej: 12A" />

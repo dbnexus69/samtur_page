@@ -24,8 +24,8 @@ export function SimCardForm({ sim, onChange }: SimCardFormProps) {
           <FormField label="País de Destino">
             <Input value={sim.destinationCountry} onChange={(e) => onChange({ destinationCountry: e.target.value })} placeholder="Ej: España, USA" />
           </FormField>
-          <FormField label="Fecha de Llegada">
-            <Input type="date" value={sim.arrivalDate} onChange={(e) => onChange({ arrivalDate: e.target.value })} />
+          <FormField label="Fecha y Hora de Llegada">
+            <Input type="datetime-local" value={sim.arrivalDate} onChange={(e) => onChange({ arrivalDate: e.target.value })} />
           </FormField>
           <FormField label="Duración del Viaje (Días)">
             <Input type="number" value={sim.tripDuration} onChange={(e) => onChange({ tripDuration: e.target.value })} placeholder="Ej: 15" />

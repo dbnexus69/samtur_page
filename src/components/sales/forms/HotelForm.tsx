@@ -1,4 +1,5 @@
 import { Building2, Users, Briefcase, Trash2, PlusCircle } from "lucide-react";
+import * as LuIcons from "react-icons/lu";
 import { FormField, Input, Combobox, Select } from "../../ui/Form";
 import { Button } from "../../ui/Button";
 import { HotelData, GuestInfo } from "../../../types";
@@ -74,18 +75,33 @@ export function HotelForm({ hotel, onChange, data }: HotelFormProps) {
               placeholder="Ej: 123456789"
             />
           </FormField>
-          <FormField label="Fecha de Entrada">
+          <FormField label="Check-in (Fecha y Hora)">
             <Input
-              type="date"
+              type="datetime-local"
               value={hotel.startDate}
               onChange={(e) => onChange({ startDate: e.target.value })}
             />
           </FormField>
-          <FormField label="Fecha de Salida">
+          <FormField label="Check-out (Fecha y Hora)">
             <Input
-              type="date"
+              type="datetime-local"
               value={hotel.endDate}
               onChange={(e) => onChange({ endDate: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Tipo de Hotel">
+            <Select
+              value={hotel.hotelType || ""}
+              onChange={(e) => onChange({ hotelType: e.target.value })}
+              options={[
+                { value: "", label: "Seleccionar tipo..." },
+                { value: "hotel", label: "Hotel Normal" },
+                { value: "resort", label: "Resort / Todo Incluido" },
+                { value: "boutique", label: "Hotel Boutique" },
+                { value: "apartamento", label: "Apartamento / AirBnB" },
+                { value: "hostal", label: "Hostal / Albergue" },
+                { value: "finca", label: "Finca / Casa Rural" },
+              ]}
             />
           </FormField>
         </div>
@@ -174,6 +190,18 @@ export function HotelForm({ hotel, onChange, data }: HotelFormProps) {
             />
           </FormField>
         </div>
+      </div>
+
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+        <h4 className="text-xs font-bold text-gray-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <LuIcons.LuFileText size={14} /> Observaciones del Hotel
+        </h4>
+        <textarea
+          className="w-full h-24 p-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+          placeholder="Ej: Habitación con vista al mar, late check-out solicitado, etc."
+          value={hotel.observations || ""}
+          onChange={(e) => onChange({ observations: e.target.value })}
+        />
       </div>
     </div>
   );

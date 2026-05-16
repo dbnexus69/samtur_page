@@ -35,8 +35,8 @@ export interface WizardFormData {
   commissionAgent: string;
   commissionAmount: string;
   commissionPaymentMethod: string;
-  vendorId: string;
-  vendorName: string;
+  asesorId: string;
+  asesorName: string;
   selectedProducts: SaleProductId[];
   observations: string;
   paymentMethod: string;
@@ -81,14 +81,11 @@ export const INITIAL_TICKET = (client?: any): TicketData => ({
   baggagePlan: "",
   ticketNumber: "",
   seatNumber: "",
-  isRoundTrip: false,
-  returnLeg: {
-    origin: "",
-    destination: "",
-    flightNumber: "",
-    seat: "",
-    date: "",
-  },
+  flightMode: "one_way",
+  hasStops: false,
+  returnHasStops: false,
+  outboundStops: [],
+  returnStops: [],
   legs: [{ origin: "", destination: "", flightNumber: "", seat: "", date: "" }],
   passengerInfo: {
     name: client?.name || "",
@@ -108,6 +105,8 @@ export const INITIAL_HOTEL = (client?: any): HotelData => ({
   supplierCost: 0,
   ta: 0,
   supplierPaymentMethod: "Efectivo",
+  hotelType: "",
+  observations: "",
   guests: [
     {
       name: client?.name || "",
@@ -297,15 +296,15 @@ export const INITIAL_FORM: WizardFormData = {
   commissionAgent: "",
   commissionAmount: "",
   commissionPaymentMethod: "",
-  vendorId: "",
-  vendorName: "",
+  asesorId: "",
+  asesorName: "",
   selectedProducts: [],
   observations: "",
   paymentMethod: "",
   total: "",
   ta: "",
   supplierCost: "",
-  status: "pendiente",
+  status: "credito",
   isCredit: false,
   creditDueDate: "",
   tickets: [],

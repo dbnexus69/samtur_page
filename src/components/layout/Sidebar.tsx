@@ -138,7 +138,7 @@ export function Sidebar({ isMobileOpen = false, onClose }: SidebarProps) {
           <div className={`transition-all duration-300 origin-left ${isExpanded ? "opacity-100 scale-100" : "opacity-0 scale-0 w-0"}`}>
             <p className="text-sm font-bold truncate text-white">{user?.name}</p>
             <p className="text-[10px] text-gray-400 uppercase tracking-wider">
-              {user?.role === "admin" ? "Administrador" : "Vendedor"}
+              {user?.role === "admin" ? "Administrador" : "Asesor"}
             </p>
           </div>
         </div>

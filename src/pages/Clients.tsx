@@ -10,6 +10,7 @@ import StatCard from '../components/ui/StatCard';
 import SortIcon from '../components/ui/SortIcon';
 import ClientDetailModal from '../components/clients/ClientDetailModal';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
 import { formatDate } from '../utils/formatters';
 import { Client } from '../types';
@@ -20,7 +21,8 @@ import AvatarPicker, { AVATARS } from '../components/ui/AvatarPicker';
 
 export default function Clients() {
   const { data, addClient, updateClient, toggleClientStatus } = useData();
-  const { canCreate, canEdit } = usePermissions();
+  const { user } = useAuth();
+  const { permissions, canCreate, canEdit } = usePermissions();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -137,7 +139,8 @@ export default function Clients() {
     } else {
       addClient({
         ...clientData as any,
-        registrationDate: new Date().toISOString().split('T')[0]
+        registrationDate: new Date().toISOString().split('T')[0],
+        createdBy: user?.id
       });
       setSuccessMessage('Nuevo cliente registrado correctamente');
       setShowConfetti(true);
@@ -159,10 +162,14 @@ export default function Clients() {
   };
 
   const stats = useMemo(() => {
-    const total = data.clients.length;
-    const active = data.clients.filter(c => c.status === 'active').length;
+    const clientsToCalc = permissions.clients.view === 'own' 
+      ? data.clients.filter(c => c.createdBy === user?.id)
+      : data.clients;
+
+    const total = clientsToCalc.length;
+    const active = clientsToCalc.filter(c => c.status === 'active').length;
     const inactive = total - active;
-    const recent = data.clients.filter(c => {
+    const recent = clientsToCalc.filter(c => {
       const regDate = new Date(c.registrationDate);
       const monthAgo = new Date();
       monthAgo.setMonth(monthAgo.getMonth() - 1);
@@ -170,7 +177,7 @@ export default function Clients() {
     }).length;
 
     return { total, active, inactive, recent };
-  }, [data.clients]);
+  }, [data.clients, permissions.clients.view, user?.id]);
 
   const requestSort = (key: keyof Client) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -181,7 +188,11 @@ export default function Clients() {
   };
 
   const filteredClients = useMemo(() => {
-    const filtered = data.clients.filter(client => {
+    const clientsToFilter = permissions.clients.view === 'own'
+      ? data.clients.filter(c => c.createdBy === user?.id)
+      : data.clients;
+
+    const filtered = clientsToFilter.filter(client => {
       const matchesSearch =
         client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.docNumber.includes(searchTerm) ||
@@ -197,7 +208,7 @@ export default function Clients() {
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [data.clients, searchTerm, statusFilter, sortConfig]);
+  }, [data.clients, searchTerm, statusFilter, sortConfig, permissions.clients.view, user?.id]);
 
   const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
   const paginatedClients = filteredClients.slice(

@@ -22,7 +22,7 @@ interface DataContextType {
   addConfigItem: (section: ConfigSection, item: Record<string, unknown>) => Record<string, unknown>;
   updateConfigItem: (section: ConfigSection, id: number, item: Record<string, unknown>) => void;
   deleteConfigItem: (section: ConfigSection, id: number) => void;
-  updateRolePermissions: (permissions: RolePermissions) => void;
+  updateRolePermissions: (role: 'asesor' | 'freelancer', permissions: RolePermissions) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -32,7 +32,31 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!data) return;
-    
+
+    // Migración de datos antiguos (vendor/vendedor -> asesor)
+    const needsMigration = data.sales?.some(s => ((s as any).vendorName && !s.asesorName) || (s as any).status === 'pendiente') || 
+                          data.users?.some(u => (u.role as string).toLowerCase() === 'vendedor' || (u.role as string).toLowerCase() === 'vendor');
+
+    if (needsMigration) {
+      const migratedSales = data.sales.map(s => ({
+        ...s,
+        asesorName: s.asesorName || (s as any).vendorName,
+        asesorId: s.asesorId || (s as any).vendorId,
+        status: (s as any).status === 'pendiente' ? 'credito' : s.status
+      }));
+
+      const migratedUsers = data.users.map(u => ({
+        ...u,
+        role: ['vendedor', 'vendor'].includes((u.role as string).toLowerCase()) ? 'asesor' : u.role
+      }));
+
+      setData({
+        ...data,
+        sales: migratedSales,
+        users: migratedUsers
+      });
+    }
+
     const currentAirlines = data.config?.airlines || [];
     const hasOldAirlines = currentAirlines.length < 18 || currentAirlines.some((a: any) => !a.website || !a.type);
     
@@ -44,7 +68,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     const currentBaggage = data.config?.baggage || [];
     const hasOldBaggage = currentBaggage.length === 0 || currentBaggage.some((b: any) => !b.airlineName || !b.fareType);
-    
+
     if ((hasOldAirlines || hasOldSuppliers || hasOldAirports || hasOldBaggage) && mockData?.config) {
       setData({
         ...data,
@@ -227,13 +251,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const updateRolePermissions = (permissions: RolePermissions) => {
+  const updateRolePermissions = (role: 'asesor' | 'freelancer', permissions: RolePermissions) => {
     setData({
       ...data,
       config: {
         ...data.config,
         rolePermissions: {
-          vendor: permissions
+          ...data.config.rolePermissions,
+          [role]: permissions
         }
       }
     });

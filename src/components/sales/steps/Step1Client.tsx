@@ -35,16 +35,16 @@ export function Step1Client({ form, set, data, errors }: any) {
             />
           </FormField>
 
-          <FormField label="Vendedor / Operador *">
+          <FormField label="Asesor *">
             <Combobox
-              value={form.vendorName}
+              value={form.asesorName}
               onChange={(val) => {
                 const selected = data.users.find((u: any) => u.name === val);
                 if (selected) {
-                  set("vendorId", String(selected.id));
-                  set("vendorName", selected.name);
+                  set("asesorId", String(selected.id));
+                  set("asesorName", selected.name);
                 } else {
-                  set("vendorName", val);
+                  set("asesorName", val);
                 }
               }}
               options={data.users

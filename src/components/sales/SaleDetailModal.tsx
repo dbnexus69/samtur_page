@@ -124,10 +124,10 @@ export default function SaleDetailModal({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
             <div>
               <span className="text-gray-500 text-xs block">
-                Vendedor/Admin
+                Asesor
               </span>{" "}
               <span className="font-medium text-gray-800">
-                {selectedSale.vendorName}
+                {selectedSale.asesorName}
               </span>
             </div>
             <div>
