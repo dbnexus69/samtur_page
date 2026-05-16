@@ -1,15 +1,20 @@
-import { Car, Users, Shield, Calendar } from "lucide-react";
+import { Car } from "lucide-react";
 import { FormField, Input, Combobox } from "../../ui/Form";
 import { CarRentalData } from "../../../types";
+import { ClientInfoSection, VoucherField, FinancialSection } from "./VoucherField";
 
 interface CarRentalFormProps {
   car: CarRentalData;
+  client: any;
+  suppliers?: any[];
   onChange: (updates: Partial<CarRentalData>) => void;
 }
 
-export function CarRentalForm({ car, onChange }: CarRentalFormProps) {
+export function CarRentalForm({ car, client, suppliers, onChange }: CarRentalFormProps) {
   return (
     <div className="space-y-6 animate-fade-in">
+      {client && <ClientInfoSection client={client} />}
+
       <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
         <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
           <Car size={14} /> Renta de Vehículo
@@ -100,6 +105,20 @@ export function CarRentalForm({ car, onChange }: CarRentalFormProps) {
           </FormField>
         </div>
       </div>
+
+      <FinancialSection 
+        supplierName={car.supplierName}
+        supplierCost={car.supplierCost}
+        ta={car.ta}
+        suppliers={suppliers}
+        onChange={(updates) => onChange(updates)}
+      />
+
+      <VoucherField 
+        voucher={car.voucher} 
+        sendVoucher={car.sendVoucher} 
+        onChange={(updates) => onChange(updates)} 
+      />
     </div>
   );
 }

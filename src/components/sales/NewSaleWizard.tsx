@@ -190,6 +190,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
     if (!activeForm || activeIdx === null) return null;
 
     const product = SALE_PRODUCTS.find((p) => p.id === activeForm);
+    const client = data.clients.find((c: any) => c.name === form.clientId);
 
     return (
       <div className="flex flex-col h-full bg-white animate-fade-in">
@@ -231,7 +232,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "tiqueteria":
               return (
                 <TicketForm
-                  ticket={form.tickets[activeIdx] || INITIAL_TICKET()}
+                  ticket={form.tickets[activeIdx] || INITIAL_TICKET(client)}
                   onChange={(updates) => {
                     const next = [...form.tickets];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -247,7 +248,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "hoteleria":
               return (
                 <HotelForm
-                  hotel={form.hotels[activeIdx] || INITIAL_HOTEL()}
+                  hotel={form.hotels[activeIdx] || INITIAL_HOTEL(client)}
                   onChange={(updates) => {
                     const next = [...form.hotels];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -259,7 +260,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "seguros_viaje":
               return (
                 <InsuranceForm
-                  insurance={form.insurances[activeIdx] || INITIAL_INSURANCE()}
+                  insurance={form.insurances[activeIdx] || INITIAL_INSURANCE(client)}
                   onChange={(updates) => {
                     const next = [...form.insurances];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -271,7 +272,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "planes":
               return (
                 <PlanForm
-                  plan={form.plans[activeIdx] || INITIAL_PLAN()}
+                  plan={form.plans[activeIdx] || INITIAL_PLAN(client)}
                   onChange={(updates) => {
                     const next = [...form.plans];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -283,7 +284,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "checkin":
               return (
                 <CheckInForm
-                  checkin={form.checkIns[activeIdx] || INITIAL_CHECKIN()}
+                  checkIn={form.checkIns[activeIdx] || INITIAL_CHECKIN(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.checkIns];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -294,7 +297,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "documentacion_migratoria":
               return (
                 <MigrationForm
-                  migration={form.migrations[activeIdx] || INITIAL_MIGRATION()}
+                  migration={form.migrations[activeIdx] || INITIAL_MIGRATION(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.migrations];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -305,7 +310,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "simcard":
               return (
                 <SimCardForm
-                  sim={form.simCards[activeIdx] || INITIAL_SIMCARD()}
+                  sim={form.simCards[activeIdx] || INITIAL_SIMCARD(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.simCards];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -316,7 +323,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "renta_vehiculos":
               return (
                 <CarRentalForm
-                  car={form.carRentals[activeIdx] || INITIAL_CAR_RENTAL()}
+                  car={form.carRentals[activeIdx] || INITIAL_CAR_RENTAL(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.carRentals];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -327,7 +336,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "renta_fincas":
               return (
                 <FincaForm
-                  finca={form.fincas[activeIdx] || INITIAL_FINCA()}
+                  finca={form.fincas[activeIdx] || INITIAL_FINCA(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.fincas];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -338,7 +349,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "tours":
               return (
                 <TourForm
-                  tour={form.tours[activeIdx] || INITIAL_TOUR()}
+                  tour={form.tours[activeIdx] || INITIAL_TOUR(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.tours];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -349,7 +362,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "centros_convencion":
               return (
                 <ConventionForm
-                  convention={form.conventions[activeIdx] || INITIAL_CONVENTION()}
+                  convention={form.conventions[activeIdx] || INITIAL_CONVENTION(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.conventions];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -360,7 +375,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "restaurantes":
               return (
                 <RestaurantForm
-                  restaurant={form.restaurants[activeIdx] || INITIAL_RESTAURANT()}
+                  restaurant={form.restaurants[activeIdx] || INITIAL_RESTAURANT(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.restaurants];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -371,7 +388,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "visa":
               return (
                 <VisaForm
-                  visa={form.visas[activeIdx] || INITIAL_VISA()}
+                  visa={form.visas[activeIdx] || INITIAL_VISA(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.visas];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -382,7 +401,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "pasaporte":
               return (
                 <PassportForm
-                  passport={form.passports[activeIdx] || INITIAL_PASSPORT()}
+                  passport={form.passports[activeIdx] || INITIAL_PASSPORT(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.passports];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -393,7 +414,9 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
             case "servicio_mascotas":
               return (
                 <PetServiceForm
-                  petService={form.petServices[activeIdx] || INITIAL_PET_SERVICE()}
+                  pet={form.petServices[activeIdx] || INITIAL_PET_SERVICE(client)}
+                  client={client}
+                  suppliers={data.config.suppliers}
                   onChange={(updates) => {
                     const next = [...form.petServices];
                     next[activeIdx] = { ...next[activeIdx], ...updates };
@@ -401,6 +424,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
                   }}
                 />
               );
+
             default:
               return null;
           }
@@ -459,16 +483,30 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
       petServiceData: form.petServices.length > 0 ? form.petServices : undefined,
       isCredit: form.isCredit,
       creditDueDate: form.isCredit ? form.creditDueDate : undefined,
-      commissionAgent: form.commissionAgent,
-      commissionAmount: Number(form.commissionAmount) || 0,
-      commissionPaymentMethod: form.commissionPaymentMethod,
+      commissionAgentId: Number(form.commissionAgentId) || undefined,
+      commissionAgentName: form.commissionAgentName || undefined,
+      commissionAgentAmount: Number(form.commissionAgentAmount) || undefined,
+      commissionAgentRetentionPercentage: Number(form.commissionAgentRetentionPercentage) || undefined,
+      commissionAgentNetPayment: Number(form.commissionAgentNetPayment) || undefined,
+      isSettled: !!form.commissionAgentId ? false : undefined,
       ta: Number(form.ta) || 0,
       supplierCost: Number(form.supplierCost) || 0,
     };
 
     addSale(saleData as any);
     localStorage.removeItem("itea_new_sale_draft");
-    onSuccess("Venta registrada exitosamente");
+
+    const hasVouchersToSend = [
+      ...form.checkIns, ...form.migrations, ...form.simCards, ...form.carRentals,
+      ...form.fincas, ...form.tours, ...form.conventions, ...form.restaurants,
+      ...form.visas, ...form.passports, ...form.petServices
+    ].some(item => item.sendVoucher);
+
+    if (hasVouchersToSend) {
+      onSuccess("Venta registrada y vouchers enviados al cliente");
+    } else {
+      onSuccess("Venta registrada exitosamente");
+    }
     onClose();
   };
 

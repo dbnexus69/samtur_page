@@ -1,13 +1,16 @@
 import { LuUtensils } from "react-icons/lu";
 import { FormField, Input, Combobox } from "../../ui/Form";
 import { RestaurantData } from "../../../types";
+import { ClientInfoSection, VoucherField, FinancialSection } from "./VoucherField";
 
 interface RestaurantFormProps {
   restaurant: RestaurantData;
+  client: any;
+  suppliers?: any[];
   onChange: (updates: Partial<RestaurantData>) => void;
 }
 
-export function RestaurantForm({ restaurant, onChange }: RestaurantFormProps) {
+export function RestaurantForm({ restaurant, client, suppliers, onChange }: RestaurantFormProps) {
   const toggleRestriction = (res: string) => {
     const current = restaurant.dietaryRestrictions;
     const next = current.includes(res) ? current.filter((i) => i !== res) : [...current, res];
@@ -16,6 +19,8 @@ export function RestaurantForm({ restaurant, onChange }: RestaurantFormProps) {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {client && <ClientInfoSection client={client} />}
+
       <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
         <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
           <LuUtensils size={14} /> Reserva de Restaurante
@@ -86,6 +91,20 @@ export function RestaurantForm({ restaurant, onChange }: RestaurantFormProps) {
           </div>
         </div>
       </div>
+
+      <FinancialSection 
+        supplierName={restaurant.supplierName}
+        supplierCost={restaurant.supplierCost}
+        ta={restaurant.ta}
+        suppliers={suppliers}
+        onChange={(updates) => onChange(updates)}
+      />
+
+      <VoucherField 
+        voucher={restaurant.voucher} 
+        sendVoucher={restaurant.sendVoucher} 
+        onChange={(updates) => onChange(updates)} 
+      />
     </div>
   );
 }

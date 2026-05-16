@@ -1,18 +1,23 @@
-import { Map, Bus, Calendar, Users } from "lucide-react";
+import { LuMap } from "react-icons/lu";
 import { FormField, Input, Combobox, Textarea } from "../../ui/Form";
 import { TourData } from "../../../types";
+import { ClientInfoSection, VoucherField, FinancialSection } from "./VoucherField";
 
 interface TourFormProps {
   tour: TourData;
+  client: any;
+  suppliers?: any[];
   onChange: (updates: Partial<TourData>) => void;
 }
 
-export function TourForm({ tour, onChange }: TourFormProps) {
+export function TourForm({ tour, client, suppliers, onChange }: TourFormProps) {
   return (
     <div className="space-y-6 animate-fade-in">
+      {client && <ClientInfoSection client={client} />}
+
       <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
         <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
-          <Map size={14} /> Tour Guiado
+          <LuMap size={14} /> Tour Guiado
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Nombre del Pasajero">
@@ -68,6 +73,20 @@ export function TourForm({ tour, onChange }: TourFormProps) {
           </FormField>
         </div>
       </div>
+
+      <FinancialSection 
+        supplierName={tour.supplierName}
+        supplierCost={tour.supplierCost}
+        ta={tour.ta}
+        suppliers={suppliers}
+        onChange={(updates) => onChange(updates)}
+      />
+
+      <VoucherField 
+        voucher={tour.voucher} 
+        sendVoucher={tour.sendVoucher} 
+        onChange={(updates) => onChange(updates)} 
+      />
     </div>
   );
-}
+}

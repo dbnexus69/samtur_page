@@ -250,6 +250,11 @@ export interface CheckInData {
   phone: string;
   specialNeeds: string;
   needsWheelchair: boolean;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface MigrationData {
@@ -261,6 +266,11 @@ export interface MigrationData {
   destinationCountry: string;
   requestedDocType: string;
   email: string;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface SimCardData {
@@ -273,6 +283,11 @@ export interface SimCardData {
   simType: string;
   deliveryMethod: string;
   email: string;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface CarRentalData {
@@ -285,6 +300,11 @@ export interface CarRentalData {
   additionalDrivers: number;
   insuranceType: "basic" | "all_risk";
   guaranteeCreditCard: string;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface FincaData {
@@ -298,6 +318,11 @@ export interface FincaData {
   petType: string;
   additionalServices: string[];
   phone: string;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface TourData {
@@ -312,6 +337,11 @@ export interface TourData {
   pickupPoint: string;
   medicalConditions: string;
   phone: string;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface ConventionData {
@@ -326,6 +356,11 @@ export interface ConventionData {
   hasCatering: boolean;
   cateringNotes: string;
   email: string;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface RestaurantData {
@@ -337,6 +372,11 @@ export interface RestaurantData {
   dietaryRestrictions: string[];
   specialOccasion: string;
   phone: string;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface VisaData {
@@ -349,6 +389,11 @@ export interface VisaData {
   visaType: string;
   estimatedTravelDate: string;
   email: string;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface PassportData {
@@ -359,6 +404,11 @@ export interface PassportData {
   processType: string;
   estimatedTravelDate: string;
   phone: string;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface PetServiceData {
@@ -373,6 +423,11 @@ export interface PetServiceData {
   destinationCountry: string;
   medicalConditions: string;
   phone: string;
+  voucher?: string;
+  sendVoucher?: boolean;
+  supplierName?: string;
+  supplierCost?: number;
+  ta?: number;
 }
 
 export interface PaymentRecord {
@@ -413,9 +468,14 @@ export interface Sale {
   isCredit?: boolean;
   creditDueDate?: string;
   creditPaidAmount?: number;
-  commissionAgent?: string;
-  commissionAmount?: number;
-  commissionPaymentMethod?: string;
+  // Comisionista
+  commissionAgentId?: number;
+  commissionAgentName?: string;
+  commissionAgentAmount?: number;
+  commissionAgentRetentionPercentage?: number;
+  commissionAgentNetPayment?: number;
+  isSettled?: boolean;
+  settlementDate?: string;
   ta?: number;
   supplierCost?: number;
   payments?: PaymentRecord[];
@@ -430,6 +490,27 @@ export interface Flight {
   time: string;
   type: "ida" | "regreso";
   checkin: "pendiente" | "realizado";
+}
+
+export interface CommissionAgent {
+  id: number;
+  name: string;
+  type: string;
+  docType: string;
+  docNumber: string;
+  status: "Activo" | "Inactivo";
+}
+
+export interface CommissionSettlement {
+  id: number;
+  agentId: number;
+  agentName: string;
+  amount: number;
+  date: string;
+  paymentMethod: string;
+  reference?: string;
+  notes?: string;
+  salesIds: number[];
 }
 
 export interface ConfigData {
@@ -486,6 +567,8 @@ export interface AppData {
   clients: Client[];
   sales: Sale[];
   flights: Flight[];
+  commissionAgents: CommissionAgent[];
+  commissionSettlements: CommissionSettlement[];
   config: ConfigData;
   salesHistory: MonthlySale[];
 }

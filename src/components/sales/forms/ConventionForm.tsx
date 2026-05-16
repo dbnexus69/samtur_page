@@ -1,13 +1,16 @@
-import { Building2, Users } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { FormField, Input, Combobox, Textarea } from "../../ui/Form";
 import { ConventionData } from "../../../types";
+import { ClientInfoSection, VoucherField, FinancialSection } from "./VoucherField";
 
 interface ConventionFormProps {
   convention: ConventionData;
+  client: any;
+  suppliers?: any[];
   onChange: (updates: Partial<ConventionData>) => void;
 }
 
-export function ConventionForm({ convention, onChange }: ConventionFormProps) {
+export function ConventionForm({ convention, client, suppliers, onChange }: ConventionFormProps) {
   const toggleAV = (item: string) => {
     const current = convention.avEquipment;
     const next = current.includes(item) ? current.filter((i) => i !== item) : [...current, item];
@@ -16,6 +19,8 @@ export function ConventionForm({ convention, onChange }: ConventionFormProps) {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {client && <ClientInfoSection client={client} />}
+
       <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
         <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
           <Building2 size={14} /> Centro de Convenciones
@@ -102,6 +107,20 @@ export function ConventionForm({ convention, onChange }: ConventionFormProps) {
           </div>
         </div>
       </div>
+
+      <FinancialSection 
+        supplierName={convention.supplierName}
+        supplierCost={convention.supplierCost}
+        ta={convention.ta}
+        suppliers={suppliers}
+        onChange={(updates) => onChange(updates)}
+      />
+
+      <VoucherField 
+        voucher={convention.voucher} 
+        sendVoucher={convention.sendVoucher} 
+        onChange={(updates) => onChange(updates)} 
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import Clients from './pages/Clients';
 import Itineraries from './pages/Itineraries';
 import Users from './pages/Users';
 import Config from './pages/Config';
+import CommissionAgents from './pages/CommissionAgents';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -45,6 +46,7 @@ function AppRoutes() {
         <Route path="itineraries" element={<Itineraries />} />
         <Route path="users" element={<AdminRoute><Users /></AdminRoute>} />
         <Route path="config" element={<AdminRoute><Config /></AdminRoute>} />
+        <Route path="commissions" element={<CommissionAgents />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

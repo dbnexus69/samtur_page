@@ -17,12 +17,13 @@ export function Card({ children, className = '' }: CardProps) {
 interface CardHeaderProps {
   children: ReactNode;
   actions?: ReactNode;
+  className?: string;
 }
 
-export function CardHeader({ children, actions }: CardHeaderProps) {
+export function CardHeader({ children, actions, className = '' }: CardHeaderProps) {
   return (
-    <div className="flex items-center justify-between p-4 border-b border-gray-border">
-      <h2 className="text-lg font-heading font-semibold text-primary">{children}</h2>
+    <div className={`flex items-center justify-between p-4 border-b border-gray-border ${className}`}>
+      <div className="flex-1">{children}</div>
       {actions}
     </div>
   );

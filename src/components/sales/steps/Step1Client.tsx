@@ -57,43 +57,30 @@ export function Step1Client({ form, set, data, errors }: any) {
             />
           </FormField>
 
-          <FormField label="Comisionista">
-            <Combobox
-              value={form.commissionAgent || ""}
-              onChange={(val) => set("commissionAgent", val)}
-              options={[
-                { value: "Agencia Viajes Plus", label: "Agencia Viajes Plus" },
-                { value: "Asesor Independiente", label: "Asesor Independiente" },
-                { value: "Ventas Directas Web", label: "Ventas Directas Web" },
-                { value: "Referido por Cliente", label: "Referido por Cliente" },
-                { value: "Alianza Corporativa", label: "Alianza Corporativa" },
-                { value: "Referido Familiar", label: "Referido Familiar" },
-                { value: "Aliado Comercial", label: "Aliado Comercial" },
-              ]}
-              placeholder="Escribe o selecciona..."
-            />
-          </FormField>
-
-          <FormField label="Valor Comisión">
-            <Input
-              type="number"
-              value={form.commissionAmount}
-              onChange={(e) => set("commissionAmount", e.target.value)}
-              placeholder="0"
-            />
-          </FormField>
-
-          <FormField label="Forma de Pago Comisión">
+          <FormField label="Comisionista / Referido">
             <Select
-              value={form.commissionPaymentMethod}
-              onChange={(e) =>
-                set("commissionPaymentMethod", e.target.value)
-              }
+              value={form.commissionAgentId || ""}
+              onChange={(e) => {
+                const agentId = e.target.value;
+                if (agentId === "") {
+                  set("commissionAgentId", "");
+                  set("commissionAgentName", "");
+                  set("commissionAgentAmount", "0");
+                  set("commissionAgentRetentionPercentage", "0");
+                  set("commissionAgentNetPayment", "0");
+                } else {
+                  const agent = (data.commissionAgents || []).find((a: any) => a.id.toString() === agentId);
+                  if (agent) {
+                    set("commissionAgentId", agentId);
+                    set("commissionAgentName", agent.name);
+                  }
+                }
+              }}
               options={[
-                { value: "", label: "No aplica / Pendiente" },
-                ...data.config.paymentMethods.map((p) => ({
-                  value: p.name,
-                  label: p.name,
+                { value: "", label: "Venta Directa (Sin Comisionista)" },
+                ...(data.commissionAgents || []).map((a: any) => ({
+                  value: a.id.toString(),
+                  label: a.name,
                 })),
               ]}
             />

@@ -19,9 +19,13 @@ interface DataContextType {
   updateSale: (id: number, sale: Partial<Sale>) => void;
   registerCreditPayment: (saleId: number, amount: number, isTotal: boolean) => void;
   updateFlight: (id: number, flight: Partial<Flight>) => void;
+  settleCommissions: (agentId: number, settlement: any) => void;
   addConfigItem: (section: ConfigSection, item: Record<string, unknown>) => Record<string, unknown>;
   updateConfigItem: (section: ConfigSection, id: number, item: Record<string, unknown>) => void;
   deleteConfigItem: (section: ConfigSection, id: number) => void;
+  addCommissionAgent: (agent: any) => any;
+  updateCommissionAgent: (id: number, agent: any) => void;
+  deleteCommissionAgent: (id: number) => void;
   updateRolePermissions: (role: 'asesor' | 'freelancer', permissions: RolePermissions) => void;
 }
 
@@ -79,6 +83,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
           airports: hasOldAirports ? mockData.config.airports : data.config.airports,
           baggage: hasOldBaggage ? mockData.config.baggage : data.config.baggage
         }
+      });
+    }
+
+    // Migración y/o Inicialización de comisionistas (fuera de config)
+    if (!data.commissionAgents || (data.config as any)?.commissionAgents) {
+      const agents = data.commissionAgents || (data.config as any)?.commissionAgents || [];
+      const settlements = data.commissionSettlements || (data.config as any)?.commissionSettlements || [];
+      
+      const newConfig = { ...data.config };
+      delete (newConfig as any).commissionAgents;
+      delete (newConfig as any).commissionSettlements;
+
+      setData({
+        ...data,
+        commissionAgents: agents,
+        commissionSettlements: settlements,
+        config: newConfig
       });
     }
   }, []);
@@ -161,7 +182,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           }
         });
 
-        if (ticket.isRoundTrip && ticket.returnLeg && ticket.returnLeg.origin && ticket.returnLeg.destination && ticket.returnLeg.date) {
+        if (ticket.flightMode === 'round_trip' && ticket.returnLeg && ticket.returnLeg.origin && ticket.returnLeg.destination && ticket.returnLeg.date) {
           newFlights.push({
             id: maxFlightId++,
             passenger: ticket.passengerInfo?.name || sale.clientName || 'Pasajero',
@@ -209,6 +230,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const settleCommissions = (agentId: number, settlement: any) => {
+    const agent = data.commissionAgents.find(a => a.id === agentId);
+    const settlements = data.commissionSettlements || [];
+    const settlementId = settlements.length > 0 ? Math.max(...settlements.map(s => s.id)) + 1 : 1;
+    const newSettlement = {
+      ...settlement,
+      id: settlementId,
+      agentId,
+      agentName: agent?.name || 'Agente Desconocido',
+      salesIds: data.sales
+        .filter(s => s.commissionAgentId === agentId && !s.isSettled)
+        .map(s => s.id)
+    };
+    setData({
+      ...data,
+      sales: data.sales.map(s =>
+        s.commissionAgentId === agentId && !s.isSettled
+          ? { ...s, isSettled: true, settlementDate: settlement.date }
+          : s
+      ),
+      commissionSettlements: [...settlements, newSettlement]
+    });
+  };
+
   const updateFlight = (id: number, flightUpdate: Partial<Flight>) => {
     setData({
       ...data,
@@ -229,6 +274,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return newItem;
   };
 
+  const addCommissionAgent = (agent: any) => {
+    const newAgent = { ...agent, id: generateId(data.commissionAgents) };
+    setData({
+      ...data,
+      commissionAgents: [...data.commissionAgents, newAgent]
+    });
+    return newAgent;
+  };
+
   const updateConfigItem = (section: ConfigSection, id: number, itemUpdate: Record<string, unknown>) => {
     const sectionData = data.config[section] as Record<string, unknown>[];
     setData({
@@ -240,6 +294,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const updateCommissionAgent = (id: number, agentUpdate: any) => {
+    setData({
+      ...data,
+      commissionAgents: data.commissionAgents.map(a => a.id === id ? { ...a, ...agentUpdate } : a)
+    });
+  };
+
   const deleteConfigItem = (section: ConfigSection, id: number) => {
     const sectionData = data.config[section] as Record<string, unknown>[];
     setData({
@@ -248,6 +309,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
         ...data.config,
         [section]: sectionData.filter(i => i.id !== id)
       }
+    });
+  };
+
+  const deleteCommissionAgent = (id: number) => {
+    setData({
+      ...data,
+      commissionAgents: data.commissionAgents.filter(a => a.id !== id)
     });
   };
 
@@ -284,11 +352,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
       toggleClientStatus,
       addSale,
       updateSale,
+      settleCommissions,
       registerCreditPayment,
       updateFlight,
       addConfigItem,
       updateConfigItem,
       deleteConfigItem,
+      addCommissionAgent,
+      updateCommissionAgent,
+      deleteCommissionAgent,
       updateRolePermissions
     }}>
       {children}

@@ -1,15 +1,20 @@
 import { LuSmartphone } from "react-icons/lu";
 import { FormField, Input, Combobox } from "../../ui/Form";
 import { SimCardData } from "../../../types";
+import { ClientInfoSection, VoucherField, FinancialSection } from "./VoucherField";
 
 interface SimCardFormProps {
   sim: SimCardData;
+  client: any;
+  suppliers?: any[];
   onChange: (updates: Partial<SimCardData>) => void;
 }
 
-export function SimCardForm({ sim, onChange }: SimCardFormProps) {
+export function SimCardForm({ sim, client, suppliers, onChange }: SimCardFormProps) {
   return (
     <div className="space-y-6 animate-fade-in">
+      {client && <ClientInfoSection client={client} />}
+      
       <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
         <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
           <LuSmartphone size={14} /> Configuración de SIM Card
@@ -62,6 +67,20 @@ export function SimCardForm({ sim, onChange }: SimCardFormProps) {
           </FormField>
         </div>
       </div>
+
+      <FinancialSection 
+        supplierName={sim.supplierName}
+        supplierCost={sim.supplierCost}
+        ta={sim.ta}
+        suppliers={suppliers}
+        onChange={(updates) => onChange(updates)}
+      />
+
+      <VoucherField 
+        voucher={sim.voucher} 
+        sendVoucher={sim.sendVoucher} 
+        onChange={(updates) => onChange(updates)} 
+      />
     </div>
   );
-}
+}

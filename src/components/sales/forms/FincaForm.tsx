@@ -1,15 +1,20 @@
-import { Home, Users, Calendar } from "lucide-react";
-import { FormField, Input, Combobox } from "../../ui/Form";
+import { Home } from "lucide-react";
+import { FormField, Input } from "../../ui/Form";
 import { FincaData } from "../../../types";
+import { ClientInfoSection, VoucherField, FinancialSection } from "./VoucherField";
 
 interface FincaFormProps {
   finca: FincaData;
+  client: any;
+  suppliers?: any[];
   onChange: (updates: Partial<FincaData>) => void;
 }
 
-export function FincaForm({ finca, onChange }: FincaFormProps) {
+export function FincaForm({ finca, client, suppliers, onChange }: FincaFormProps) {
   return (
     <div className="space-y-6 animate-fade-in">
+      {client && <ClientInfoSection client={client} />}
+
       <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
         <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
           <Home size={14} /> Renta de Finca
@@ -50,6 +55,20 @@ export function FincaForm({ finca, onChange }: FincaFormProps) {
           </FormField>
         </div>
       </div>
+
+      <FinancialSection 
+        supplierName={finca.supplierName}
+        supplierCost={finca.supplierCost}
+        ta={finca.ta}
+        suppliers={suppliers}
+        onChange={(updates) => onChange(updates)}
+      />
+
+      <VoucherField 
+        voucher={finca.voucher} 
+        sendVoucher={finca.sendVoucher} 
+        onChange={(updates) => onChange(updates)} 
+      />
     </div>
   );
-}
+}

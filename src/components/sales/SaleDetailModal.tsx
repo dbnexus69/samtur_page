@@ -29,7 +29,7 @@ export default function SaleDetailModal({
   if (!selectedSale) return null;
 
   const client = clients.find((c) => c.id === selectedSale.clientId);
-  const commissionAmount = (selectedSale as any).commissionAmount || 0;
+  const commissionAmount = selectedSale.commissionAgentNetPayment || 0;
   const supplierCost = selectedSale.supplierCost || 0;
   const gananciaNeta = selectedSale.total - supplierCost - commissionAmount;
 
@@ -139,15 +139,13 @@ export default function SaleDetailModal({
               </span>
             </div>
             <div>
-              <span className="text-gray-500 text-xs block">
-                Tarifa Admin (T.A)
-              </span>{" "}
-              <span className="font-medium text-gray-800">
-                {formatCurrency(selectedSale.ta || 0)}
+              <span className="text-gray-500 text-xs block">Pago Comisionista</span>{" "}
+              <span className="font-medium text-amber-600">
+                {formatCurrency(commissionAmount)}
               </span>
             </div>
             <div>
-              <span className="text-gray-500 text-xs block">Ganancia Neta</span>{" "}
+              <span className="text-gray-500 text-xs block">Ganancia Oficina</span>{" "}
               <span className="font-bold text-emerald-600">
                 {formatCurrency(gananciaNeta)}
               </span>
@@ -156,7 +154,7 @@ export default function SaleDetailModal({
         </div>
 
         {/* Sección Comisionista */}
-        {(selectedSale.commissionAgent || commissionAmount > 0) && (
+        {(selectedSale.commissionAgentName || commissionAmount > 0) && (
           <div>
             <h4 className="text-sm font-bold text-primary border-b border-gray-200 pb-2 mb-3">
               Detalles del Comisionista
@@ -165,22 +163,18 @@ export default function SaleDetailModal({
               <div>
                 <span className="text-gray-500 text-xs block">Nombre</span>{" "}
                 <span className="font-medium text-gray-800">
-                  {selectedSale.commissionAgent || "-"}
+                  {selectedSale.commissionAgentName || "-"}
                 </span>
               </div>
               <div>
-                <span className="text-gray-500 text-xs block">
-                  Forma de Pago
-                </span>{" "}
+                <span className="text-gray-500 text-xs block">% Retención Oficina</span>{" "}
                 <span className="font-medium text-gray-800">
-                  {(selectedSale as any).commissionPaymentMethod || "-"}
+                  {selectedSale.commissionAgentRetentionPercentage || 0}%
                 </span>
               </div>
               <div>
-                <span className="text-gray-500 text-xs block">
-                  Valor Pagado
-                </span>{" "}
-                <span className="font-medium text-rose-600">
+                <span className="text-gray-500 text-xs block">Neto a Pagar</span>{" "}
+                <span className="font-bold text-rose-600">
                   {formatCurrency(commissionAmount)}
                 </span>
               </div>

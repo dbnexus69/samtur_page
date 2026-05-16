@@ -388,10 +388,9 @@ export const mockData: AppData = {
       category: "hoteles",
       paymentMethod: "Tarjeta de Crédito",
       // --- DATOS NUEVOS DE COMISIÓN Y FINANCIEROS ---
-      commissionAgent: "Agencia Viajes Plus",
-      commissionAmount: 150000,
-      commissionPaymentMethod: "Transferencia Bancaria",
-      ta: 250000,
+      commissionAgentName: "Agencia Viajes Plus",
+      commissionAgentNetPayment: 150000,
+      commissionAgentRetentionPercentage: 0,
       supplierCost: 2100000,
       // Ganancia neta: 2.500.000 - 2.100.000 - 150.000 = 250.000
       observations:
@@ -412,10 +411,9 @@ export const mockData: AppData = {
       creditDueDate: "2026-06-15",
       creditPaidAmount: 0,
       // --- DATOS NUEVOS DE COMISIÓN Y FINANCIEROS ---
-      commissionAgent: "Asesor Independiente",
-      commissionAmount: 20000,
-      commissionPaymentMethod: "Efectivo",
-      ta: 50000,
+      commissionAgentName: "Asesor Independiente",
+      commissionAgentNetPayment: 20000,
+      commissionAgentRetentionPercentage: 0,
       supplierCost: 730000,
       // Ganancia neta: 800.000 - 730.000 - 20.000 = 50.000
       observations:
@@ -435,10 +433,9 @@ export const mockData: AppData = {
       isCredit: true,
       creditPaidAmount: 2000000,
       // --- DATOS NUEVOS DE COMISIÓN Y FINANCIEROS ---
-      commissionAgent: "Ventas Directas Web",
-      commissionAmount: 300000,
-      commissionPaymentMethod: "Descuento en factura",
-      ta: 500000,
+      commissionAgentName: "Ventas Directas Web",
+      commissionAgentNetPayment: 300000,
+      commissionAgentRetentionPercentage: 0,
       supplierCost: 3700000,
       // Ganancia neta: 4.500.000 - 3.700.000 - 300.000 = 500.000
       observations:
@@ -918,5 +915,10 @@ export const mockData: AppData = {
       freelancer: DEFAULT_FREELANCER_PERMISSIONS,
     },
   },
+  commissionAgents: [
+    { id: 1, name: "Agencia Viajes Plus", type: "Agencia Externa", docType: "NIT", docNumber: "900123456-1", status: "Activo" },
+    { id: 2, name: "Asesor Independiente", type: "Comisionista", docType: "CC", docNumber: "1020304050", status: "Activo" },
+  ],
+  commissionSettlements: [],
   salesHistory,
 };

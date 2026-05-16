@@ -38,9 +38,10 @@ export default function SaleEditModal({
     observations: "",
     isCredit: false,
     creditDueDate: "",
-    commissionAgent: "",
-    commissionAmount: "",
-    commissionPaymentMethod: "",
+    commissionAgentName: "",
+    commissionAgentAmount: "",
+    commissionAgentRetentionPercentage: "",
+    commissionAgentNetPayment: "",
     ta: "",
     supplierCost: "",
   });
@@ -61,11 +62,16 @@ export default function SaleEditModal({
         observations: editingSale.observations || "",
         isCredit: editingSale.isCredit || false,
         creditDueDate: editingSale.creditDueDate || "",
-        commissionAgent: editingSale.commissionAgent || "",
-        commissionAmount: (editingSale as any).commissionAmount
-          ? String((editingSale as any).commissionAmount)
+        commissionAgentName: editingSale.commissionAgentName || "",
+        commissionAgentAmount: editingSale.commissionAgentAmount
+          ? String(editingSale.commissionAgentAmount)
           : "",
-        commissionPaymentMethod: (editingSale as any).commissionPaymentMethod || "",
+        commissionAgentRetentionPercentage: editingSale.commissionAgentRetentionPercentage
+          ? String(editingSale.commissionAgentRetentionPercentage)
+          : "",
+        commissionAgentNetPayment: editingSale.commissionAgentNetPayment
+          ? String(editingSale.commissionAgentNetPayment)
+          : "",
         ta: editingSale.ta ? String(editingSale.ta) : "",
         supplierCost: editingSale.supplierCost ? String(editingSale.supplierCost) : "",
       });
@@ -79,9 +85,10 @@ export default function SaleEditModal({
         observations: "",
         isCredit: false,
         creditDueDate: "",
-        commissionAgent: "",
-        commissionAmount: "",
-        commissionPaymentMethod: "",
+        commissionAgentName: "",
+        commissionAgentAmount: "",
+        commissionAgentRetentionPercentage: "",
+        commissionAgentNetPayment: "",
         ta: "",
         supplierCost: "",
       });
@@ -153,9 +160,10 @@ export default function SaleEditModal({
       isCredit: formData.isCredit,
       creditDueDate: formData.isCredit ? formData.creditDueDate : undefined,
       creditPaidAmount: formData.isCredit ? totalPaidAmount : undefined,
-      commissionAgent: formData.commissionAgent,
-      commissionAmount: Number(formData.commissionAmount) || 0,
-      commissionPaymentMethod: formData.commissionPaymentMethod,
+      commissionAgentName: formData.commissionAgentName,
+      commissionAgentAmount: Number(formData.commissionAgentAmount) || 0,
+      commissionAgentRetentionPercentage: Number(formData.commissionAgentRetentionPercentage) || 0,
+      commissionAgentNetPayment: Number(formData.commissionAgentNetPayment) || 0,
       ta: Number(formData.ta) || 0,
       supplierCost: Number(formData.supplierCost) || 0,
       payments: payments,
@@ -237,7 +245,7 @@ export default function SaleEditModal({
                   Comisionista
                 </span>
                 <span className="font-semibold text-gray-800">
-                  {editingSale.commissionAgent || "N/A"}
+                  {editingSale.commissionAgentName || "N/A"}
                 </span>
               </div>
               <div className="col-span-2 sm:col-span-3 pt-3 mt-1 border-t border-gray-100">
@@ -297,7 +305,7 @@ export default function SaleEditModal({
                 {formatCurrency(
                   editingSale.total -
                     (editingSale.supplierCost || 0) -
-                    ((editingSale as any).commissionAmount || 0),
+                    (editingSale.commissionAgentNetPayment || 0),
                 )}
               </p>
             </div>

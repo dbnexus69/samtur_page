@@ -32,9 +32,11 @@ export const PRODUCT_IMAGES: Record<string, string> = {
 
 export interface WizardFormData {
   clientId: string;
-  commissionAgent: string;
-  commissionAmount: string;
-  commissionPaymentMethod: string;
+  commissionAgentId: string;
+  commissionAgentName: string;
+  commissionAgentAmount: string;
+  commissionAgentRetentionPercentage: string;
+  commissionAgentNetPayment: string;
   asesorId: string;
   asesorName: string;
   selectedProducts: SaleProductId[];
@@ -166,6 +168,11 @@ export const INITIAL_CHECKIN = (client?: any): CheckInData => ({
   phone: client?.phone || "",
   specialNeeds: "",
   needsWheelchair: false,
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_MIGRATION = (client?: any): MigrationData => ({
@@ -177,6 +184,11 @@ export const INITIAL_MIGRATION = (client?: any): MigrationData => ({
   destinationCountry: "",
   requestedDocType: "Visa Turismo",
   email: client?.email || "",
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_SIMCARD = (client?: any): SimCardData => ({
@@ -189,6 +201,11 @@ export const INITIAL_SIMCARD = (client?: any): SimCardData => ({
   simType: "eSIM",
   deliveryMethod: "Correo Electrónico",
   email: client?.email || "",
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_CAR_RENTAL = (client?: any): CarRentalData => ({
@@ -201,6 +218,11 @@ export const INITIAL_CAR_RENTAL = (client?: any): CarRentalData => ({
   additionalDrivers: 0,
   insuranceType: "basic",
   guaranteeCreditCard: "",
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_FINCA = (client?: any): FincaData => ({
@@ -214,6 +236,11 @@ export const INITIAL_FINCA = (client?: any): FincaData => ({
   petType: "",
   additionalServices: [],
   phone: client?.phone || "",
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_TOUR = (client?: any): TourData => ({
@@ -228,6 +255,11 @@ export const INITIAL_TOUR = (client?: any): TourData => ({
   pickupPoint: "",
   medicalConditions: "",
   phone: client?.phone || "",
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_CONVENTION = (client?: any): ConventionData => ({
@@ -242,6 +274,11 @@ export const INITIAL_CONVENTION = (client?: any): ConventionData => ({
   hasCatering: false,
   cateringNotes: "",
   email: client?.email || "",
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_RESTAURANT = (client?: any): RestaurantData => ({
@@ -253,6 +290,11 @@ export const INITIAL_RESTAURANT = (client?: any): RestaurantData => ({
   dietaryRestrictions: [],
   specialOccasion: "cumpleaños",
   phone: client?.phone || "",
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_VISA = (client?: any): VisaData => ({
@@ -265,6 +307,11 @@ export const INITIAL_VISA = (client?: any): VisaData => ({
   visaType: "turista",
   estimatedTravelDate: "",
   email: client?.email || "",
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_PASSPORT = (client?: any): PassportData => ({
@@ -275,6 +322,11 @@ export const INITIAL_PASSPORT = (client?: any): PassportData => ({
   processType: "primera vez",
   estimatedTravelDate: "",
   phone: client?.phone || "",
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_PET_SERVICE = (client?: any): PetServiceData => ({
@@ -289,13 +341,20 @@ export const INITIAL_PET_SERVICE = (client?: any): PetServiceData => ({
   destinationCountry: "",
   medicalConditions: "",
   phone: client?.phone || "",
+  voucher: "",
+  sendVoucher: false,
+  supplierName: "",
+  supplierCost: 0,
+  ta: 0,
 });
 
 export const INITIAL_FORM: WizardFormData = {
   clientId: "",
-  commissionAgent: "",
-  commissionAmount: "",
-  commissionPaymentMethod: "",
+  commissionAgentId: "",
+  commissionAgentName: "",
+  commissionAgentAmount: "",
+  commissionAgentRetentionPercentage: "0",
+  commissionAgentNetPayment: "0",
   asesorId: "",
   asesorName: "",
   selectedProducts: [],

@@ -43,7 +43,7 @@ export default function SalesTable({
           <TableCell>{sale.id}</TableCell>
           <TableCell>{sale.clientName}</TableCell>
           <TableCell>{sale.asesorName}</TableCell>
-          <TableCell>{sale.commissionAgent || "-"}</TableCell>
+          <TableCell>{sale.commissionAgentName || "-"}</TableCell>
           <TableCell>{formatCurrency(sale.ta || 0)}</TableCell>
           <TableCell>{formatCurrency(sale.supplierCost || 0)}</TableCell>
           <TableCell className="font-semibold">
