@@ -117,18 +117,38 @@ export function PlanForm({ plan, onChange, data }: PlanFormProps) {
               placeholder="Número de 13 dígitos"
             />
           </FormField>
-          <FormField label="Fecha Inicio (Hora)">
+          <FormField label="Fecha Ida (Vuelo)">
             <Input
               type="datetime-local"
-              value={plan.startDate}
-              onChange={(e) => onChange({ startDate: e.target.value })}
+              value={plan.flightDepartureDate}
+              onChange={(e) => {
+                const val = e.target.value;
+                onChange({ flightDepartureDate: val, startDate: val });
+              }}
             />
           </FormField>
-          <FormField label="Fecha Fin (Hora)">
+          <FormField label="Fecha Vuelta (Vuelo)">
             <Input
               type="datetime-local"
-              value={plan.endDate}
-              onChange={(e) => onChange({ endDate: e.target.value })}
+              value={plan.flightReturnDate}
+              onChange={(e) => {
+                const val = e.target.value;
+                onChange({ flightReturnDate: val, endDate: val });
+              }}
+            />
+          </FormField>
+          <FormField label="Ingreso Hotel">
+            <Input
+              type="datetime-local"
+              value={plan.hotelCheckIn}
+              onChange={(e) => onChange({ hotelCheckIn: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Salida Hotel">
+            <Input
+              type="datetime-local"
+              value={plan.hotelCheckOut}
+              onChange={(e) => onChange({ hotelCheckOut: e.target.value })}
             />
           </FormField>
         </div>

@@ -147,6 +147,10 @@ export const INITIAL_PLAN = (client?: any): PlanData => ({
   ticketNumber: "",
   startDate: "",
   endDate: "",
+  flightDepartureDate: "",
+  flightReturnDate: "",
+  hotelCheckIn: "",
+  hotelCheckOut: "",
   airline: "",
   guests: [
     {

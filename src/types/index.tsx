@@ -194,6 +194,10 @@ export interface PlanData {
   ticketNumber: string;
   startDate: string;
   endDate: string;
+  flightDepartureDate?: string;
+  flightReturnDate?: string;
+  hotelCheckIn?: string;
+  hotelCheckOut?: string;
   supplierPaymentMethod: string;
   supplier: string;
   airline: string;
