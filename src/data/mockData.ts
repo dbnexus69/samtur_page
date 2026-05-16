@@ -388,9 +388,11 @@ export const mockData: AppData = {
       category: "hoteles",
       paymentMethod: "Tarjeta de Crédito",
       // --- DATOS NUEVOS DE COMISIÓN Y FINANCIEROS ---
-      commissionAgent: "Agencia Viajes Plus",
-      commissionAmount: 150000,
-      commissionPaymentMethod: "Transferencia Bancaria",
+      commissionAgentId: 1,
+      commissionAgentName: "Viajes Plus",
+      commissionAgentAmount: 150000,
+      commissionAgentRetentionPercentage: 10,
+      commissionAgentNetPayment: 135000,
       ta: 250000,
       supplierCost: 2100000,
       // Ganancia neta: 2.500.000 - 2.100.000 - 150.000 = 250.000
@@ -412,9 +414,11 @@ export const mockData: AppData = {
       creditDueDate: "2026-06-15",
       creditPaidAmount: 0,
       // --- DATOS NUEVOS DE COMISIÓN Y FINANCIEROS ---
-      commissionAgent: "Asesor Independiente",
-      commissionAmount: 20000,
-      commissionPaymentMethod: "Efectivo",
+      commissionAgentId: 2,
+      commissionAgentName: "Asesor Juan",
+      commissionAgentAmount: 20000,
+      commissionAgentRetentionPercentage: 15,
+      commissionAgentNetPayment: 17000,
       ta: 50000,
       supplierCost: 730000,
       // Ganancia neta: 800.000 - 730.000 - 20.000 = 50.000
@@ -435,9 +439,11 @@ export const mockData: AppData = {
       isCredit: true,
       creditPaidAmount: 2000000,
       // --- DATOS NUEVOS DE COMISIÓN Y FINANCIEROS ---
-      commissionAgent: "Ventas Directas Web",
-      commissionAmount: 300000,
-      commissionPaymentMethod: "Descuento en factura",
+      commissionAgentId: 1,
+      commissionAgentName: "Viajes Plus",
+      commissionAgentAmount: 300000,
+      commissionAgentRetentionPercentage: 10,
+      commissionAgentNetPayment: 270000,
       ta: 500000,
       supplierCost: 3700000,
       // Ganancia neta: 4.500.000 - 3.700.000 - 300.000 = 500.000
@@ -636,14 +642,12 @@ export const mockData: AppData = {
         id: 3,
         name: "Viajes Exito",
         type: "Operador",
-        contact: "operaciones@viajesexito.com",
         website: "https://www.viajesexito.com",
       },
       {
         id: 4,
         name: "Alsa Viajes",
         type: "Operador",
-        contact: "ventas@alsaviajes.com",
         website: "https://www.alsa.es",
       },
     ],
@@ -664,6 +668,10 @@ export const mockData: AppData = {
       { id: 6, airlineName: "LATAM", fareType: "Top / Premium", personalItem: "Incluido (Bolso/Morral pequeño)", carryOn: "10 kg Incluido", checkedBag: "23 kg Incluido (Hasta 2 piezas)", notes: "Excelente flexibilidad, ideal para viajes internacionales largos." },
       { id: 7, airlineName: "Wingo", fareType: "Go Basic", personalItem: "Incluido (Mochila pequeña)", carryOn: "No incluido", checkedBag: "No incluido", notes: "Aerolínea de bajo costo. Controles estrictos de medidas." },
       { id: 8, airlineName: "Wingo", fareType: "Go Extra", personalItem: "Incluido (Mochila pequeña)", carryOn: "10 kg Incluido", checkedBag: "20 kg Incluido", notes: "Incluye maleta de bodega estándar de hasta 20 kg." },
+    ],
+    commissionAgents: [
+      { id: 1, name: "Viajes Plus", type: "Agencia Externa", docType: "NIT", docNumber: "900.123.456-1", baseCommissionPercentage: 5, defaultRetentionPercentage: 10, status: "Activo" },
+      { id: 2, name: "Asesor Juan", type: "Freelance", docType: "CC", docNumber: "1.020.333.444", baseCommissionPercentage: 7, defaultRetentionPercentage: 15, status: "Activo" },
     ],
     rolePermissions: {
       vendor: DEFAULT_VENDOR_PERMISSIONS,

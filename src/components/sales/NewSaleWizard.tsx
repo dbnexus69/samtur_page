@@ -90,6 +90,14 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
   const [activeForm, setActiveForm] = useState<SaleProductId | null>(null);
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [toast, setToast] = useState<{ msg: string; type: 'error' | 'success' } | null>(null);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const actions = {
     showOtherProducts,
@@ -412,13 +420,21 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(3)) return;
-    const client = data.clients.find((c: any) => c.name === form.clientId);
-    if (!client) {
-      setErrors({ ...errors, clientId: "El cliente no es válido" });
-      setStep(1);
-      return;
-    }
+    try {
+      if (!validateStep(3)) {
+        console.error("Validation failed", errors);
+        const firstError = Object.values(errors)[0] || "Por favor revisa los campos obligatorios";
+        setToast({ msg: firstError, type: 'error' });
+        return;
+      }
+      
+      const client = data.clients.find((c: any) => c.name === form.clientId);
+      if (!client) {
+        setErrors(prev => ({ ...prev, clientId: "El cliente no es válido" }));
+        setToast({ msg: "El cliente seleccionado no es válido", type: 'error' });
+        setStep(1);
+        return;
+      }
 
     const productLabels = form.selectedProducts
       .map((id) => {
@@ -459,9 +475,11 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
       petServiceData: form.petServices.length > 0 ? form.petServices : undefined,
       isCredit: form.isCredit,
       creditDueDate: form.isCredit ? form.creditDueDate : undefined,
-      commissionAgent: form.commissionAgent,
-      commissionAmount: Number(form.commissionAmount) || 0,
-      commissionPaymentMethod: form.commissionPaymentMethod,
+      commissionAgentId: form.commissionAgentId ? Number(form.commissionAgentId) : undefined,
+      commissionAgentName: form.commissionAgentName || undefined,
+      commissionAgentAmount: Number(form.commissionAgentAmount) || 0,
+      commissionAgentRetentionPercentage: Number(form.commissionAgentRetentionPercentage) || 0,
+      commissionAgentNetPayment: Number(form.commissionAgentNetPayment) || 0,
       ta: Number(form.ta) || 0,
       supplierCost: Number(form.supplierCost) || 0,
     };
@@ -470,6 +488,10 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
     localStorage.removeItem("itea_new_sale_draft");
     onSuccess("Venta registrada exitosamente");
     onClose();
+    } catch (error) {
+      console.error("Error saving sale:", error);
+      setToast({ msg: "Error crítico al guardar la venta", type: 'error' });
+    }
   };
 
   const handleCancel = () => {
@@ -479,6 +501,20 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
 
   return (
     <div className="flex flex-col h-full relative overflow-hidden">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border animate-bounce-subtle ${
+          toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+        }`}>
+          <div className={`p-2 rounded-xl ${toast.type === 'error' ? 'bg-red-100' : 'bg-emerald-100'}`}>
+            <Package size={20} className={toast.type === 'error' ? 'text-red-600' : 'text-emerald-600'} />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Atención</p>
+            <p className="font-bold text-sm">{toast.msg}</p>
+          </div>
+        </div>
+      )}
       {activeForm ? renderActiveForm() : (
         <>
           {/* Header / Stepper */}

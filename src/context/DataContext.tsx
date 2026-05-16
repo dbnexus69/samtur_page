@@ -3,7 +3,7 @@ import { AppData, User, Client, Sale, Flight, RolePermissions } from '../types';
 import { mockData } from '../data/mockData';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
-type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'airports' | 'baggage';
+type ConfigSection = 'cards' | 'paymentMethods' | 'documentTypes' | 'airlines' | 'suppliers' | 'airports' | 'baggage' | 'commissionAgents' | 'commissionSettlements';
 
 interface DataContextType {
   data: AppData;
@@ -19,6 +19,7 @@ interface DataContextType {
   updateSale: (id: number, sale: Partial<Sale>) => void;
   registerCreditPayment: (saleId: number, amount: number, isTotal: boolean) => void;
   updateFlight: (id: number, flight: Partial<Flight>) => void;
+  settleCommissions: (agentId: number, settlement: any) => void;
   addConfigItem: (section: ConfigSection, item: Record<string, unknown>) => Record<string, unknown>;
   updateConfigItem: (section: ConfigSection, id: number, item: Record<string, unknown>) => void;
   deleteConfigItem: (section: ConfigSection, id: number) => void;
@@ -45,7 +46,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const currentBaggage = data.config?.baggage || [];
     const hasOldBaggage = currentBaggage.length === 0 || currentBaggage.some((b: any) => !b.airlineName || !b.fareType);
     
-    if ((hasOldAirlines || hasOldSuppliers || hasOldAirports || hasOldBaggage) && mockData?.config) {
+    const currentCommissionAgents = data.config?.commissionAgents || [];
+    const hasOldCommissionAgents = currentCommissionAgents.length === 0;
+
+    const currentSettlements = data.config?.commissionSettlements || [];
+    const hasOldSettlements = !data.config?.commissionSettlements;
+
+    if ((hasOldAirlines || hasOldSuppliers || hasOldAirports || hasOldBaggage || hasOldCommissionAgents) && mockData?.config) {
       setData({
         ...data,
         config: {
@@ -53,11 +60,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
           airlines: hasOldAirlines ? mockData.config.airlines : data.config.airlines,
           suppliers: hasOldSuppliers ? mockData.config.suppliers : data.config.suppliers,
           airports: hasOldAirports ? mockData.config.airports : data.config.airports,
-          baggage: hasOldBaggage ? mockData.config.baggage : data.config.baggage
+          baggage: hasOldBaggage ? mockData.config.baggage : data.config.baggage,
+          commissionAgents: hasOldCommissionAgents ? mockData.config.commissionAgents : data.config.commissionAgents,
+          commissionSettlements: hasOldSettlements ? (mockData.config.commissionSettlements || []) : data.config.commissionSettlements
         }
       });
     }
-  }, []);
+  }, [data]);
 
   const refreshData = () => {
     const stored = localStorage.getItem('itea_data');
@@ -185,6 +194,35 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const settleCommissions = (agentId: number, settlement: any) => {
+    const agent = data.config.commissionAgents.find(a => a.id === agentId);
+    const settlementId = generateId(data.config.commissionSettlements || []);
+    const newSettlement = {
+      ...settlement,
+      id: settlementId,
+      agentId,
+      agentName: agent?.name || 'Agente Desconocido',
+      salesIds: data.sales
+        .filter(s => s.commissionAgentId === agentId && !s.isSettled)
+        .map(s => s.id)
+    };
+
+    setData({
+      ...data,
+      sales: data.sales.map(s => 
+        s.commissionAgentId === agentId && !s.isSettled 
+          ? { ...s, isSettled: true, settlementDate: settlement.date } 
+          : s
+      ),
+      config: {
+        ...data.config,
+        commissionSettlements: [...(data.config.commissionSettlements || []), newSettlement]
+      }
+    });
+    
+    return newSettlement;
+  };
+
   const updateFlight = (id: number, flightUpdate: Partial<Flight>) => {
     setData({
       ...data,
@@ -259,6 +297,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       toggleClientStatus,
       addSale,
       updateSale,
+      settleCommissions,
       registerCreditPayment,
       updateFlight,
       addConfigItem,

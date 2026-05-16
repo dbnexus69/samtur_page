@@ -9,6 +9,7 @@ import {
   Settings,
   LogOut,
   Database,
+  Coins,
   X,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -31,6 +32,7 @@ export function Sidebar({ isMobileOpen = false, onClose }: SidebarProps) {
     { to: "/sales", icon: DollarSign, label: "Ventas", permission: 'sales' as const },
     { to: "/clients", icon: Users, label: "Clientes", permission: 'clients' as const },
     { to: "/itineraries", icon: Plane, label: "Itinerarios", permission: 'itineraries' as const },
+    { to: "/commission-agents", icon: Coins, label: "Comisionistas", permission: 'sales' as const },
   ];
 
   const adminLinks = [
@@ -63,8 +65,9 @@ export function Sidebar({ isMobileOpen = false, onClose }: SidebarProps) {
         </button>
       </div>
 
-      <nav className="flex-1 py-6 overflow-y-auto overflow-x-hidden scrollbar-hide">
-        <ul className="space-y-2 px-3">
+      <nav className="flex-1 py-6 overflow-y-auto overflow-x-hidden [direction:rtl] custom-scrollbar">
+        <div className="[direction:ltr]">
+          <ul className="space-y-2 px-3">
           {filteredMainLinks.map((link) => (
             <li key={link.to}>
               <NavLink
@@ -128,6 +131,7 @@ export function Sidebar({ isMobileOpen = false, onClose }: SidebarProps) {
             </ul>
           </div>
         )}
+        </div>
       </nav>
 
       <div className={`p-4 border-t border-[#032650] transition-all duration-300 ${isExpanded ? "" : "items-center"}`}>

@@ -32,9 +32,11 @@ export const PRODUCT_IMAGES: Record<string, string> = {
 
 export interface WizardFormData {
   clientId: string;
-  commissionAgent: string;
-  commissionAmount: string;
-  commissionPaymentMethod: string;
+  commissionAgentId: string;
+  commissionAgentName: string;
+  commissionAgentAmount: string;
+  commissionAgentRetentionPercentage: string;
+  commissionAgentNetPayment: string;
   vendorId: string;
   vendorName: string;
   selectedProducts: SaleProductId[];
@@ -294,9 +296,11 @@ export const INITIAL_PET_SERVICE = (client?: any): PetServiceData => ({
 
 export const INITIAL_FORM: WizardFormData = {
   clientId: "",
-  commissionAgent: "",
-  commissionAmount: "",
-  commissionPaymentMethod: "",
+  commissionAgentId: "",
+  commissionAgentName: "",
+  commissionAgentAmount: "",
+  commissionAgentRetentionPercentage: "",
+  commissionAgentNetPayment: "",
   vendorId: "",
   vendorName: "",
   selectedProducts: [],

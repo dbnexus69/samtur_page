@@ -383,12 +383,27 @@ export interface Sale {
   isCredit?: boolean;
   creditDueDate?: string;
   creditPaidAmount?: number;
-  commissionAgent?: string;
-  commissionAmount?: number;
-  commissionPaymentMethod?: string;
+  commissionAgentId?: number;
+  commissionAgentName?: string;
+  commissionAgentAmount?: number;
+  commissionAgentRetentionPercentage?: number;
+  commissionAgentNetPayment?: number;
+  isSettled?: boolean;
+  settlementDate?: string;
   ta?: number;
   supplierCost?: number;
   payments?: PaymentRecord[];
+}
+
+export interface CommissionAgent {
+  id: number;
+  name: string;
+  type: "Freelance" | "Agencia Externa" | "Otro";
+  docType: string;
+  docNumber: string;
+  baseCommissionPercentage: number; // % sobre la T.A.
+  defaultRetentionPercentage: number; // % que se queda la oficina por defecto
+  status: "Activo" | "Inactivo";
 }
 
 export interface Flight {
@@ -400,6 +415,18 @@ export interface Flight {
   time: string;
   type: "ida" | "regreso";
   checkin: "pendiente" | "realizado";
+}
+
+export interface CommissionSettlement {
+  id: number;
+  agentId: number;
+  agentName: string;
+  amount: number;
+  date: string;
+  paymentMethod: string;
+  reference?: string;
+  notes?: string;
+  salesIds: number[];
 }
 
 export interface ConfigData {
@@ -420,7 +447,9 @@ export interface ConfigData {
     type: "Nacional" | "Internacional"; 
     website: string; 
   }[];
-  suppliers: { id: number; name: string; type: string; contact: string; website: string }[];
+  suppliers: { id: number; name: string; type: string; contact?: string; website: string }[];
+  commissionAgents: CommissionAgent[];
+  commissionSettlements?: CommissionSettlement[];
   airports: {
     id: number;
     name: string;

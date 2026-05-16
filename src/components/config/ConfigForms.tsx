@@ -338,6 +338,77 @@ export default function ConfigForms({ section, formData, setFormData, errors, se
           </FormField>
         </>
       );
+    case 'commissionAgents':
+      return (
+        <>
+          <FormField label="Nombre Completo / Agencia" error={errors.name}>
+            <Input 
+              value={formData.name || ''} 
+              onChange={e => {
+                setFormData({ ...formData, name: e.target.value });
+                if (errors.name) setErrors({ ...errors, name: '' });
+              }} 
+              placeholder="Ej. Asesor Juan o Agencia Viajes Plus"
+              error={errors.name}
+            />
+          </FormField>
+          <FormField label="Tipo de Comisionista" error={errors.type}>
+            <Select
+              value={formData.type || ''}
+              onChange={e => {
+                setFormData({ ...formData, type: e.target.value });
+                if (errors.type) setErrors({ ...errors, type: '' });
+              }}
+              options={[
+                { value: '', label: 'Seleccione un tipo' },
+                { value: 'Freelance', label: 'Freelance' },
+                { value: 'Agencia Externa', label: 'Agencia Externa' },
+                { value: 'Otro', label: 'Otro' }
+              ]}
+              error={errors.type}
+            />
+          </FormField>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Tipo de Documento" error={errors.docType}>
+              <Select
+                value={formData.docType || ''}
+                onChange={e => {
+                  setFormData({ ...formData, docType: e.target.value });
+                  if (errors.docType) setErrors({ ...errors, docType: '' });
+                }}
+                options={[
+                  { value: '', label: 'Seleccione' },
+                  ...data.config.documentTypes.map((dt: any) => ({ value: dt.name, label: dt.name }))
+                ]}
+                error={errors.docType}
+              />
+            </FormField>
+            <FormField label="Número Documento" error={errors.docNumber}>
+              <Input 
+                value={formData.docNumber || ''} 
+                onChange={e => {
+                  setFormData({ ...formData, docNumber: e.target.value });
+                  if (errors.docNumber) setErrors({ ...errors, docNumber: '' });
+                }} 
+                placeholder="Ej. 1.020..."
+                error={errors.docNumber}
+              />
+            </FormField>
+          </div>
+
+          <FormField label="Estado" error={errors.status}>
+            <Select
+              value={formData.status || 'Activo'}
+              onChange={e => setFormData({ ...formData, status: e.target.value })}
+              options={[
+                { value: 'Activo', label: 'Activo' },
+                { value: 'Inactivo', label: 'Inactivo' }
+              ]}
+              error={errors.status}
+            />
+          </FormField>
+        </>
+      );
     default:
       return null;
   }

@@ -1,4 +1,4 @@
-import { CreditCard } from "lucide-react";
+import { CreditCard, Coins } from "lucide-react";
 import { FormField, Input, Select, Textarea, Combobox } from "../../ui/Form";
 import { WizardFormData } from "../wizardData";
 
@@ -93,7 +93,60 @@ export function Step3Payment({ form, set, data, errors }: any) {
           </FormField>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+          {form.commissionAgentId ? (
+            <div className="col-span-2 flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <Coins size={16} />
+              </div>
+              <p className="text-sm font-bold text-primary">Comisionista asignado: {form.commissionAgentName}</p>
+            </div>
+          ) : (
+            <p className="col-span-2 text-xs text-gray-400 italic">Venta directa (sin comisionista asignado)</p>
+          )}
 
+          {form.commissionAgentId && (
+            <>
+              <FormField label="Comisión Bruta (Cálculo base)">
+                <Input
+                  type="number"
+                  value={form.commissionAgentAmount}
+                  onChange={(e) => {
+                    const gross = parseFloat(e.target.value) || 0;
+                    const retention = parseFloat(form.commissionAgentRetentionPercentage) || 0;
+                    const net = gross * (1 - retention / 100);
+                    set("commissionAgentAmount", e.target.value);
+                    set("commissionAgentNetPayment", net.toString());
+                  }}
+                  placeholder="0"
+                />
+              </FormField>
+              <FormField label="% Retención para Oficina">
+                <Input
+                  type="number"
+                  value={form.commissionAgentRetentionPercentage}
+                  onChange={(e) => {
+                    const retention = parseFloat(e.target.value) || 0;
+                    const gross = parseFloat(form.commissionAgentAmount) || 0;
+                    const net = gross * (1 - retention / 100);
+                    set("commissionAgentRetentionPercentage", e.target.value);
+                    set("commissionAgentNetPayment", net.toString());
+                  }}
+                  placeholder="Ej. 10.5"
+                />
+              </FormField>
+              <FormField label="Comisión Neta a Pagar">
+                <Input
+                  type="number"
+                  value={form.commissionAgentNetPayment}
+                  readOnly
+                  className="bg-gray-100 font-bold text-emerald-600"
+                  placeholder="0"
+                />
+              </FormField>
+            </>
+          )}
+        </div>
 
         {form.isCredit && (
           <FormField label="Fecha de Vencimiento">
@@ -115,7 +168,7 @@ export function Step3Payment({ form, set, data, errors }: any) {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase">
-                  Total
+                  Venta Total
                 </p>
                 <p className="font-black text-gray-800">
                   ${Number(form.total).toLocaleString("es-CO")}
@@ -123,7 +176,7 @@ export function Step3Payment({ form, set, data, errors }: any) {
               </div>
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase">
-                  Proveedores
+                  Costo Netto
                 </p>
                 <p className="font-black text-rose-600">
                   ${(Number(form.supplierCost) || 0).toLocaleString("es-CO")}
@@ -131,22 +184,22 @@ export function Step3Payment({ form, set, data, errors }: any) {
               </div>
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase">
-                  Comisión
+                  Pago Comisionista
                 </p>
                 <p className="font-black text-amber-600">
-                  ${(Number(form.commissionAmount) || 0).toLocaleString("es-CO")}
+                  ${(Number(form.commissionAgentNetPayment) || 0).toLocaleString("es-CO")}
                 </p>
               </div>
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase">
-                  Ganancia
+                  Ganancia Oficina
                 </p>
                 <p className="font-black text-emerald-600">
                   $
                   {(
                     Number(form.total) -
                     (Number(form.supplierCost) || 0) -
-                    (Number(form.commissionAmount) || 0)
+                    (Number(form.commissionAgentNetPayment) || 0)
                   ).toLocaleString("es-CO")}
                 </p>
               </div>

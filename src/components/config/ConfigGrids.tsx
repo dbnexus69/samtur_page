@@ -3,6 +3,7 @@ import {
   CreditCard, Pencil, Trash2, Coins, IdCard, 
   PlaneTakeoff, Building2, Compass, Luggage 
 } from 'lucide-react';
+import { formatCurrency } from '../../utils/formatters';
 
 interface ConfigGridsProps {
   section: string;
@@ -447,6 +448,87 @@ export default function ConfigGrids({ section, filteredData, handleOpenModal, ha
                 <Pencil size={13} />
               </button>
               <button onClick={() => handleDelete(bag.id)} className="p-1.5 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50" title="Eliminar">
+                <Trash2 size={13} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (section === 'commissionAgents') {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filteredData.map((agent) => (
+          <div key={agent.id} className="bg-white border border-gray-border hover:border-primary/40 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group relative overflow-hidden">
+            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${
+              agent.type === 'Freelance' ? 'from-purple-500 to-indigo-600' :
+              agent.type === 'Agencia Externa' ? 'from-blue-500 to-primary' : 'from-gray-500 to-slate-700'
+            }`} />
+            
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary/10 transition-colors">
+                  <Coins size={18} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-800 text-xs">{agent.name}</h3>
+                  <span className="text-[10px] text-gray-400 font-mono">{agent.docType}: {agent.docNumber}</span>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                  agent.type === 'Freelance' ? 'bg-purple-50 text-purple-700 border border-purple-200' :
+                  agent.type === 'Agencia Externa' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                  'bg-gray-50 text-gray-700 border border-gray-200'
+                }`}>
+                  {agent.type}
+                </span>
+                <span className={`text-[8px] font-bold uppercase tracking-widest ${agent.status === 'Activo' ? 'text-green-600' : 'text-red-600'}`}>
+                  ● {agent.status}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 bg-gray-50/50 p-3 rounded-lg border border-gray-100 mt-2">
+              <div>
+                <span className="block text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">Comisión Base</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm font-bold text-primary">{agent.baseCommissionPercentage}%</span>
+                  <span className="text-[8px] text-gray-400 font-semibold italic">s/ T.A.</span>
+                </div>
+              </div>
+              <div className="border-l border-gray-200 pl-3">
+                <span className="block text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">Retención Oficina</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm font-bold text-accent">{agent.defaultRetentionPercentage}%</span>
+                  <span className="text-[8px] text-gray-400 font-semibold italic">s/ Com.</span>
+                </div>
+              </div>
+            </div>
+
+            <div className={`mt-3 p-3 rounded-xl flex items-center justify-between border ${
+              (agent.accumulated || 0) >= 50000 
+                ? 'bg-amber-50 border-amber-200 text-amber-900 shadow-sm shadow-amber-100' 
+                : 'bg-emerald-50 border-emerald-100 text-emerald-900'
+            }`}>
+              <div>
+                <span className="block text-[8px] font-bold uppercase tracking-widest opacity-70">Acumulado Ganancia</span>
+                <span className="text-base font-black tracking-tight">{formatCurrency(agent.accumulated || 0)}</span>
+              </div>
+              {(agent.accumulated || 0) >= 50000 && (
+                <div className="bg-amber-500 text-white text-[8px] font-black px-2 py-1 rounded-lg animate-pulse uppercase tracking-wider">
+                  ¡Liquidar!
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-gray-100 pt-3 mt-2 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={() => handleOpenModal(agent)} className="p-1.5 text-gray-500 hover:text-primary rounded-md hover:bg-gray-100" title="Editar">
+                <Pencil size={13} />
+              </button>
+              <button onClick={() => handleDelete(agent.id)} className="p-1.5 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50" title="Eliminar">
                 <Trash2 size={13} />
               </button>
             </div>
