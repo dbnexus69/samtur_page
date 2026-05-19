@@ -40,6 +40,9 @@ Thumbs.db
 ehthumbs.db
 *.tmp
 
+# Docs
 AGENTS.md
 alcance.md
 exampleBD.md
+diagram_bd_ITEA.sql
+diagram_dbdiagram.dbml

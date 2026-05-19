@@ -186,6 +186,48 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
     if (step > 1) setStep(step - 1);
   };
 
+  const closeActiveForm = () => {
+    if (activeForm && activeIdx !== null) {
+      let targetKey: string | null = null;
+      switch (activeForm) {
+        case "tiqueteria": targetKey = "tickets"; break;
+        case "hoteleria": targetKey = "hotels"; break;
+        case "seguros_viaje": targetKey = "insurances"; break;
+        case "planes": targetKey = "plans"; break;
+        case "checkin": targetKey = "checkIns"; break;
+        case "documentacion_migratoria": targetKey = "migrations"; break;
+        case "simcard": targetKey = "simCards"; break;
+        case "renta_vehiculos": targetKey = "carRentals"; break;
+        case "renta_fincas": targetKey = "fincas"; break;
+        case "tours": targetKey = "tours"; break;
+        case "centros_convencion": targetKey = "conventions"; break;
+        case "restaurantes": targetKey = "restaurants"; break;
+        case "visa": targetKey = "visas"; break;
+        case "pasaporte": targetKey = "passports"; break;
+        case "servicio_mascotas": targetKey = "petServices"; break;
+      }
+
+      if (targetKey) {
+        const items = (form as any)[targetKey] || [];
+        const currentItem = items[activeIdx];
+        if (currentItem && isItemEmpty(currentItem, activeForm)) {
+          const nextItems = [...items];
+          nextItems.splice(activeIdx, 1);
+          
+          setForm(prev => {
+            const updatedForm = { ...prev, [targetKey!]: nextItems };
+            if (nextItems.length === 0) {
+              updatedForm.selectedProducts = prev.selectedProducts.filter(p => p !== activeForm);
+            }
+            return updatedForm;
+          });
+        }
+      }
+    }
+    setActiveForm(null);
+    setActiveIdx(null);
+  };
+
   const renderActiveForm = () => {
     if (!activeForm || activeIdx === null) return null;
 
@@ -198,7 +240,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
         <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50/50">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setActiveForm(null)}
+              onClick={closeActiveForm}
               className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-600"
             >
               <ChevronLeft size={20} />
@@ -217,7 +259,7 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
           </div>
           <Button 
             size="sm" 
-            onClick={() => setActiveForm(null)}
+            onClick={closeActiveForm}
             className="bg-primary hover:bg-primary/90 text-white"
           >
             Listo
@@ -571,18 +613,12 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
           <>
             <Button
               variant="outline"
-              onClick={() => {
-                setActiveForm(null);
-                setActiveIdx(null);
-              }}
+              onClick={closeActiveForm}
             >
               Regresar
             </Button>
             <Button
-              onClick={() => {
-                setActiveForm(null);
-                setActiveIdx(null);
-              }}
+              onClick={closeActiveForm}
             >
               Confirmar y Continuar
             </Button>
@@ -630,3 +666,111 @@ export default function NewSaleWizard({ onClose, onSuccess }: Props) {
     </div>
   );
 }
+
+function isItemEmpty(item: any, category: SaleProductId): boolean {
+  if (!item) return true;
+  
+  if (Number(item.supplierCost) > 0 || Number(item.ta) > 0) return false;
+  if (item.supplierName && item.supplierName.trim() !== "") return false;
+
+  switch (category) {
+    case "tiqueteria":
+      return (
+        !item.airline &&
+        !item.reservationNumber &&
+        !item.flightNumber &&
+        !item.ticketNumber &&
+        !item.seatNumber &&
+        (!item.legs || item.legs.every((l: any) => !l.origin && !l.destination && !l.flightNumber))
+      );
+    case "hoteleria":
+      return (
+        !item.hotelName &&
+        !item.destination &&
+        !item.reservationNumber &&
+        !item.observations &&
+        !item.hotelType
+      );
+    case "seguros_viaje":
+      return !item.contactName && !item.contactNumber && !item.address;
+    case "planes":
+      return (
+        !item.planName &&
+        !item.hotelName &&
+        !item.reservationNumber &&
+        !item.flightNumber &&
+        !item.ticketNumber &&
+        !item.airline
+      );
+    case "checkin":
+      return (
+        !item.flightOrReservation &&
+        !item.travelDate &&
+        !item.seat &&
+        !item.baggage &&
+        !item.specialNeeds
+      );
+    case "documentacion_migratoria":
+      return (
+        !item.nationality &&
+        !item.passportNumber &&
+        !item.passportExpiry &&
+        !item.destinationCountry
+      );
+    case "simcard":
+      return (
+        !item.destinationCountry &&
+        !item.arrivalDate &&
+        !item.tripDuration &&
+        !item.dataPlan
+      );
+    case "renta_vehiculos":
+      return (
+        !item.licenseNumber &&
+        !item.pickupDate &&
+        !item.returnDate &&
+        !item.guaranteeCreditCard
+      );
+    case "renta_fincas":
+      return !item.checkInDate && !item.checkOutDate && !item.petType;
+    case "tours":
+      return (
+        !item.selectedTour &&
+        !item.preferredDate &&
+        !item.childrenAges &&
+        !item.pickupPoint &&
+        !item.medicalConditions
+      );
+    case "centros_convencion":
+      return (
+        !item.organization &&
+        !item.startDate &&
+        !item.endDate &&
+        !item.cateringNotes
+      );
+    case "restaurantes":
+      return !item.dateTime;
+    case "visa":
+      return (
+        !item.nationality &&
+        !item.passportNumber &&
+        !item.passportExpiration &&
+        !item.countryApplying &&
+        !item.estimatedTravelDate
+      );
+    case "pasaporte":
+      return !item.residenceCity && !item.estimatedTravelDate;
+    case "servicio_mascotas":
+      return (
+        !item.petName &&
+        !item.breed &&
+        item.weight === 0 &&
+        !item.travelDate &&
+        !item.destinationCountry &&
+        !item.medicalConditions
+      );
+    default:
+      return true;
+  }
+}
+

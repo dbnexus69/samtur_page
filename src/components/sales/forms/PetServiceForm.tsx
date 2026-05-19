@@ -68,7 +68,7 @@ export function PetServiceForm({ pet, client, suppliers, onChange }: PetServiceF
             />
           </FormField>
           <FormField label="Fecha de Viaje">
-            <Input type="date" value={pet.travelDate} onChange={(e) => onChange({ travelDate: e.target.value })} />
+            <Input type="datetime-local" value={pet.travelDate} onChange={(e) => onChange({ travelDate: e.target.value })} />
           </FormField>
           <FormField label="País Destino">
             <Input value={pet.destinationCountry} onChange={(e) => onChange({ destinationCountry: e.target.value })} placeholder="País de destino" />
